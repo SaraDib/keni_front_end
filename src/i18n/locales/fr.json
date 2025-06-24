@@ -1,0 +1,138 @@
+{
+  "header": {
+    "title": "GlobalHealth",
+    "subtitle": "GlobalHealth - Therapy & Training Center",
+    "appointment": "Prenez rendez-vous dès maintenant"
+  },
+  "footer": {
+    "title": "GlobalHealth - Therapy & Training Center",
+    "openingHours": "Horaires d'ouverture",
+    "closed": "Fermé",
+    "handicapAccess": "Accès sans obstacle",
+    "loading": "Chargement..."
+  },
+  "navbar": {
+    "start": "Commencer",
+    "services": "Services",
+    "about": "Qui sommes nous",
+    "jobs": "Offres d'emploi",
+    "faq": "FAQ",
+    "contact": "Contact"
+  },
+  "services": {
+    "title": "Notre gamme de services"
+  },
+  "ordonnance": {
+    "title": "Ordonnance vierge",
+    "description": "Il existe maintenant ce que l'on appelle des ordonnances vierges pour certains diagnostics en thérapie. Grâce à ces prescriptions, nous avons, en tant qu'établissement de thérapie, la possibilité de décider nous-mêmes quelle thérapie et à quelle fréquence le traitement est effectué. Les personnes qui ont un médecin traitant qui délivre ces « ordonnances vierges » sont toujours les bienvenues à nous rejoindre."
+  },
+  "experts": {
+    "title": "Experts en santé et bien-être",
+    "description": "Notre entreprise exploite deux cabinets et un centre de formation à Essen-Frintrop, qui se trouvent directement à la frontière d'Oberhausen et de Mülheim. Avec notre large gamme de services tels que la physiothérapie, l'ergothérapie, la prévention, les sports de réadaptation et l'entraînement, nous sommes un partenaire fiable pour la santé et le bien-être de nos clients. Nous attachons une grande importance à offrir à nos patients des plans de thérapie et de formation sur mesure."
+  },
+  "updates": {
+    "title": "Mises à jour et événements autour de notre offre de formation et de thérapie",
+    "description1": "En plus de notre vaste gamme de services, il est important pour nous de vous tenir régulièrement au courant des derniers développements et des événements à venir. Pour ce faire, nous utilisons activement nos plateformes Facebook et Instagram, où nous partageons des contenus intéressants et des nouvelles passionnantes.",
+    "description2": "Nous vous invitons cordialement à nous rendre visite sur ces canaux de médias sociaux pour faire partie de notre communauté grandissante et être toujours bien informé. Ne manquez aucune mise à jour importante et faites partie de notre communauté en ligne dynamique !"
+  },
+  "opacity": {
+    "phoneAlt": "Téléphone de contact",
+    "contactMessage": "Contactez-nous pour prendre rendez-vous et faire le premier pas vers une vie plus saine.",
+    "appointmentAriaLabel": "Prendre rendez-vous",
+    "calendarIconAlt": "Icône calendrier",
+    "callAriaLabel": "Appeler",
+    "phoneIconAlt": "Icône phone",
+    "waveAlt": "vague"
+  },
+  "common": {
+    "loading": "Chargement..."
+  },
+  "aboutUs": {
+    "pageTitle": "Rééducation sportive",
+    "sectionTitle": "Qui sommes-nous",
+    "teamTitle": "L'équipe de Physio Essen",
+    "managementTitle": "Gestion",
+    "medicalTeamTitle": "Équipe Médicale",
+    "closeButton": "Fermer",
+    "prevEmployee": "Employé précédent",
+    "nextEmployee": "Employé suivant",
+    "history": [
+      "Ouverture de notre première clinique en 2010",
+      "Introduction de nouveaux services de physiothérapie",
+      "Expansion à une deuxième clinique",
+      "Lancement de notre programme de formation continue",
+      "Mise en place d'un nouveau système de gestion des rendez-vous"
+    ]
+  },
+  "faq":{
+    "title": "FAQ",
+    "subtitle":"GlobalHealth - Therapy & Training Center"
+  },
+  "faqs": {
+    "title": "Informations utiles/FAQ",
+    "subtitle": "Questions fréquemment posées"
+  },
+  "jobOffers": {
+    "pageTitle": "Offres d'emploi",
+    "formTitle": "formulaire de demande",
+    "formSubtitle": "Rejoignez notre équipe - nous vous ferons bouger aussi !",
+    "formCallToAction": "Postulez En Ligne Maintenant",
+    "salutationLabel": "Salutation",
+    "salutationM": "M.",
+    "salutationMme": "Mme.",
+    "salutationMlle": "Mlle.",
+    "nameLabel": "Nom Prénom*",
+    "namePlaceholder": "Nom Prénom*",
+    "streetLabel": "Rue, numéro de maison",
+    "streetPlaceholder": "Rue, numéro de maison",
+    "zipCodeLabel": "Code postal",
+    "zipCodePlaceholder": "Code postal",
+    "cityLabel": "Ville",
+    "cityPlaceholder": "Ville",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "E-mail*",
+    "phoneLabel": "Téléphone*",
+    "phonePlaceholder": "Téléphone*",
+    "professionLabel": "Profession *",
+    "professionPlaceholder": "Pour quel domaine souhaitez-vous postuler ?",
+    "motivationLetterLabel": "Lettre de motivation",
+    "cvLabel": "Envoyez-nous vos Curriculum Vitae (CV)",
+    "submitButton": "Envoyer",
+    "contactPersonText": "Bonjour, appelez-moi simplement Alexandre. Je suis la personne de contact pour votre candidature.",
+    "advantagesTitle": "Avantages sociaux",
+    "advantagesSubtitle": "Tous vos avantages en un coup d'œil",
+    "advantagesList": [
+      "Salaire 3 500 – 3 900€ pour 37 heures par semaine",
+      "600€ net en plus grâce aux avantages non monétaires",
+      "Régime de retraite d'entreprise avec subvention allant jusqu'à 100 €",
+      "Prise en charge de la totalité des frais de formation",
+      "Activités passionnantes en thérapie, formations, groupes, conférences, cours de formation",
+      "30 jours de récupération",
+      "Vendredi 14 h : début de la fin de semaine",
+      "Location de vélos avec jusqu'à 40 € de subvention",
+      "Apportez vos idées"
+    ]
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "GlobalHealth - Therapy & Training Center"
+  },
+  "contactForm": {
+    "title": "Formulaire de rendez-vous",
+    "subtitle": "Obtenez des rendez-vous pour des traitements de physiothérapie et d'ergothérapie",
+    "labels": {
+      "lastName": "Nom",
+      "firstName": "Prénom",
+      "birthDate": "Date de naissance",
+      "phone": "Téléphone",
+      "email": "Email",
+      "request": "Que pouvons-nous faire pour vous?",
+      "prescriptionType": "Type de recette"
+    },
+    "errors": {
+      "requiredField": "Ce champ est obligatoire",
+      "invalidEmail": "Email invalide",
+      "invalidPhone": "Numéro de téléphone invalide"
+    }
+  }
+}
