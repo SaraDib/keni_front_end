@@ -15,7 +15,7 @@ const People = () => {
   const fetchPeople = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://keniweb.test/api/equipes', {
+      const response = await axios.get('http://localhost:8000/api/equipes', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ const People = () => {
       accessor: "Image",
       render: (item) => (
         <img
-          src={`http://keniweb.test/api/equipes/${item.ID_Equipe}/image`}
+          src={`http://localhost:8000/api/equipes/${item.ID_Equipe}/image`}
           alt={item.Nom}
           className="w-10 h-10 rounded-full object-cover"
           onError={(e) => {
@@ -114,7 +114,7 @@ const People = () => {
       setIsLoading(true);
       if (Array.isArray(id)) {
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/equipes/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/equipes/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -122,7 +122,7 @@ const People = () => {
           })
         ));
       } else {
-        await axios.delete(`http://keniweb.test/api/equipes/${id}`, {
+        await axios.delete(`http://localhost:8000/api/equipes/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -172,7 +172,7 @@ const People = () => {
           data.append('Image', currentPerson.Image || '');
         }
 
-        await axios.post(`http://keniweb.test/api/equipes/${currentPerson.ID_Equipe}`, data, {
+        await axios.post(`http://localhost:8000/api/equipes/${currentPerson.ID_Equipe}`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -180,7 +180,7 @@ const People = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://keniweb.test/api/equipes', data, {
+        await axios.post('http://localhost:8000/api/equipes', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${localStorage.getItem('token')}`

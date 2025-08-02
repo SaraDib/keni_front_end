@@ -12,7 +12,7 @@ const Contact = () => {
   const fetchContacts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://keniweb.test/api/contact-us', {
+      const response = await axios.get('http://localhost:8000/api/contact-us', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ const Contact = () => {
       if (Array.isArray(id)) {
         // Suppression multiple
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/contact-us/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/contact-us/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -93,7 +93,7 @@ const Contact = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://keniweb.test/api/contact-us/${id}`, {
+        await axios.delete(`http://localhost:8000/api/contact-us/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

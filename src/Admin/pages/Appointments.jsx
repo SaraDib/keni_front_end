@@ -19,7 +19,7 @@ const Appointments = () => {
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://keniweb.test/api/rendez-vous', {
+      const response = await axios.get('http://localhost:8000/api/rendez-vous', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -158,7 +158,7 @@ const Appointments = () => {
       if (Array.isArray(id)) {
         // Suppression multiple
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/rendez-vous/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/rendez-vous/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -167,7 +167,7 @@ const Appointments = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://keniweb.test/api/rendez-vous/${id}`, {
+        await axios.delete(`http://localhost:8000/api/rendez-vous/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

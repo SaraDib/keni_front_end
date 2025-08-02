@@ -19,12 +19,12 @@ const HealthCenter = () => {
     try {
       setIsLoading(true);
       const [centersResponse, hoursResponse] = await Promise.all([
-        axios.get('http://keniweb.test/api/centres', {
+        axios.get('http://localhost:8000/api/centres', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }),
-        axios.get('http://keniweb.test/api/horaires', {
+        axios.get('http://localhost:8000/api/horaires', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -189,7 +189,7 @@ const HealthCenter = () => {
       if (Array.isArray(id)) {
         // Suppression multiple
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/centres/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/centres/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -197,7 +197,7 @@ const HealthCenter = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://keniweb.test/api/centres/${id}`, {
+        await axios.delete(`http://localhost:8000/api/centres/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -235,7 +235,7 @@ const HealthCenter = () => {
   const handleDeleteHour = async (id) => {
     try {
       setIsLoading(true);
-      await axios.delete(`http://keniweb.test/api/horaires/${id}`, {
+      await axios.delete(`http://localhost:8000/api/horaires/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -262,7 +262,7 @@ const HealthCenter = () => {
       
       if (currentCenter) {
         // Mise à jour
-        await axios.put(`http://keniweb.test/api/centres/${currentCenter.ID_Center}`, dataToSend, {
+        await axios.put(`http://localhost:8000/api/centres/${currentCenter.ID_Center}`, dataToSend, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -270,7 +270,7 @@ const HealthCenter = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://keniweb.test/api/centres', dataToSend, {
+        await axios.post('http://localhost:8000/api/centres', dataToSend, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -304,7 +304,7 @@ const HealthCenter = () => {
       
       if (currentHours) {
         // Mise à jour
-        await axios.put(`http://keniweb.test/api/horaires/${currentHours.ID_Horaire}`, hourData, {
+        await axios.put(`http://localhost:8000/api/horaires/${currentHours.ID_Horaire}`, hourData, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -312,7 +312,7 @@ const HealthCenter = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://keniweb.test/api/horaires', hourData, {
+        await axios.post('http://localhost:8000/api/horaires', hourData, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

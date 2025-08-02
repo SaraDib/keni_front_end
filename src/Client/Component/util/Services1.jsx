@@ -58,7 +58,7 @@ function Services1({ serviceData }) {
     <div>
     <div className=" w-full h-screen overflow-hidden relative">
     <img 
-      src={'http://keniweb.test/api/services/'+serviceData.ID_Service+'/photo'} 
+      src={'http://localhost:8000/api/services/'+serviceData.ID_Service+'/photo'} 
       alt="FAQ" 
       className="w-full h-full object-cover"
     />
@@ -102,7 +102,7 @@ function Services1({ serviceData }) {
             <>
               <div data-aos="fade-right" className="overflow-hidden">
                 <img
-                  src={`http://keniweb.test/api/photos/${firstRowService.photos[0].ID_Photo}/image`}
+                  src={`http://localhost:8000/api/photos/${firstRowService.photos[0].ID_Photo}/image`}
                   alt="Physiothérapie 1"
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                 />
@@ -110,7 +110,7 @@ function Services1({ serviceData }) {
               {firstRowService.photos.length > 1 && (
                 <div data-aos="fade-left" className="overflow-hidden">
                   <img
-                    src={`http://keniweb.test/api/photos/${firstRowService.photos[1].ID_Photo}/image`}
+                    src={`http://localhost:8000/api/photos/${firstRowService.photos[1].ID_Photo}/image`}
                     alt="Physiothérapie 2"
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
@@ -134,7 +134,7 @@ function Services1({ serviceData }) {
 
    </div>
    <div data-aos="fade-left" className="w-4/6 max-sm:w-full max-sm:p-4">
-     <img  src={'http://keniweb.test/api/photos/'+service.photos[0].ID_Photo+'/image'} alt='inter' className="h-full object-cover max-sm:h-auto" />
+     <img  src={'http://localhost:8000/api/photos/'+service.photos[0].ID_Photo+'/image'} alt='inter' className="h-full object-cover max-sm:h-auto" />
    </div>
    </div>
     ))}
@@ -145,7 +145,7 @@ function Services1({ serviceData }) {
       <div key={service.ID_Row_Service} className="bg-customBleu flex gap-10 justify-between max-sm:flex-col">
         <div data-aos="fade-right" className="w-4/6 max-sm:w-full max-sm:p-4">
           {service.photos && service.photos.length > 0 && (
-            <img src={`http://keniweb.test/api/photos/${service.photos[0].ID_Photo}/image`} alt='chelsea' className="h-full w-full object-cover max-sm:h-auto" />
+            <img src={`http://localhost:8000/api/photos/${service.photos[0].ID_Photo}/image`} alt='chelsea' className="h-full w-full object-cover max-sm:h-auto" />
           )}
         </div>
         <div className="px-20 pb-20 pt-32 w-15/16 max-sm:p-6 max-sm:w-full">

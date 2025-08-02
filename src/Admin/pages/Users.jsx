@@ -16,7 +16,7 @@ const UsersPage = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://keniweb.test/api/users', {
+      const response = await axios.get('http://localhost:8000/api/users', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ const UsersPage = () => {
       if (Array.isArray(id)) {
         // Multiple delete
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/users/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/users/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -106,7 +106,7 @@ const UsersPage = () => {
         ));
       } else {
         // Single delete
-        await axios.delete(`http://keniweb.test/api/users/${id}`, {
+        await axios.delete(`http://localhost:8000/api/users/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -132,7 +132,7 @@ const UsersPage = () => {
       const data = { ...formData, ID_Entreprise: 1 };
       if (currentUser) {
         // Update
-        await axios.put(`http://keniweb.test/api/users/${currentUser.ID_User}`, data, {
+        await axios.put(`http://localhost:8000/api/users/${currentUser.ID_User}`, data, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -140,7 +140,7 @@ const UsersPage = () => {
         });
       } else {
         // Create
-        await axios.post('http://keniweb.test/api/register', data, {
+        await axios.post('http://localhost:8000/api/register', data, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

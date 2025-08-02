@@ -34,7 +34,7 @@ const LoginPage = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://keniweb.test/api/login', {
+      const response = await axios.post('http://localhost:8000/api/login', {
         Email: formData.email,
         password: formData.password
       });

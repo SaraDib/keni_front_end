@@ -89,7 +89,7 @@ const CrudTable = ({
               className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center"
             >
               <Plus size={16} className="mr-1" />
-              Ajouter
+              Ajouter 
             </button>
           )}
         </div>

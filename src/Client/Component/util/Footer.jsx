@@ -16,7 +16,7 @@ function Footer() {
     const fetchCentres = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://keniweb.test/api/centres");
+        const response = await axios.get("http://localhost:8000/api/centres");
         setCentres(response.data);
         setLoading(false);
       } catch (error) {

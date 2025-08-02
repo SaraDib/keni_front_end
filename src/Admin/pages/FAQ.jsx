@@ -19,7 +19,7 @@ const FAQ = () => {
       const token = localStorage.getItem('token');
       
       // Make the API request with the Authorization header
-      const response = await axios.get('http://keniweb.test/api/faqs', {
+      const response = await axios.get('http://localhost:8000/api/faqs', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -96,11 +96,11 @@ const FAQ = () => {
       if (Array.isArray(id)) {
         // Suppression multiple
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/faqs/${singleId}`, { headers })
+          axios.delete(`http://localhost:8000/api/faqs/${singleId}`, { headers })
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://keniweb.test/api/faqs/${id}`, { headers });
+        await axios.delete(`http://localhost:8000/api/faqs/${id}`, { headers });
       }
       await fetchFaqs(); // Recharger les données
       setError(null);
@@ -129,10 +129,10 @@ const FAQ = () => {
       
       if (currentFaq) {
         // Mise à jour
-        await axios.put(`http://keniweb.test/api/faqs/${currentFaq.ID_FAQ}`, dataWithEnterprise, { headers });
+        await axios.put(`http://localhost:8000/api/faqs/${currentFaq.ID_FAQ}`, dataWithEnterprise, { headers });
       } else {
         // Ajout
-        await axios.post('http://keniweb.test/api/faqs', dataWithEnterprise, { headers });
+        await axios.post('http://localhost:8000/api/faqs', dataWithEnterprise, { headers });
       }
       await fetchFaqs(); // Recharger les données
       setShowForm(false);

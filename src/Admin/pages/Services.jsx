@@ -39,9 +39,9 @@ const Services = () => {
   const [showRowForm, setShowRowForm] = useState(false);
 
   // API base URL
-  const API_URL = 'http://keniweb.test/api/services';
-  const ROW_API_URL = 'http://keniweb.test/api/row-services';
-  const TYPE_PHOTOS_API_URL = 'http://keniweb.test/api/type-photos';
+  const API_URL = 'http://localhost:8000/api/services';
+  const ROW_API_URL = 'http://localhost:8000/api/row-services';
+  const TYPE_PHOTOS_API_URL = 'http://localhost:8000/api/type-photos';
 
   // Fetch all services
   const fetchServices = async () => {
@@ -183,7 +183,7 @@ const Services = () => {
     
     // Set preview image if available
     if (service.Photos) {
-      setPreviewImage(`http://keniweb.test/api/services/${service.ID_Service}/photo`);
+      setPreviewImage(`http://localhost:8000/api/services/${service.ID_Service}/photo`);
     } else {
       setPreviewImage(null);
     }
@@ -386,7 +386,7 @@ const Services = () => {
         photoFormData.append('ID_Row', rowId);
         photoFormData.append('Photo', rowImage);
         
-        await axios.post('http://keniweb.test/api/photos', photoFormData, {
+        await axios.post('http://localhost:8000/api/photos', photoFormData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -400,7 +400,7 @@ const Services = () => {
           photoFormData1.append('ID_Row', rowId);
           photoFormData1.append('Photo', rowImage1);
           
-          await axios.post('http://keniweb.test/api/photos', photoFormData1, {
+          await axios.post('http://localhost:8000/api/photos', photoFormData1, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
@@ -414,7 +414,7 @@ const Services = () => {
           photoFormData2.append('ID_Row', rowId);
           photoFormData2.append('Photo', rowImage2);
           
-          await axios.post('http://keniweb.test/api/photos', photoFormData2, {
+          await axios.post('http://localhost:8000/api/photos', photoFormData2, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
@@ -646,7 +646,7 @@ const Services = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {service.Photos ? (
                         <img
-                          src={`http://keniweb.test/api/services/${service.ID_Service}/photo`}
+                          src={`http://localhost:8000/api/services/${service.ID_Service}/photo`}
                           alt={service.Nom}
                           className="h-10 w-10 rounded-full object-cover"
                           onError={(e) => {
