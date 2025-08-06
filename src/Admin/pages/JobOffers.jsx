@@ -12,7 +12,7 @@ const JobOffers = () => {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://keniweb.test/api/offres-emploi', {
+      const response = await axios.get('http://localhost:8000/api/offres-emploi', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ const JobOffers = () => {
   // Télécharger un fichier
   const handleDownload = async (type, id) => {
     try {
-      const response = await axios.get(`http://keniweb.test/api/offres-emploi/${id}/${type}`, {
+      const response = await axios.get(`http://localhost:8000/api/offres-emploi/${id}/${type}`, {
         responseType: 'blob',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -141,7 +141,7 @@ const JobOffers = () => {
       if (Array.isArray(id)) {
         // Suppression multiple
         await Promise.all(id.map(singleId => 
-          axios.delete(`http://keniweb.test/api/offres-emploi/${singleId}`, {
+          axios.delete(`http://localhost:8000/api/offres-emploi/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -150,7 +150,7 @@ const JobOffers = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://keniweb.test/api/offres-emploi/${id}`, {
+        await axios.delete(`http://localhost:8000/api/offres-emploi/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'

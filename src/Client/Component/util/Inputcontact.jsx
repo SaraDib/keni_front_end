@@ -50,7 +50,7 @@ function Inputcontact() {
 
     try {
       const response = await axios.post(
-        'http://keniweb.test/api/rendez-vous',
+        'http://localhost:8000/api/rendez-vous',
         payload
       );
       console.log('Submission successful:', response.data);

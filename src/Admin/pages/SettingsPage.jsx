@@ -26,7 +26,7 @@ const SettingsPage = () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://keniweb.test/api/entreprises/1', {
+      const response = await axios.get('http://localhost:8000/api/entreprises/1', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -46,7 +46,7 @@ const SettingsPage = () => {
         Facebook: entrepriseData.Facebook || '',
         Instagram: entrepriseData.Instagram || '',
         logoPreview: entrepriseData.Logo ? 
-          `http://keniweb.test/api/entreprises/${entrepriseData.ID_Entreprise}/logo` : 
+          `http://localhost:8000/api/entreprises/${entrepriseData.ID_Entreprise}/logo` : 
           '/images/logo.png'
       });
       
@@ -105,7 +105,7 @@ const SettingsPage = () => {
 
       // Use POST with _method=PUT for Laravel's form handling
       await axios.post(
-        `http://keniweb.test/api/entreprises/${settings.ID_Entreprise}`,
+        `http://localhost:8000/api/entreprises/${settings.ID_Entreprise}`,
         formData,
         {
           headers: {

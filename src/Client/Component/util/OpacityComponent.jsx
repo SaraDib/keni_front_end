@@ -19,7 +19,7 @@ export default function OpacityComponent({top}){
 
   useEffect( ()=>{
 
-    axios.get('http://keniweb.test/api/entreprises')
+    axios.get('http://localhost:8000/api/entreprises')
     .then(response => {
       setSetting(response.data);
     })

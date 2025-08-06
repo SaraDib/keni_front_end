@@ -14,7 +14,7 @@ export default function ServicesEN() {
     useEffect(() => {
         const fetchServiceData = async () => {
             try {
-                const response = await axios.get(`http://keniweb.test/api/services/${id}`);
+                const response = await axios.get(`http://localhost:8000/api/services/${id}`);
                 setServiceData(response.data);
                 setLoading(false);
             } catch (err) {

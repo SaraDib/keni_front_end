@@ -19,7 +19,7 @@ export default function BlueNavbar() {
 
   useEffect(() => {
     // Fetch services from API
-    fetch('http://keniweb.test/api/services')
+    fetch('http://localhost:8000/api/services')
       .then(response => response.json())
       .then(data => setServices(data))
       .catch(error => console.error('Error fetching services:', error));

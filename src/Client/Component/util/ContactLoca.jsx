@@ -25,7 +25,7 @@ function ContactLoca() {
         });
 
         setLoading(true);
-        axios.get('http://keniweb.test/api/centres')
+        axios.get('http://localhost:8000/api/centres')
             .then(response => {
                 setCentres(response.data);
                 setLoading(false);

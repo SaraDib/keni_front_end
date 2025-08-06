@@ -32,6 +32,9 @@ import Ergotherapie from "./Client/Component/Performances/Ergothérapie";
 import NotFound from './Client/Component/NotFound';
 import ServiceTest from './Client/Component/ServiceTest';
 import ServicesEN from './Client/Component/Performances/ServicesEN';
+import ExpertsAdmin from './Admin/pages/ExpertsAdmin';
+import UpdatesAdmin from './Admin/pages/UpdatesAdmin';
+import AboutUsAdmin from './Admin/pages/AboutUsAdmin';
 function App() {
   useEffect(() => { console.log(window.UC_UI); }, []);
 
@@ -68,6 +71,15 @@ function App() {
   >
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<Dashboard />} />
+    <Route path="experts" element={<ExpertsAdmin/>} />
+    <Route path="updates" element={<UpdatesAdmin/>} />
+
+    
+    <Route path="about-us" element={<AboutUsAdmin/>} />
+
+
+
+
     <Route path="faq" element={<FAQ />} />
     <Route path="health-center" element={<HealthCenter />} />
     <Route path="contact" element={<Contact />} />

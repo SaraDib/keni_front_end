@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Home, User, Settings, LogOut, Menu, X, Calendar, UserPlus, HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers } from 'lucide-react';
+import { Home, User, Settings,FileText, LogOut, Menu, X,Activity, Calendar, UserPlus, HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers } from 'lucide-react';
 import Logo from './Logo';
 
 
@@ -165,20 +165,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
   const navigate = useNavigate();
   const location = useLocation();
 
-
   const handleLogout = () => {
-    // Remove all authentication data from localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
-    
-    // Redirect to login page
     navigate('/admin/login');
   };
 
   return (
-    <div
-      className={`h-full bg-gray-800 text-white flex flex-col transition-all duration-300`}
-    >
+    <div className={`h-full bg-gray-800 text-white flex flex-col transition-all duration-300`}>
       {/* Logo and Toggle */}
       <div className="p-4 flex items-center justify-between border-b border-gray-700">
         {!isCollapsed || isMobile ? (
@@ -245,6 +239,33 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/services'}
+          />
+          
+          <SidebarLink 
+            to="experts" 
+            icon={<Activity size={20} />} 
+            label="Section Experts" 
+            isCollapsed={isCollapsed && !isMobile}
+            isMobile={isMobile}
+            isActive={location.pathname === '/admin/experts'}
+          />
+
+          <SidebarLink 
+            to="about-us" 
+            icon={<Activity size={20} />} 
+            label="About Us Experts" 
+            isCollapsed={isCollapsed && !isMobile}
+            isMobile={isMobile}
+            isActive={location.pathname === '/admin/about-us'}
+          />
+
+           <SidebarLink 
+            to="updates" 
+            icon={<FileText size={20} />} 
+            label="Section Updates" 
+            isCollapsed={isCollapsed && !isMobile}
+            isMobile={isMobile}
+            isActive={location.pathname === '/admin/updates'}
           />
           
           {/* Section Pages */}
@@ -321,7 +342,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
         </ul>
       </nav>
 
-      {/* Logout Button - Always visible at the bottom */}
+      {/* Logout Button */}
       <div className="p-4 border-t border-gray-700 mt-auto">
         <button
           onClick={handleLogout}

@@ -49,7 +49,7 @@ function Faq() {
     const { t , i18n } = useTranslation();
     useEffect(() => {
         setLoading(true);
-        axios.get("http://keniweb.test/api/faqs")
+        axios.get("http://localhost:8000/api/faqs")
             .then((response) => {
                 setFaqData(response.data);
                 setLoading(false);

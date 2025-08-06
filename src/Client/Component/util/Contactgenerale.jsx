@@ -33,7 +33,7 @@ function Contactgenerale() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://keniweb.test/api/contact-us", formData, {
+            const response = await axios.post("http://localhost:8000/api/contact-us", formData, {
                 headers: { "Content-Type": "application/json" }
             });
 

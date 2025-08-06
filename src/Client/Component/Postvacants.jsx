@@ -81,7 +81,7 @@ export default function Postvacants(){
     }
     
     try {
-      const response = await axios.post("http://keniweb.test/api/offres-emploi", submitData, {
+      const response = await axios.post("http://localhost:8000/api/offres-emploi", submitData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
