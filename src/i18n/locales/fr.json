@@ -1,7 +1,7 @@
 {
   "header": {
     "title": "GlobalHealth",
-    "subtitle": "GlobalHealth - Therapy & Training Center",
+    "subtitle": "Therapy & Training Center",
     "appointment": "Prenez rendez-vous dès maintenant"
   },
   "footer": {
@@ -48,7 +48,7 @@
     "loading": "Chargement..."
   },
   "aboutUs": {
-    "pageTitle": "Rééducation sportive",
+    "pageTitle": "GlobalHealth",
     "sectionTitle": "Qui sommes-nous",
     "teamTitle": "L'équipe de Physio Essen",
     "managementTitle": "Gestion",
@@ -65,8 +65,8 @@
     ]
   },
   "faq":{
-    "title": "FAQ",
-    "subtitle":"GlobalHealth - Therapy & Training Center"
+    "title": "GlobalHealth",
+    "subtitle":"Therapy & Training Center"
   },
   "faqs": {
     "title": "Informations utiles/FAQ",

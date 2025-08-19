@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../../assets/images/Blue Logo.png";
 import Phone from "../../assets/images/BluePhone.png";
-import WhatsApp from "../../assets/images/whatsappBlue.png"; 
+import WhatsApp from "../../assets/images/whatsappBlue.png";
 import LanguageSwitcher from "../util/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
@@ -47,10 +47,10 @@ export default function BlueNavbar() {
 
   return (
     <nav className="w-full fixed top-0 z-50 shadow-md" style={{ backgroundColor: '#1A2A7B' }}>
-      <div className="container mx-auto max-sm:mx-0 flex justify-between items-center p-4 max-sm:pt-4">
+      <div className="container mx-auto max-sm:mx-0 flex justify-between items-center p-4 max-sm:pt-4 px-3">
         {/* Logo - reste fixe */}
-        <Link to="/" className="text-xl font-bold text-white z-50 mr-8"> 
-          <img src={Logo} alt="Logo" className="w-64 max-sm:w-44 max-sm:h-16" />
+        <Link to="/" className="text-xl font-bold text-white z-50 mr-8 flex-shrink-0 ">
+          <img src={Logo} alt="Logo" className="w-64 max-sm:w-44 max-sm:h-16 flex-shrink-0" />
         </Link>
 
         {/* Hamburger Button - reste fixe */}
@@ -60,7 +60,7 @@ export default function BlueNavbar() {
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (
-            <></>  
+            <></>
           ) : (
             <>
               <span className="block w-6 h-0.5 bg-white transition-all duration-300 mb-1.5"></span>
@@ -72,14 +72,13 @@ export default function BlueNavbar() {
 
         {/* Mobile Menu - overlay complet */}
         <div
-          className={`fixed lg:hidden inset-0 w-full h-full transition-opacity duration-300 z-40 ${
-            isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+          className={`fixed lg:hidden inset-0 w-full h-full transition-opacity duration-300 z-40 ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
           style={{ backgroundColor: '#1A2A7B' }}
         >
           {/* Header fixe avec logo et bouton fermer */}
           <div className="fixed top-0 left-0 right-0 flex justify-between items-center p-4 z-50" style={{ backgroundColor: '#1A2A7B' }}>
-            <Link to="/" className="text-xl font-bold text-white" onClick={() => setIsMobileMenuOpen(false)}> 
+            <Link to="/" className="text-xl font-bold text-white" onClick={() => setIsMobileMenuOpen(false)}>
               <img src={Logo} alt="Logo" className="w-44 h-16" />
             </Link>
             <button
@@ -96,9 +95,8 @@ export default function BlueNavbar() {
             <div className="px-6 flex flex-col space-y-6">
               <Link
                 to="/"
-                className={`text-lg font-medium py-2 border-b border-gray-200 ${
-                  isActive("/") ? "text-white font-bold" : "text-gray-300 hover:text-white"
-                }`}
+                className={`text-lg font-medium py-2 border-b border-gray-200 ${isActive("/") ? "text-white font-bold" : "text-gray-300 hover:text-white"
+                  }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t('navbar.start')}
@@ -107,15 +105,13 @@ export default function BlueNavbar() {
               <div className="flex flex-col">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className={`text-lg font-medium py-2 border-b border-gray-200 text-left flex justify-between items-center ${
-                    services.some(service => isActive(`/service/${service.ID_Service}`)) ? "text-white font-bold" : "text-gray-300"
-                  }`}
+                  className={`text-lg font-medium py-2 border-b border-gray-200 text-left flex justify-between items-center ${services.some(service => isActive(`/service/${service.ID_Service}`)) ? "text-white font-bold" : "text-gray-300"
+                    }`}
                 >
                   {t('navbar.services')}
                   <span
-                    className={`transition-transform duration-300 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
+                    className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                      }`}
                   >
                     ▾
                   </span>
@@ -126,9 +122,8 @@ export default function BlueNavbar() {
                       <Link
                         key={service.ID_Service}
                         to={`/service/${service.ID_Service}`}
-                        className={`py-1 ${
-                          isActive(`/service/${service.ID_Service}`) ? "text-white font-bold" : "text-gray-400 hover:text-white"
-                        }`}
+                        className={`py-1 ${isActive(`/service/${service.ID_Service}`) ? "text-white font-bold" : "text-gray-400 hover:text-white"
+                          }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {getServiceName(service)}
@@ -142,9 +137,8 @@ export default function BlueNavbar() {
                 <Link
                   key={path}
                   to={path}
-                  className={`text-lg font-medium py-2 border-b border-gray-200 ${
-                    isActive(path) ? "text-white font-bold" : "text-gray-300 hover:text-white"
-                  }`}
+                  className={`text-lg font-medium py-2 border-b border-gray-200 ${isActive(path) ? "text-white font-bold" : "text-gray-300 hover:text-white"
+                    }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {[t('navbar.about'), t('navbar.jobs'), t('navbar.faq'), t('navbar.contact')][index]}
@@ -176,14 +170,13 @@ export default function BlueNavbar() {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-6">
+        <div className="hidden lg:flex items-center space-x-6 space-x-6 xl:space-x-4 lg:space-x-2">
           <Link
             to="/"
 
-            className={`${linkStyle} ${
-              isActive("/") ? "text-white" : "text-gray-300"
-            } hover:text-white text-lg`}
-            style={{ "--after-width": isActive("/") ? "100%" : "0" , marginLeft:"20px"}}
+            className={`${linkStyle} ${isActive("/") ? "text-white" : "text-gray-300"
+              } hover:text-white text-lg`}
+            style={{ "--after-width": isActive("/") ? "100%" : "0", marginLeft: "20px" }}
           >
             {t('navbar.start')}
           </Link>
@@ -192,10 +185,9 @@ export default function BlueNavbar() {
             <button
               onMouseEnter={() => setIsOpen(true)}
               onMouseLeave={() => setIsOpen(false)}
-              className={`${linkStyle} ${
-                services.some(service => isActive(`/service/${service.ID_Service}`)) ? "text-white" : "text-gray-300"
-              } hover:text-white flex items-center text-lg`}
-              style={{ 
+              className={`${linkStyle} ${services.some(service => isActive(`/service/${service.ID_Service}`)) ? "text-white" : "text-gray-300"
+                } hover:text-white flex items-center text-lg`}
+              style={{
                 "--after-width": services.some(service => isActive(`/service/${service.ID_Service}`)) ? "100%" : "0",
                 color: services.some(service => isActive(`/service/${service.ID_Service}`)) ? 'white' : ''
               }}
@@ -219,7 +211,7 @@ export default function BlueNavbar() {
                   >
                     {getServiceName(service)}
                     {isActive(`/service/${service.ID_Service}`) && (
-                      <span 
+                      <span
                         className="absolute bottom-0 left-0 w-full h-1 bg-customGreen"
                       />
                     )}
@@ -233,34 +225,38 @@ export default function BlueNavbar() {
             <Link
               key={path}
               to={path}
-              className={`${linkStyle} ${
-                isActive(path) ? "text-white" : "text-gray-300"
-              } hover:text-white text-lg`}
+              className={`${linkStyle} whitespace-nowrap text-lg sm:text-base ${isActive(path) ? "text-white" : "text-gray-300"
+                } hover:text-white`}
               style={{ "--after-width": isActive(path) ? "100%" : "0" }}
             >
               {[t('navbar.about'), t('navbar.jobs'), t('navbar.faq'), t('navbar.contact')][index]}
             </Link>
           ))}
+
         </div>
-        <LanguageSwitcher />
+        <div className="flex-shrink-0 sm:ml-0 sm:mr-1 lg:ml-6">
+  <LanguageSwitcher />
+</div>
+
+
         {/* Desktop Button Group */}
-        <div className="hidden lg:flex items-center ml-8">
+        <div className="hidden xl:flex items-center ml-auto space-x-2">
           <a
             href="https://wa.me/1234567890"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 bg-white border-2 border-solid px-2 py-1 rounded-full hover:border-blue-800 hover:bg-customGreen mr-1"
+            className="flex items-center space-x-2 bg-white border-2 border-solid px-2 py-1 rounded-full hover:border-blue-800 hover:bg-customGreen mr-2"
             style={{ borderColor: '#1A2A7B', color: '#1A2A7B' }}
           >
-            <img src={WhatsApp} alt="WhatsApp" className="size-7 inline m-2" />
+            <img src={WhatsApp} alt="WhatsApp" className="inline m-2 w-5 sm:w-4 md:w-4" />
           </a>
 
           <button
-            className="flex items-center space-x-2 bg-white border-2 border-solid px-4 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen"
+            className="flex items-center space-x-2 bg-white border-2 border-solid px-2 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen "
             style={{ borderColor: '#1A2A7B', color: '#1A2A7B' }}
           >
-            <img src={Phone} alt="Phone" className="size-5 inline m-2" />
-            <span>0201 9776650</span>
+            <img src={Phone} alt="Phone" className="inline m-2 w-5 sm:w-4 md:w-4" />
+            <span className="text-sm mr-5">0201 9776650</span>
           </button>
         </div>
       </div>

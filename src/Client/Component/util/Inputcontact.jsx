@@ -20,7 +20,7 @@ function Inputcontact() {
     Remarque: '',
     ID_Entreprise: 1, // Valeur par défaut requise par le backend
   });
-  const [ergotherapieOptions, setErgotherapieOptions] = useState([]);
+  //const [ergotherapieOptions, setErgotherapieOptions] = useState([]);
   const [physiotherapieOptions, setPhysiotherapieOptions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -44,7 +44,7 @@ function Inputcontact() {
       nombre: formData.nombre ? Number(formData.nombre) : null,
       Type_recette: formData.Type_recette || null,
       Physiotherapie: physiotherapieOptions.length > 0 ? physiotherapieOptions.join(', ') : null,
-      Ergotherapie: ergotherapieOptions.length > 0 ? ergotherapieOptions.join(', ') : null,
+      //Ergotherapie: ergotherapieOptions.length > 0 ? ergotherapieOptions.join(', ') : null,
       Remarque: formData.Remarque || null
     };
 
@@ -69,7 +69,7 @@ function Inputcontact() {
         Remarque: '',
         ID_Entreprise: 1,
       });
-      setErgotherapieOptions([]);
+      //setErgotherapieOptions([]);
       setPhysiotherapieOptions([]);
 
     } catch (error) {
@@ -91,11 +91,11 @@ function Inputcontact() {
 
   const handleTherapyChange = (option, therapyType) => {
     if (therapyType === 'ergo') {
-      setErgotherapieOptions(prev => 
+      /* setErgotherapieOptions(prev => 
         prev.includes(option) 
           ? prev.filter(item => item !== option) 
           : [...prev, option]
-      );
+      ); */
     } else {
       setPhysiotherapieOptions(prev => 
         prev.includes(option)
@@ -246,15 +246,6 @@ function Inputcontact() {
           <div className="ml-10 flex flex-row gap-40 max-sm:flex-col max-sm:gap-4 max-sm:ml-4">
             {[
               {
-                title: 'Ergothérapie',
-                options: [
-                  "Fonctionnel sur le plan moteur",
-                  "Perceptif sensorimoteur",
-                  "Entraînement cérébral",
-                ],
-                type: 'ergo'
-              },
-              {
                 title: 'Physiothérapie',
                 options: [
                   "KG",
@@ -278,7 +269,7 @@ function Inputcontact() {
                         id={`${section.type}-${idx}`}
                         checked={
                           section.type === 'ergo' 
-                            ? ergotherapieOptions.includes(option)
+                            ? false
                             : physiotherapieOptions.includes(option)
                         }
                         onChange={() => handleTherapyChange(option, section.type)}

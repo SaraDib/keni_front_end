@@ -73,7 +73,7 @@ function Services1({ serviceData }) {
   </h2>
 </div>
 
-<div className="absolute top-2/4 sm:bottom-6 left-24 max-sm:left-6  max-sm:bottom-44 sm:right-16 flex flex-row items-end gap-4 sm:flex-col">
+{/* <div className="absolute top-2/4 sm:bottom-6 left-24 max-sm:left-6  max-sm:bottom-44 sm:right-16 flex flex-row items-end gap-4 sm:flex-col">
   
   <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
     <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
@@ -86,7 +86,7 @@ function Services1({ serviceData }) {
       <img src={insta} alt="instagram" className="w-full"/>
     </div>
   </a>
-</div>
+</div> */}
 
 <div className="absolute bottom-0 w-full">
   <img src={Wave} alt="kante" className="w-full"/>
