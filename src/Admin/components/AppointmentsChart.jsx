@@ -1,204 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import axios from 'axios';
 
 const AppointmentsChart = () => {
   const currentYear = new Date().getFullYear();
-  
-  // Données pour les rendez-vous par mois
-  const appointmentsData = [
-    { month: 'Jan', count: 45, year: currentYear, details: [
-      { type: 'Entretien initial', count: 25 },
-      { type: 'Suivi', count: 15 },
-      { type: 'Évaluation', count: 5 }
-    ]},
-    { month: 'Fév', count: 38, year: currentYear, details: [
-      { type: 'Entretien initial', count: 18 },
-      { type: 'Suivi', count: 12 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Mar', count: 52, year: currentYear, details: [
-      { type: 'Entretien initial', count: 30 },
-      { type: 'Suivi', count: 17 },
-      { type: 'Évaluation', count: 5 }
-    ]},
-    { month: 'Avr', count: 65, year: currentYear, details: [
-      { type: 'Entretien initial', count: 35 },
-      { type: 'Suivi', count: 20 },
-      { type: 'Évaluation', count: 10 }
-    ]},
-    { month: 'Mai', count: 48, year: currentYear, details: [
-      { type: 'Entretien initial', count: 22 },
-      { type: 'Suivi', count: 18 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Juin', count: 70, year: currentYear, details: [
-      { type: 'Entretien initial', count: 40 },
-      { type: 'Suivi', count: 22 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Juil', count: 55, year: currentYear, details: [
-      { type: 'Entretien initial', count: 28 },
-      { type: 'Suivi', count: 20 },
-      { type: 'Évaluation', count: 7 }
-    ]},
-    { month: 'Août', count: 42, year: currentYear, details: [
-      { type: 'Entretien initial', count: 20 },
-      { type: 'Suivi', count: 15 },
-      { type: 'Évaluation', count: 7 }
-    ]},
-    { month: 'Sep', count: 60, year: currentYear, details: [
-      { type: 'Entretien initial', count: 32 },
-      { type: 'Suivi', count: 20 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Oct', count: 75, year: currentYear, details: [
-      { type: 'Entretien initial', count: 42 },
-      { type: 'Suivi', count: 25 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Nov', count: 58, year: currentYear, details: [
-      { type: 'Entretien initial', count: 30 },
-      { type: 'Suivi', count: 20 },
-      { type: 'Évaluation', count: 8 }
-    ]},
-    { month: 'Déc', count: 50, year: currentYear, details: [
-      { type: 'Entretien initial', count: 25 },
-      { type: 'Suivi', count: 18 },
-      { type: 'Évaluation', count: 7 }
-    ]}
-  ];
+  const [appointmentsData, setAppointments] = useState([]);
+  const token = localStorage.getItem("token");
 
-  // Préparer les données pour ApexCharts
-  const series = [
+  useEffect(() => {
+  axios
+    .get("http://127.0.0.1:8000/api/rendez-vous", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+    .then((res) => {
+      // Tableau fixe de tous les mois en français
+      const allMonths = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
+                         'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+      // Initialiser mappedData avec tous les mois
+      const mappedData = {};
+      allMonths.forEach(m => {
+        mappedData[m] = { 
+          month: m, 
+          details: [
+            { type: 'Privé', count: 0 },
+            { type: 'Statutaire', count: 0 }
+          ]
+        };
+      });
+
+      // Parcourir les données récupérées et ajouter les counts aux mois correspondants
+      res.data.forEach(item => {
+        const date = new Date(item.created_at);
+        const monthIndex = date.getMonth(); // 0 = Janvier, 1 = Février, ...
+        const month = allMonths[monthIndex]; // récupère le mois en français
+
+        if (!mappedData[month]) return;
+
+        if (item.Type_recette === 'Privé') mappedData[month].details[0].count += item.nombre;
+        else if (item.Type_recette === 'Statutaire') mappedData[month].details[1].count += item.nombre;
+      });
+
+      // Mettre à jour le state avec toutes les données des mois
+      setAppointments(Object.values(mappedData));
+    })
+    .catch(err => console.error("Erreur lors du chargement des rendez-vous :", err));
+}, [token]);
+
+
+
+ const series = [
     {
-      name: 'Entretien initial',
-      data: appointmentsData.map(item => item.details[0].count)
+      name: 'Privé',
+      data: appointmentsData.map(item => item.details?.[0]?.count || 0)
     },
     {
-      name: 'Suivi',
-      data: appointmentsData.map(item => item.details[1].count)
-    },
-    {
-      name: 'Évaluation',
-      data: appointmentsData.map(item => item.details[2].count)
+      name: 'Statutaire',
+      data: appointmentsData.map(item => item.details?.[1]?.count || 0)
     }
   ];
+
 
   const options = {
     chart: {
       type: 'bar',
       height: 350,
       stacked: true,
-      toolbar: {
-        show: false
-      },
-      zoom: {
-        enabled: false
-      },
+      toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: "'Open Sans', sans-serif",
     },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        legend: {
-          position: 'bottom',
-          offsetX: -10,
-          offsetY: 0
-        }
-      }
-    }],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        borderRadius: 5,
-        columnWidth: '60%',
-      },
-    },
-    xaxis: {
-      categories: appointmentsData.map(item => item.month),
-      labels: {
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      }
-    },
-    yaxis: {
-      title: {
-        text: 'Nombre de rendez-vous',
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      },
-      labels: {
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      }
-    },
-    legend: {
-      position: 'bottom',
-      offsetY: 10,
-      fontFamily: "'Open Sans', sans-serif",
-    },
-    fill: {
-      opacity: 1
-    },
+    plotOptions: { bar: { horizontal: false, borderRadius: 5, columnWidth: '60%' } },
+    xaxis: { categories: appointmentsData.map(item => item.month) },
+    yaxis: { title: { text: 'Nombre de rendez-vous' } },
+    legend: { position: 'bottom' },
     colors: ['#3b82f6', '#1d4ed8', '#1e3a8a'],
-    tooltip: {
-      y: {
-        formatter: function (val) {
-          return val + " rendez-vous"
-        }
-      },
-      theme: 'dark'
-    },
-    dataLabels: {
-      enabled: false
-    },
-    title: {
-      text: `Rendez-vous par mois en ${currentYear}`,
-      align: 'center',
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        fontFamily: "'Open Sans', sans-serif",
-        color: '#334155'
-      }
-    }
+    fill: { opacity: 1 },
+    tooltip: { y: { formatter: val => val + " rendez-vous" } },
+    dataLabels: { enabled: false },
+    title: { text: `Rendez-vous par mois en ${currentYear}`, align: 'center' },
   };
 
-  // Calculer le total des rendez-vous
-  const totalAppointments = appointmentsData.reduce((sum, item) => sum + item.count, 0);
-  const totalByType = {
-    'Entretien initial': appointmentsData.reduce((sum, item) => sum + item.details[0].count, 0),
-    'Suivi': appointmentsData.reduce((sum, item) => sum + item.details[1].count, 0),
-    'Évaluation': appointmentsData.reduce((sum, item) => sum + item.details[2].count, 0)
+  const totalAppointments = appointmentsData.reduce((sum, item) => 
+    sum + (item.details?.[0]?.count || 0) + (item.details?.[1]?.count || 0) + (item.details?.[2]?.count || 0), 0
+  );
+
+   const totalByType = {
+    'Privé': appointmentsData.reduce((sum, item) => sum + (item.details?.[0]?.count || 0), 0),
+    'Statutaire': appointmentsData.reduce((sum, item) => sum + (item.details?.[1]?.count || 0), 0)
   };
 
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-1">
-        <ReactApexChart 
-          options={options} 
-          series={series} 
-          type="bar" 
-          height="100%" 
-        />
+        <ReactApexChart options={options} series={series} type="bar" height="100%" />
       </div>
       <div className="mt-2 text-center text-sm text-gray-500">
         <div>Total: <span className="font-semibold">{totalAppointments}</span> rendez-vous en {currentYear}</div>
         <div className="flex flex-wrap justify-center mt-2 text-xs">
           <div className="flex items-center mx-2 mb-1">
             <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-            <span>Entretien initial: {totalByType['Entretien initial']}</span>
-          </div>
-          <div className="flex items-center mx-2 mb-1">
-            <div className="w-3 h-3 bg-blue-700 rounded-full mr-1"></div>
-            <span>Suivi: {totalByType['Suivi']}</span>
+            <span>Privé: {totalByType['Privé']}</span>
           </div>
           <div className="flex items-center mx-2 mb-1">
             <div className="w-3 h-3 bg-blue-900 rounded-full mr-1"></div>
-            <span>Évaluation: {totalByType['Évaluation']}</span>
+            <span>Statutaire: {totalByType['Statutaire']}</span>
           </div>
         </div>
       </div>
@@ -206,4 +115,4 @@ const AppointmentsChart = () => {
   );
 };
 
-export default AppointmentsChart; 
+export default AppointmentsChart;
