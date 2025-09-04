@@ -35,8 +35,13 @@ import ServicesEN from './Client/Component/Performances/ServicesEN';
 import ExpertsAdmin from './Admin/pages/ExpertsAdmin';
 import UpdatesAdmin from './Admin/pages/UpdatesAdmin';
 import AboutUsAdmin from './Admin/pages/AboutUsAdmin';
+import axios from 'axios';
 function App() {
-  useEffect(() => { console.log(window.UC_UI); }, []);
+  useEffect(() => { console.log(window.UC_UI);
+    // Tracker la visite actuelle
+        axios.post('http://127.0.0.1:8000/api/track-visit')
+        .catch(console.error);
+   }, []);
 
   return (
     <Router>
