@@ -74,43 +74,44 @@ const UpdatesAdmin = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-      };
+  e.preventDefault();
+  try {
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    };
 
-      const updateFormData = new FormData();
-      updateFormData.append('title_fr', formData.title_fr);
-      updateFormData.append('title_ar', formData.title_ar);
-      updateFormData.append('description_fr', formData.description_fr);
-      updateFormData.append('description_ar', formData.description_ar);
-      updateFormData.append('active', formData.active ? '1' : '0');
-      if (image) {
-        updateFormData.append('image', image);
-      }
+    const updateFormData = new FormData();
+    updateFormData.append('title_fr', formData.title_fr);
+    updateFormData.append('title_ar', formData.title_ar);
+    updateFormData.append('description_fr', formData.description_fr);
+    updateFormData.append('description_ar', formData.description_ar);
+    updateFormData.append('active', formData.active ? '1' : '0');
+    if (image) updateFormData.append('image', image);
 
-      if (formData.ID_Updates) {
-        await axios.put(`${API_URL}/${formData.ID_Updates}`, updateFormData, { headers });
-      } else {
-        const response = await axios.post(API_URL, updateFormData, { headers });
-        setFormData((prev) => ({
-          ...prev,
-          ID_Updates: response.data.ID_Updates || response.data.id,
-        }));
-      }
+    if (formData.ID_Updates) {
+  // POST vers /updates/{id} pour modifier
+  await axios.post(`${API_URL}/${formData.ID_Updates}`, updateFormData, { headers });
+} else {
+  const response = await axios.post(API_URL, updateFormData, { headers });
+  setFormData((prev) => ({
+    ...prev,
+    ID_Updates: response.data.ID_Updates || response.data.id,
+  }));
+}
 
-      fetchUpdate();
-      alert(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
-    } catch (error) {
-      console.error('Erreur:', error.response ? error.response.data : error.message);
-      alert(
-        error.response?.data?.message ||
-          'Échec de l’enregistrement de la mise à jour. Voir la console pour plus de détails.'
-      );
-    }
-  };
+
+    fetchUpdate();
+    alert(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
+  } catch (error) {
+    console.error('Erreur:', error.response ? error.response.data : error.message);
+    alert(
+      error.response?.data?.message ||
+        'Échec de l’enregistrement de la mise à jour. Voir la console pour plus de détails.'
+    );
+  }
+};
+
 
   const handleDelete = async () => {
     if (!formData.ID_Updates) {

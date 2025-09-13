@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Home, User, Settings,FileText, LogOut, Menu, X,Activity, Calendar, UserPlus, HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers } from 'lucide-react';
+import { Home, User, Settings,FileText, LogOut, Menu, X,Activity,HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers,ClipboardList ,HeartPulse} from 'lucide-react';
 import Logo from './Logo';
+
+
 
 
 // Import des composants de page
@@ -267,6 +269,23 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
             isMobile={isMobile}
             isActive={location.pathname === '/admin/updates'}
           />
+
+          <SidebarLink 
+            to="gestion-recettes" 
+            icon={<ClipboardList size={20} />} 
+            label="Gestion des Recettes" 
+            isCollapsed={isCollapsed && !isMobile}
+            isMobile={isMobile}
+            isActive={location.pathname === '/admin/gestion-recettes'}
+          />
+          <SidebarLink 
+            to="physiotherapie" 
+            icon={<HeartPulse size={20} />} 
+            label="Physiothérapie" 
+            isCollapsed={isCollapsed && !isMobile}
+            isMobile={isMobile}
+            isActive={location.pathname === '/admin/physiotherapie'}
+          />
           
           {/* Section Pages */}
           {(!isCollapsed || isMobile) && (
@@ -286,7 +305,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
           <SidebarLink 
             to="health-center" 
             icon={<Building size={20} />} 
-            label="Centre de santé" 
+            label="Centre de global health" 
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/health-center'}

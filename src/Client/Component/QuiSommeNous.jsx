@@ -110,9 +110,12 @@ export default function QuiSommeNous() {
         <img src={qsn} alt="Qui Sommes-Nous" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
           <div
-            data-aos="zoom-in"
-            className="absolute bottom-1/2 sm:bottom-1/3 lg:ml-14 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-4"
-          >
+  key={i18n.language} // force le rerender quand la langue change
+  data-aos="zoom-in"
+  className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-4 ${
+    i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+  }`}
+>
             <h1 className="max-sm:text-5xl sm:text-6xl font-dmsans mb-2">{t('aboutUs.pageTitle')}</h1>
             <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">
               {t('header.subtitle')}
@@ -126,7 +129,20 @@ export default function QuiSommeNous() {
       </div>
 
       <div className="bg-white h-[30px] md:h-[50px] lg:h-[70px]" />
-
+    {/* Icônes des réseaux sociaux */}
+              <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
+                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+                  <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                    <img src={fb} alt="facebook" className="w-full" />
+                  </div>
+                </a>
+                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                  <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                    <img src={insta} alt="instagram" className="w-full" />
+                  </div>
+                </a>
+              </div>
+             
       {/* Historique Section */}
       <div className="bg-white py-8 md:py-12 px-4 md:px-8 lg:px-10">
         {descriptionItems.length > 0 && (

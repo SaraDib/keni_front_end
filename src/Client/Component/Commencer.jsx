@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import 'aos/dist/aos.css';
 import AOS from 'aos';
 import { useTranslation } from 'react-i18next';
-import image1 from '../assets/images/image1.webp';
-import image2 from '../assets/images/image2.webp';
 import image3 from '../assets/images/wave.svg';
 import wave from '../assets/images/wave-white-bottom.svg';
 import fbGreen from '../assets/images/F-facebook.png';
@@ -22,21 +20,35 @@ export default function Commencer() {
   const [expertData, setExpertData] = useState(null);
   const [updateData, setUpdateData] = useState(null);
   const [mediaError, setMediaError] = useState({ video: false, image: false, updateImage: false });
-  const images = [image1, image2];
+  const [sliderImages, setSliderImages] = useState([]);
   const navigate = useNavigate();
 
+  // Récupération des images du slider depuis l'API
   useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/slider');
+        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        setSliderImages(imagesFromAPI);
+      } catch (err) {
+        console.error('Erreur lors du chargement des images du slider', err);
+      }
+    };
+
+    fetchSliderImages();
+  }, []);
+
+  // Changement automatique des slides
+  useEffect(() => {
+    if (sliderImages.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setCurrentIndex(prevIndex => (prevIndex + 1) % sliderImages.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [sliderImages]);
 
   useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-    });
+    AOS.init({ duration: 1000, once: true });
   }, []);
 
   useEffect(() => {
@@ -52,7 +64,7 @@ export default function Commencer() {
     const fetchExpertData = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/experts');
-        const activeExpert = response.data.find((expert) => expert.Etat);
+        const activeExpert = response.data.find(expert => expert.Etat);
         setExpertData(activeExpert || null);
       } catch (error) {
         console.error('Erreur lors de la récupération des données experts:', error);
@@ -65,7 +77,6 @@ export default function Commencer() {
         const data = response.data
           ? { ...response.data, ID_Updates: response.data.id || response.data.ID_Updates }
           : null;
-        console.log('Fetched update data:', data);
         setUpdateData(data);
       } catch (error) {
         console.error('Erreur lors de la récupération des données de mise à jour:', error);
@@ -77,7 +88,7 @@ export default function Commencer() {
     fetchUpdateData();
   }, []);
 
-  // Function to sanitize HTML, removing unwanted <h1> tags
+  // Fonction pour nettoyer les <h1> dans les descriptions
   const sanitizeDescription = (html) => {
     if (!html) return '';
     const parser = new DOMParser();
@@ -97,7 +108,7 @@ export default function Commencer() {
     <>
       <div className="w-full h-screen overflow-hidden relative">
         {/* Diaporama en arrière-plan */}
-        {images.map((image, index) => (
+        {sliderImages.map((image, index) => (
           <img
             key={index}
             src={image}
@@ -115,15 +126,14 @@ export default function Commencer() {
         <div className="z-90 bg-black bg-opacity-100 flex flex-col gap-10">
           {/* Texte principal */}
           <div
+            key={i18n.language}
             data-aos="zoom-in"
-            className="absolute bottom-1/4 flex flex-col max-sm:left-2 sm:flex sm:justify-start text-white p-4 lg:ml-14"
+            className={`absolute bottom-1/4 flex flex-col max-sm:left-2 sm:flex sm:justify-start text-white p-4 ${
+              i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+            }`}
           >
-            <h1 className="max-sm:text-4xl sm:text-5xl font-dmsans mb-2">
-              {t('header.title')}
-            </h1>
-            <h2 className="text-customGreen sm:text-3xl font-dmsans max-sm:text-2xl">
-              {t('header.subtitle')}
-            </h2>
+            <h1 className="max-sm:text-4xl sm:text-5xl font-dmsans mb-2">{t('header.title')}</h1>
+            <h2 className="text-customGreen sm:text-3xl font-dmsans max-sm:text-2xl">{t('header.subtitle')}</h2>
 
             <div className="flex mb-4 mr-40">
               <button
@@ -142,14 +152,24 @@ export default function Commencer() {
                   alt="Icône calendrier"
                   aria-hidden="true"
                 />
-                <span className="transition-all duration-300 ease-in-out lg:text-xl md:text-base">
-                  {t('header.appointment')}
-                </span>
+                <span className="transition-all duration-300 ease-in-out lg:text-xl md:text-base">{t('header.appointment')}</span>
               </button>
             </div>
           </div>
 
-         
+          {/* Icônes des réseaux sociaux */}
+          <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                <img src={fb} alt="facebook" className="w-full" />
+              </div>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                <img src={insta} alt="instagram" className="w-full" />
+              </div>
+            </a>
+          </div>
 
           {/* Image décorative */}
           <div className="absolute bottom-0 w-full">
@@ -176,10 +196,7 @@ export default function Commencer() {
                       ? `http://localhost:8000/api/experts/${expertData.ID_Expert}/image`
                       : undefined
                   }
-                  onError={(e) => {
-                    console.error('Video playback error:', e);
-                    setMediaError((prev) => ({ ...prev, video: true }));
-                  }}
+                  onError={(e) => setMediaError((prev) => ({ ...prev, video: true }))}
                 >
                   <source
                     src={`http://localhost:8000/api/experts/${expertData.ID_Expert}/video`}
@@ -216,16 +233,14 @@ export default function Commencer() {
                   className="w-full max-w-xs md:max-w-2xl h-auto object-cover rounded-lg shadow-md"
                   src={`http://localhost:8000/api/experts/${expertData.ID_Expert}/image`}
                   alt={expertData.TitleFR}
-                  onError={(e) => {
-                    console.error('Image load error:', `http://localhost:8000/api/experts/${expertData.ID_Expert}/image`);
-                    setMediaError((prev) => ({ ...prev, image: true }));
-                  }}
+                  onError={(e) => setMediaError((prev) => ({ ...prev, image: true }))}
                 />
               </div>
             )}
           </section>
         </>
       )}
+
       <div className="h-[40px] md:h-[70px] bg-white" />
       <div className="bg-gray-100 h-36 md:h-72">
         <img src={wave} alt="---" className="w-full h-full object-cover" />
@@ -265,14 +280,13 @@ export default function Commencer() {
         <div className="h-auto md:h-[500px] w-full bg-[#1a2a7b] flex flex-col md:flex-row">
           {updateData.ID_Updates && updateData.image_path && !mediaError.updateImage && (
             <img
-              src={`http://localhost:8000/api/updates/${updateData.ID_Updates}/image`}
+              src={`http://localhost:8000/storage/${updateData.image_path}`}
               alt={updateData.title_fr || 'Mise à jour'}
               data-aos="fade-right"
               className="w-full md:w-auto h-auto object-contain mx-auto md:mx-0"
               onError={(e) => {
-                console.error('Update image load error:', `http://localhost:8000/api/updates/${updateData.ID_Updates}/image`);
                 setMediaError((prev) => ({ ...prev, updateImage: true }));
-                e.target.src = '/default-image.png'; // Fallback image
+                e.target.src = '/default-image.png';
               }}
             />
           )}

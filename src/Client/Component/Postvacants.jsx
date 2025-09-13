@@ -23,8 +23,8 @@ import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
-export default function Postvacants(){
-  const { t } = useTranslation();
+export default function Postvacants() {
+  const { t ,i18n} = useTranslation();
 
   // Updated state variables to match backend requirements
   const [formData, setFormData] = useState({
@@ -62,33 +62,33 @@ export default function Postvacants(){
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Create FormData object for submission
     const submitData = new FormData();
-    
+
     // Add all form fields
     Object.keys(formData).forEach(key => {
       submitData.append(key, formData[key]);
     });
-    
+
     // Add files if they exist
     if (lettre) {
       submitData.append("lettre", lettre);
     }
-    
+
     if (CV) {
       submitData.append("CV", CV);
     }
-    
+
     try {
       const response = await axios.post("http://localhost:8000/api/offres-emploi", submitData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      
+
       toast.success("Formulaire soumis avec succès !");
-      
+
       // Reset form after successful submission
       setFormData({
         ID_Entreprise: 1,
@@ -103,11 +103,11 @@ export default function Postvacants(){
       });
       setLettre(null);
       setCV(null);
-      
+
       console.log(response.data);
     } catch (error) {
       console.error("Erreur lors de l'envoi du formulaire", error);
-      
+
       // Show more detailed error message if available
       if (error.response && error.response.data && error.response.data.errors) {
         const errorMessages = Object.values(error.response.data.errors).flat();
@@ -136,8 +136,8 @@ export default function Postvacants(){
     { icon: icon8, text: "Location de vélos avec jusqu'à 40 € de subvention" },
     { icon: icon9, text: "Apportez vos idées" }
   ];
-  
-  return(
+
+  return (
     <div>
       <Toaster position="bottom-left" reverseOrder={false} />
       {/* section 1 */}
@@ -149,21 +149,39 @@ export default function Postvacants(){
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
 
-        <div data-aos="zoom-in" className="absolute bottom-1/2 sm:bottom-1/3 lg:ml-14 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-7">
-          <h1 className="max-sm:text-4xl sm:text-6xl font-dmsans mb-2 ">{t('jobOffers.pageTitle')}</h1>
-          <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">
-          {t('header.subtitle')}
-          </h2>
-        </div>
+<div
+  key={i18n.language} // force le rerender quand la langue change
+  data-aos="zoom-in"
+  className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-7 ${
+    i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+  }`}
+>            <h1 className="max-sm:text-4xl sm:text-6xl font-dmsans mb-2 ">{t('jobOffers.pageTitle')}</h1>
+            <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">
+              {t('header.subtitle')}
+            </h2>
+          </div>
 
-        
 
-        <div className="absolute bottom-0 w-full">
-          <img src={kante} alt="kante" className="w-full"/>
-        </div>
+
+          <div className="absolute bottom-0 w-full">
+            <img src={kante} alt="kante" className="w-full" />
+          </div>
         </div>
       </div>
-
+{/* Icônes des réseaux sociaux */}
+          <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                <img src={fb} alt="facebook" className="w-full" />
+              </div>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
+                <img src={insta} alt="instagram" className="w-full" />
+              </div>
+            </a>
+          </div>
+         
       {/* section 2 */}
       <div className="flex flex-col md:flex-row items-center bg-white 
         lg:pt-10 max-sm:py-14 sm:py-10
@@ -346,12 +364,17 @@ export default function Postvacants(){
 
         {/* Right Side - Image & Contact */}
         <div className="md:w-1/4 w-full flex flex-col items-center md:items-start mt-6 md:mt-0">
-          <img
-            data-aos="fade-left"
-            src={Per2}
-            alt="Person smiling"
-            className="w-48 md:w-64 rounded-lg"
-          />
+          <div className="flex justify-center md:justify-start">
+            <div className="w-72 h-72 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full overflow-hidden">
+              <img
+                src={Per2}
+                alt="Person smiling"
+                className="w-full h-full object-contain object-center"
+              />
+            </div>
+          </div>
+
+
           <p className="mt-4 text-blue-800 text-center md:text-left">
             {t('jobOffers.contactPersonText')}
           </p>
@@ -361,7 +384,7 @@ export default function Postvacants(){
       {/* section 3 */}
       <div className="w-full bg-white">
         <div className="w-full">
-          <img src={kulosfski} alt="kulosfski" className="w-full"/>
+          <img src={kulosfski} alt="kulosfski" className="w-full" />
         </div>
 
         <div className="mx-auto bg-[#f3f3f3] py-12 px-6 sm:px-16 md:px-32 text-2xl">
@@ -382,7 +405,7 @@ export default function Postvacants(){
 
       {/* section 4 */}
       <div className="relative pt-8 md:pt-12 lg:pt-16 bg-gray-100" />
-        <OpacityComponent />
+      <OpacityComponent />
       <div className="bg-white h-[30px] md:h-[50px] lg:h-[100px]" />
     </div>
   );

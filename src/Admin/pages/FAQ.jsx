@@ -5,26 +5,19 @@ import { HelpCircle } from 'lucide-react';
 import axios from 'axios';
 
 const FAQ = () => {
-  // État pour stocker les données
   const [faqs, setFaqs] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [currentFaq, setCurrentFaq] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Charger les FAQs depuis l'API
+  // Charger les FAQs
   const fetchFaqs = async () => {
     try {
-      // Get the token from localStorage
       const token = localStorage.getItem('token');
-      
-      // Make the API request with the Authorization header
       const response = await axios.get('http://localhost:8000/api/faqs', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      
       setFaqs(response.data);
       setError(null);
     } catch (err) {
@@ -39,70 +32,70 @@ const FAQ = () => {
     fetchFaqs();
   }, []);
 
-  // Définition des colonnes du tableau
+  // Colonnes du tableau
   const columns = [
-    { header: "Question", accessor: "Question" },
+    { header: "Question (Fr)", accessor: "Question" },
+    { header: "Question (Ar)", accessor: "QuestionAR",
+      render: (item) => (
+        <div className="text-right" dir="rtl">{item.QuestionAR}</div>
+      )
+    },
     { 
-      header: "Réponse", 
-      accessor: "reponse",
+      header: "Réponse (Fr)", 
+      accessor: "Reponse",
       render: (item) => (
         <div className="max-w-xs truncate" title={item.Reponse}>
           {item.Reponse}
         </div>
       )
-    }
-  ];
-
-  // Définition des champs du formulaire
-  const formFields = [
-    { 
-      name: "Question", 
-      label: "Question", 
-      type: "text", 
-      required: true,
-      fullWidth: true
     },
     { 
-      name: "Reponse", 
-      label: "Réponse", 
-      type: "textarea", 
-      required: true,
-      rows: 4,
-      fullWidth: true
+      header: "Réponse (Ar)", 
+      accessor: "ReponseAR",
+      render: (item) => (
+        <div className="max-w-xs truncate text-right" dir="rtl" title={item.ReponseAR}>
+          {item.ReponseAR}
+        </div>
+      )
     }
   ];
 
-  // Gérer l'ajout d'une FAQ
+  // Champs du formulaire
+  const formFields = [
+    { name: "Question", label: "Question (Français)", type: "text", required: true, fullWidth: true },
+    { name: "QuestionAR", label: "Question (Arabe)", type: "text", required: true, fullWidth: true },
+    { name: "Reponse", label: "Réponse (Français)", type: "textarea", required: true, rows: 4, fullWidth: true },
+    { name: "ReponseAR", label: "Réponse (Arabe)", type: "textarea", required: true, rows: 4, fullWidth: true }
+  ];
+
+  // Ajouter FAQ
   const handleAdd = () => {
     setCurrentFaq(null);
     setShowForm(true);
   };
 
-  // Gérer la modification d'une FAQ
+  // Modifier FAQ
   const handleEdit = (faq) => {
     setCurrentFaq(faq);
     setShowForm(true);
   };
 
-  // Gérer la suppression d'une FAQ
+  // Supprimer FAQ
   const handleDelete = async (id) => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`
-      };
+      const headers = { 'Authorization': `Bearer ${token}` };
 
       if (Array.isArray(id)) {
-        // Suppression multiple
         await Promise.all(id.map(singleId => 
           axios.delete(`http://localhost:8000/api/faqs/${singleId}`, { headers })
         ));
       } else {
-        // Suppression unique
         await axios.delete(`http://localhost:8000/api/faqs/${id}`, { headers });
       }
-      await fetchFaqs(); // Recharger les données
+
+      await fetchFaqs();
       setError(null);
     } catch (err) {
       setError('Erreur lors de la suppression');
@@ -112,34 +105,30 @@ const FAQ = () => {
     }
   };
 
-  // Gérer la soumission du formulaire
+  // Soumettre formulaire
   const handleSubmit = async (formData) => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`
-      };
-      
-      // Add ID_Entreprise to the form data
+      const headers = { 'Authorization': `Bearer ${token}` };
+
       const dataWithEnterprise = {
         ...formData,
         ID_Entreprise: 1
       };
-      
+
       if (currentFaq) {
-        // Mise à jour
         await axios.put(`http://localhost:8000/api/faqs/${currentFaq.ID_FAQ}`, dataWithEnterprise, { headers });
       } else {
-        // Ajout
         await axios.post('http://localhost:8000/api/faqs', dataWithEnterprise, { headers });
       }
-      await fetchFaqs(); // Recharger les données
+
+      await fetchFaqs();
       setShowForm(false);
       setError(null);
     } catch (err) {
-      setError('Erreur lors de l\'enregistrement');
-      console.error('Erreur:', err);
+      setError("Erreur lors de l'enregistrement");
+      console.error("Erreur:", err);
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +142,7 @@ const FAQ = () => {
       </div>
       
       <p className="mb-6 text-gray-600">
-        Gérez les questions fréquemment posées qui apparaîtront sur votre site.
+        Gérez les questions fréquemment posées qui apparaîtront sur votre site (FR & AR).
       </p>
 
       {error && (

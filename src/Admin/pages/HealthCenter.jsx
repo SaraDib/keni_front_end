@@ -335,7 +335,7 @@ const HealthCenter = () => {
     <div className="p-4 md:p-6">
       <div className="flex items-center mb-6">
         <Building className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Centres de santé</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Centre de global health</h1>
       </div>
       
       <p className="mb-6 text-gray-600">

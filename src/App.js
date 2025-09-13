@@ -35,6 +35,8 @@ import ServicesEN from './Client/Component/Performances/ServicesEN';
 import ExpertsAdmin from './Admin/pages/ExpertsAdmin';
 import UpdatesAdmin from './Admin/pages/UpdatesAdmin';
 import AboutUsAdmin from './Admin/pages/AboutUsAdmin';
+import GestionPhysiotherapie from './Admin/pages/GestionTypesPhysiotherapie';
+import GestionRecettes from './Admin/pages/GestionRecettes';
 import axios from 'axios';
 function App() {
   useEffect(() => { console.log(window.UC_UI);
@@ -82,7 +84,8 @@ function App() {
     
     <Route path="about-us" element={<AboutUsAdmin/>} />
 
-
+    <Route path="gestion-recettes" element={<GestionRecettes />} />
+    <Route path="physiotherapie" element={<GestionPhysiotherapie />} />
 
 
     <Route path="faq" element={<FAQ />} />

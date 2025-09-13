@@ -127,7 +127,9 @@
       "phone": "Téléphone",
       "email": "Email",
       "request": "Que pouvons-nous faire pour vous?",
-      "prescriptionType": "Type de recette"
+      "prescriptionType": "Type de recette",
+      "number":"Nombre",
+      "physiotherapy":"Physiothérapie"
     },
     "errors": {
       "requiredField": "Ce champ est obligatoire",
