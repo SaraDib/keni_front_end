@@ -4,7 +4,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import axios from 'axios';
 
 // Composant pour gérer les sliders
-const SliderUploader = ({ sliderImages, setSliderImages }) => {
+const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
   const [newSliderImages, setNewSliderImages] = useState([]);
 
   const token = localStorage.getItem('token');
@@ -15,6 +15,7 @@ const SliderUploader = ({ sliderImages, setSliderImages }) => {
     try {
       const formData = new FormData();
       newSliderImages.forEach(file => formData.append('sliderImages[]', file));
+      formData.append('nom_page', nomPage);
       const response = await axios.post('http://localhost:8000/api/slider', formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
       });
@@ -44,7 +45,7 @@ const SliderUploader = ({ sliderImages, setSliderImages }) => {
 
   return (
     <div className="mb-6">
-      <h3 className="text-md font-medium text-gray-900 mb-2">Images du Slider page d'accueil</h3>
+      <h3 className="block text-sm font-medium text-gray-700 mb-2">Images de la page {nomPage}</h3>
       <div className="flex flex-wrap gap-4">
         {/* Images existantes */}
         {sliderImages.map((img) => (
@@ -74,17 +75,23 @@ const SliderUploader = ({ sliderImages, setSliderImages }) => {
           </div>
         ))}
 
-        {/* Ajouter */}
-        <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-          + Ajouter
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-          />
-        </label>
+{/* Ajouter */}
+{(nomPage === 'commencer' || nomPage === 'contact') || 
+ (sliderImages.length === 0 && newSliderImages.length === 0) ? (
+  <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+    + Ajouter
+    <input
+      type="file"
+      multiple={nomPage === 'commencer' || nomPage === 'contact'}
+      accept="image/*"
+      className="hidden"
+      onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+    />
+  </label>
+) : null}
+
+
+
       </div>
 
       {newSliderImages.length > 0 && (
@@ -241,9 +248,8 @@ const SettingsPage = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${
-                      activeTab === tab.id ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
+                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${activeTab === tab.id ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
                   >
                     <span className="mr-3">{tab.icon}</span>
                     {tab.label}
@@ -253,12 +259,12 @@ const SettingsPage = () => {
             </div>
 
             {/* Contenu des onglets */}
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-6 max-h-[60vh] overflow-y-auto">
               <form onSubmit={handleSubmit}>
                 {activeTab === 'general' && (
                   <div>
                     <h2 className="text-lg font-medium text-gray-900 mb-4">Paramètres généraux</h2>
-                    
+
                     {/* Nom entreprise */}
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
@@ -286,8 +292,8 @@ const SettingsPage = () => {
                         <div>
                           <label className="block">
                             <span className="sr-only">Choisir un logo</span>
-                            <input 
-                              type="file" 
+                            <input
+                              type="file"
                               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                               accept="image/*"
                               onChange={handleChange}
@@ -300,7 +306,32 @@ const SettingsPage = () => {
                     </div>
 
                     {/* Slider */}
-                    <SliderUploader sliderImages={sliderImages} setSliderImages={setSliderImages} />
+                    <SliderUploader
+                      sliderImages={sliderImages.filter(img => img.nom_page === 'commencer')}
+                      setSliderImages={setSliderImages}
+                      nomPage="commencer"
+                    />
+                    <SliderUploader
+                      sliderImages={sliderImages.filter(img => img.nom_page === 'qui sommes nous')}
+                      setSliderImages={setSliderImages}
+                      nomPage="qui sommes nous"
+                    />
+                    <SliderUploader
+                      sliderImages={sliderImages.filter(img => img.nom_page === "offres d'emploi")}
+                      setSliderImages={setSliderImages}
+                      nomPage="offres d'emploi"
+                    />
+                    <SliderUploader
+                      sliderImages={sliderImages.filter(img => img.nom_page === "FAQ")}
+                      setSliderImages={setSliderImages}
+                      nomPage="FAQ"
+                    />
+                    <SliderUploader
+                      sliderImages={sliderImages.filter(img => img.nom_page === 'contact')}
+                      setSliderImages={setSliderImages}
+                      nomPage="contact"
+                    />
+
                   </div>
                 )}
 
@@ -413,9 +444,8 @@ const SettingsPage = () => {
                 <div className="mt-8 flex justify-end">
                   <button
                     type="submit"
-                    className={`px-4 py-2 rounded-md text-white flex items-center ${
-                      isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
+                    className={`px-4 py-2 rounded-md text-white flex items-center ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                      }`}
                     disabled={isLoading}
                   >
                     {isLoading ? (

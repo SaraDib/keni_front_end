@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect ,useState} from 'react';
 import faqImage from "../assets/images/FAQimage.jpg"; 
 import fb from "../assets/images/fb.png";
 import insta from "../assets/images/insta.png";
@@ -7,9 +7,10 @@ import kante from "../assets/images/wave.svg";
 import 'aos/dist/aos.css'; 
 import AOS from 'aos';
 import { useTranslation } from 'react-i18next';
-
+import axios from "axios";
 function Faq() {
  const { t,i18n } = useTranslation();
+ const [sliderImages, setSliderImages] = useState([]);
 
   useEffect(() => {
       AOS.init({
@@ -17,12 +18,29 @@ function Faq() {
         once: true,     // L'animation ne se répète qu'une seule fois
       });
     }, []);
+// Récupération des images du slider depuis l'API
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/slider', {
+          params: {
+            nom_page: 'FAQ' // ici tu mets le nom de la page
+          }
+        });
+        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        setSliderImages(imagesFromAPI);
+      } catch (err) {
+        console.error('Erreur lors du chargement des images du slider', err);
+      }
+    };
 
+    fetchSliderImages();
+  }, []);
   return (<>
 
     <div className="w-full h-screen overflow-hidden relative" name='ss'>
       <img 
-        src={faqImage} 
+        src={sliderImages} 
         alt="FAQ" 
         className="w-full h-full object-cover"
       />

@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Postvacants() {
   const { t ,i18n} = useTranslation();
+  const [sliderImages, setSliderImages] = useState([]);
 
   // Updated state variables to match backend requirements
   const [formData, setFormData] = useState({
@@ -137,13 +138,31 @@ export default function Postvacants() {
     { icon: icon9, text: "Apportez vos idées" }
   ];
 
+  // Récupération des images du slider depuis l'API
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/slider', {
+          params: {
+            nom_page: "offres d'emploi" // ici tu mets le nom de la page
+          }
+        });
+        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        setSliderImages(imagesFromAPI);
+      } catch (err) {
+        console.error('Erreur lors du chargement des images du slider', err);
+      }
+    };
+
+    fetchSliderImages();
+  }, []);
   return (
     <div>
       <Toaster position="bottom-left" reverseOrder={false} />
       {/* section 1 */}
       <div className="w-full h-full overflow-hidden relative">
         <img
-          src={imagego}
+          src={sliderImages}
           alt="FAQ"
           className="w-full h-screen object-cover"
         />

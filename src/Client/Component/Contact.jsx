@@ -7,7 +7,7 @@ import photo2 from "../assets/images/shutterstock_1628797483-1920w.jpg"
 import amwaj1 from "../assets/images/wave.svg";
 import fb from "../assets/images/fb.png";
 import insta from "../assets/images/insta.png";
-
+import axios from "axios";
 // First, import useTranslation at the top of the file
 import { useTranslation } from 'react-i18next';
 
@@ -16,18 +16,17 @@ export default function Contact(){
     const { t, i18n } = useTranslation();
   
     const [currentIndex, setCurrentIndex] = useState(0);
-    const images = [
-        photo1,
-        photo2,
-      ];
+
+   
+    const [sliderImages, setSliderImages] = useState([]);
     
       useEffect(() => {
         const interval = setInterval(() => {
-          setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % sliderImages.length);
         }, 3000);
     
         return () => clearInterval(interval);
-      }, [images.length]);
+      }, [sliderImages.length]);
 
 
        useEffect(() => {
@@ -36,10 +35,29 @@ export default function Contact(){
             once: true,     // L'animation ne se répète qu'une seule fois
           });
         }, []);
+
+        // Récupération des images du slider depuis l'API
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/slider', {
+          params: {
+            nom_page: 'contact' // ici tu mets le nom de la page
+          }
+        });
+        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        setSliderImages(imagesFromAPI);
+      } catch (err) {
+        console.error('Erreur lors du chargement des images du slider', err);
+      }
+    };
+
+    fetchSliderImages();
+  }, []);
     return(
         <div className="w-full h-screen overflow-hidden relative">
       {/* Diaporama en arrière-plan */}
-      {images.map((image, index) => (
+      {sliderImages.map((image, index) => (
         <img
           key={index}
           src={image}

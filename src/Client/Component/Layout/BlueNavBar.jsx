@@ -85,12 +85,15 @@ export default function BlueNavbar() {
       </a>
 
       <button
-        className="flex items-center gap-x-2 bg-white border-2 border-solid px-2 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen"
-        style={{ borderColor: "#1A2A7B", color: "#1A2A7B" }}
-      >
-        <img src={Phone} alt="Phone" className="inline m-2 w-5" />
-        <span className="text-sm mr-2">0201 9776650</span>
-      </button>
+  className="flex items-center gap-x-2 bg-white border-2 border-solid px-2 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen"
+  style={{ borderColor: "#1A2A7B", color: "#1A2A7B" }}
+>
+  <img src={Phone} alt="Phone" className="inline m-2 w-5" />
+  <span className="text-sm" style={{ direction: "ltr" }}>
+    0201 9776650
+  </span>
+</button>
+
     </div>
   );
 

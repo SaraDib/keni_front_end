@@ -27,7 +27,11 @@ export default function Commencer() {
   useEffect(() => {
     const fetchSliderImages = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/slider');
+        const response = await axios.get('http://localhost:8000/api/slider', {
+          params: {
+            nom_page: 'commencer' // ici tu mets le nom de la page
+          }
+        });
         const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
         setSliderImages(imagesFromAPI);
       } catch (err) {
@@ -113,13 +117,12 @@ export default function Commencer() {
             key={index}
             src={image}
             alt={`Slide ${index}`}
-            className={`absolute w-full h-full object-cover transition-transform duration-1000 ease-in-out ${
-              index === currentIndex
+            className={`absolute w-full h-full object-cover transition-transform duration-1000 ease-in-out ${index === currentIndex
                 ? 'translate-x-0'
                 : index < currentIndex
-                ? '-translate-x-full'
-                : 'translate-x-full'
-            }`}
+                  ? '-translate-x-full'
+                  : 'translate-x-full'
+              }`}
           />
         ))}
 
@@ -128,9 +131,8 @@ export default function Commencer() {
           <div
             key={i18n.language}
             data-aos="zoom-in"
-            className={`absolute bottom-1/4 flex flex-col max-sm:left-2 sm:flex sm:justify-start text-white p-4 ${
-              i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
-            }`}
+            className={`absolute bottom-1/4 flex flex-col max-sm:left-2 sm:flex sm:justify-start text-white p-4 ${i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+              }`}
           >
             <h1 className="max-sm:text-4xl sm:text-5xl font-dmsans mb-2">{t('header.title')}</h1>
             <h2 className="text-customGreen sm:text-3xl font-dmsans max-sm:text-2xl">{t('header.subtitle')}</h2>

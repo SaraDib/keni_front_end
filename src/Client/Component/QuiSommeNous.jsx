@@ -17,6 +17,7 @@ export default function QuiSommeNous() {
   const [employees, setEmployees] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEmployeeIndex, setCurrentEmployeeIndex] = useState(null);
+  const [sliderImages, setSliderImages] = useState([]);
 
   const fetchAboutUs = async () => {
     try {
@@ -103,11 +104,29 @@ export default function QuiSommeNous() {
       parseDescription(i18n.language === 'ar' ? section.description_ar : section.description_fr)
     );
 
+    // Récupération des images du slider depuis l'API
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/slider', {
+          params: {
+            nom_page: 'qui sommes nous' // ici tu mets le nom de la page
+          }
+        });
+        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        setSliderImages(imagesFromAPI);
+      } catch (err) {
+        console.error('Erreur lors du chargement des images du slider', err);
+      }
+    };
+
+    fetchSliderImages();
+  }, []);
   return (
     <>
       {/* Header Section */}
       <div className="w-full h-screen overflow-hidden relative">
-        <img src={qsn} alt="Qui Sommes-Nous" className="w-full h-full object-cover" />
+        <img src={sliderImages} alt="Qui Sommes-Nous" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
           <div
   key={i18n.language} // force le rerender quand la langue change
