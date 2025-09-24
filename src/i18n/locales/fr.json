@@ -128,13 +128,31 @@
       "email": "Email",
       "request": "Que pouvons-nous faire pour vous?",
       "prescriptionType": "Type de recette",
-      "number":"Nombre",
-      "physiotherapy":"Physiothérapie"
+      "number": "Nombre",
+      "physiotherapy": "Choisissez votre Pack:"
     },
     "errors": {
-      "requiredField": "Ce champ est obligatoire",
-      "invalidEmail": "Email invalide",
-      "invalidPhone": "Numéro de téléphone invalide"
+      "lastName": "Le nom est requis",
+      "firstName": "Le prénom est requis",
+      "birthDate": "La date de naissance est requise",
+      "phone": "Le téléphone est requis",
+      "email": "L'email est requis",
+      "request": "La demande est requise",
+      "prescriptionType": "Le type de recette est requis",
+      "number": "Le nombre est requis",
+      "physiotherapy": "Le pack est requis"
+    },
+    "remarks": "Remarques",
+    "consent": {
+      "label": "J'accepte les conditions",
+      "message": "Vous devez accepter que GlobalHealth vous contacte pour confirmer votre réservation."
+    },
+    "globalHealthPackConditions": "Conditions pour Pack Santé Globale",
+    "medicalPrescription": {
+      "question": "Avez-vous une ordonnance médicale ?",
+      "yes": "Oui",
+      "no": "Non",
+      "pleaseIndicate": "Veuillez indiquer si vous avez une ordonnance médicale."
     }
   }
 }

@@ -10,14 +10,14 @@ const GestionTypesPhysiotherapie = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  // Charger les types de physiothérapie depuis l'API
+  // Charger les packs et services depuis l'API
   const fetchTypes = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/physiotherapie');
       setTypes(response.data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Erreur lors du chargement des types de physiothérapie', error);
+      console.error('Erreur lors du chargement des packs et services', error);
       setIsLoading(false);
     }
   };
@@ -26,7 +26,7 @@ const GestionTypesPhysiotherapie = () => {
     fetchTypes();
   }, []);
 
-  // Ajouter un nouveau type de physiothérapie
+  // Ajouter un nouveau pack ou service
   const handleAddType = async () => {
     try {
       setIsLoading(true);
@@ -40,12 +40,12 @@ const GestionTypesPhysiotherapie = () => {
       setNewType('');
       setIsLoading(false);
     } catch (error) {
-      console.error('Erreur lors de l\'ajout du type de physiothérapie', error);
+      console.error('Erreur lors de l\'ajout du pack ou service', error);
       setIsLoading(false);
     }
   };
 
-  // Supprimer un type de physiothérapie
+  // Supprimer un pack ou service
   const handleDeleteType = async () => {
     try {
       setIsLoading(true);
@@ -59,12 +59,12 @@ const GestionTypesPhysiotherapie = () => {
       setShowDeleteConfirmation(false);
       setIsLoading(false);
     } catch (error) {
-      console.error('Erreur lors de la suppression du type de physiothérapie', error);
+      console.error('Erreur lors de la suppression du pack ou service', error);
       setIsLoading(false);
     }
   };
 
-  // Modifier un type de physiothérapie
+  // Modifier un pack ou service
   const handleEditType = async () => {
     try {
       setIsLoading(true);
@@ -78,14 +78,14 @@ const GestionTypesPhysiotherapie = () => {
       setEditType(null);
       setIsLoading(false);
     } catch (error) {
-      console.error('Erreur lors de la modification du type de physiothérapie', error);
+      console.error('Erreur lors de la modification du pack ou service', error);
       setIsLoading(false);
     }
   };
 
   return (
     <div className="p-6 bg-white rounded-md shadow-lg">
-      <h1 className="text-xl font-semibold mb-4">Gestion des Types de Physiothérapie</h1>
+      <h1 className="text-xl font-semibold mb-4">Gestion des Packs et Services</h1>
 
       {isLoading ? (
         <div className="text-center">Chargement...</div>
@@ -95,7 +95,7 @@ const GestionTypesPhysiotherapie = () => {
             <input
               type="text"
               className="border p-2 rounded-md w-full"
-              placeholder="Nom du type de physiothérapie"
+              placeholder="Nom du pack ou service"
               value={newType}
               onChange={(e) => setNewType(e.target.value)}
             />
@@ -107,11 +107,11 @@ const GestionTypesPhysiotherapie = () => {
             </button>
           </div>
 
-          <h2 className="text-lg font-semibold mb-4">Liste des Types de Physiothérapie</h2>
+          <h2 className="text-lg font-semibold mb-4">Liste des Packs et Services</h2>
           <table className="min-w-full bg-gray-100 rounded-md">
             <thead className="bg-gray-100">
               <tr className="text-center">
-                <th className="py-2 px-4 border-b">Nom du Type</th>
+                <th className="py-2 px-4 border-b">Nom du Pack/Service</th>
                 <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
@@ -141,7 +141,7 @@ const GestionTypesPhysiotherapie = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="text-center py-4">Aucun type disponible</td>
+                  <td colSpan="2" className="text-center py-4">Aucun pack ou service disponible</td>
                 </tr>
               )}
             </tbody>
@@ -150,7 +150,7 @@ const GestionTypesPhysiotherapie = () => {
           {/* Formulaire de modification */}
           {editType && (
             <div className="mt-4 bg-gray-200 p-4 rounded-md">
-              <h3 className="font-semibold mb-2">Modifier le Type de Physiothérapie</h3>
+              <h3 className="font-semibold mb-2">Modifier le Pack ou Service</h3>
               <input
                 type="text"
                 className="border p-2 rounded-md w-full"
@@ -176,7 +176,7 @@ const GestionTypesPhysiotherapie = () => {
           {showDeleteConfirmation && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
               <div className="bg-white p-6 rounded-md shadow-lg w-1/3 text-center">
-                <h4 className="text-lg font-semibold">Êtes-vous sûr de vouloir supprimer ce type ?</h4>
+                <h4 className="text-lg font-semibold">Êtes-vous sûr de vouloir supprimer ce pack ou service ?</h4>
                 <div className="mt-4">
                   <button
                     onClick={handleDeleteType}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Home, User, Settings,FileText, LogOut, Menu, X,Activity,HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers,ClipboardList ,HeartPulse} from 'lucide-react';
+import { Home, User, Settings,FileText, LogOut, Menu, X,Activity,HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers,ClipboardList ,Package} from 'lucide-react';
 import Logo from './Logo';
 
 
@@ -280,8 +280,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
           />
           <SidebarLink 
             to="physiotherapie" 
-            icon={<HeartPulse size={20} />} 
-            label="Physiothérapie" 
+            icon={<Package size={20} />} 
+            label="Packs et Services" 
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/physiotherapie'}

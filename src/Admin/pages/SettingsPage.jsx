@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Upload, Phone, Globe, Mail, MapPin, Facebook, Instagram, Image } from 'lucide-react';
+import { Settings, Save, Upload, Phone, Globe, Mail, MapPin, Facebook, Instagram, Image, Gift, Plus, Edit, Trash2, X } from 'lucide-react';
 import { FaWhatsapp } from "react-icons/fa";
 import axios from 'axios';
+import SettingsPageModals from './SettingsPageModals';
 
 // Composant pour gérer les sliders
 const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
@@ -45,50 +46,114 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
 
   return (
     <div className="mb-6">
-      <h3 className="block text-sm font-medium text-gray-700 mb-2">Images de la page {nomPage}</h3>
+      <h3 className="block text-sm font-medium text-gray-700 mb-2">
+        Images de la page {nomPage}
+        {nomPage === "offres d'emploi" && (
+          <span className="text-sm text-gray-500 ml-2">(Maximum 2 images)</span>
+        )}
+      </h3>
       <div className="flex flex-wrap gap-4">
         {/* Images existantes */}
-        {sliderImages.map((img) => (
+        {sliderImages.map((img, index) => (
           <div key={img.ID_Image || img.id} className="relative w-32 h-20 border rounded overflow-hidden">
-            <img src={`http://localhost:8000/storage/${img.Path}`} alt="Slider" className="w-full h-full object-cover" />
+            <img src={`http://localhost:8000/storage/${img.Path}`} alt={`Slider ${index + 1}`} className="w-full h-full object-cover" />
             <button
               type="button"
               onClick={() => handleDeleteSliderImage(img.ID_Image || img.id)}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600"
+              title="Supprimer cette image"
             >
               X
             </button>
+            {nomPage === "offres d'emploi" && (
+              <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                {index + 1}
+              </div>
+            )}
           </div>
         ))}
 
         {/* Nouvelles images */}
         {newSliderImages.map((file, index) => (
           <div key={index} className="relative w-32 h-20 border rounded overflow-hidden">
-            <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+            <img src={URL.createObjectURL(file)} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
             <button
               type="button"
               onClick={() => handleRemoveNewSliderImage(index)}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600"
+              title="Supprimer cette image"
             >
               X
             </button>
+            {nomPage === "offres d'emploi" && (
+              <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                {sliderImages.length + index + 1}
+              </div>
+            )}
           </div>
         ))}
 
 {/* Ajouter */}
-{(nomPage === 'commencer' || nomPage === 'contact') || 
- (sliderImages.length === 0 && newSliderImages.length === 0) ? (
-  <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-    + Ajouter
-    <input
-      type="file"
-      multiple={nomPage === 'commencer' || nomPage === 'contact'}
-      accept="image/*"
-      className="hidden"
-      onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-    />
-  </label>
-) : null}
+{(() => {
+  const totalImages = sliderImages.length + newSliderImages.length;
+  
+  // Pour les pages "commencer" et "contact" : pas de limite
+  if (nomPage === 'commencer' || nomPage === 'contact') {
+    return (
+      <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+        + Ajouter
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+        />
+      </label>
+    );
+  }
+  
+  // Pour les offres d'emploi : maximum 2 images
+  if (nomPage === "offres d'emploi") {
+    if (totalImages < 2) {
+      return (
+        <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+          + Ajouter ({totalImages}/2)
+          <input
+            type="file"
+            multiple={totalImages === 0}
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files);
+              const remainingSlots = 2 - totalImages;
+              const filesToAdd = files.slice(0, remainingSlots);
+              setNewSliderImages([...newSliderImages, ...filesToAdd]);
+            }}
+          />
+        </label>
+      );
+    }
+    return null;
+  }
+  
+  // Pour les autres pages : maximum 1 image
+  if (totalImages === 0) {
+    return (
+      <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+        + Ajouter
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+        />
+      </label>
+    );
+  }
+  
+  return null;
+})()}
 
 
 
@@ -103,6 +168,281 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
           Upload nouvelles images
         </button>
       )}
+    </div>
+  );
+};
+
+// Composant pour gérer les avantages sociaux
+const AvantagesSociauxManager = () => {
+  const [avantages, setAvantages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingAvantage, setEditingAvantage] = useState(null);
+  const [formData, setFormData] = useState({
+    photo: null,
+    paragraphe: ''
+  });
+  const [previewImage, setPreviewImage] = useState(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [avantageToDelete, setAvantageToDelete] = useState(null);
+
+  const token = localStorage.getItem('token');
+
+  // Récupérer les avantages sociaux
+  const fetchAvantages = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/avantages-sociaux', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAvantages(response.data);
+    } catch (error) {
+      setError('Erreur lors du chargement des avantages sociaux');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAvantages();
+  }, []);
+
+  // Gérer les changements du formulaire
+  const handleFormChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'photo' && files && files[0]) {
+      setFormData(prev => ({ ...prev, photo: files[0] }));
+      setPreviewImage(URL.createObjectURL(files[0]));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // Ajouter un nouvel avantage
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const submitData = new FormData();
+      submitData.append('photo', formData.photo);
+      submitData.append('paragraphe', formData.paragraphe);
+
+      const response = await axios.post('http://localhost:8000/api/avantages-sociaux', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 201) {
+        setSuccess(true);
+        setShowAddForm(false);
+        resetForm();
+        fetchAvantages();
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (error) {
+      setError('Erreur lors de l\'ajout de l\'avantage social');
+      console.error(error);
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  // Soumettre le formulaire de modification
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const formDataToSend = new FormData();
+      if (formData.photo) {
+        formDataToSend.append('photo', formData.photo);
+      }
+      formDataToSend.append('paragraphe', formData.paragraphe);
+      formDataToSend.append('_method', 'PUT');
+
+      await axios.post(`http://localhost:8000/api/avantages-sociaux/${editingAvantage.id}`, formDataToSend, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}` 
+        }
+      });
+
+      setSuccess(true);
+      setShowEditForm(false);
+      resetForm();
+      fetchAvantages();
+    } catch (error) {
+      setError(error.response?.data?.message || 'Erreur lors de la modification');
+    }
+  };
+
+  // Supprimer un avantage
+  const handleDelete = (avantage) => {
+    setAvantageToDelete(avantage);
+    setShowDeleteModal(true);
+  };
+
+  // Confirmer la suppression
+  const confirmDelete = async () => {
+    if (!avantageToDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:8000/api/avantages-sociaux/${avantageToDelete.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSuccess(true);
+      fetchAvantages();
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (error) {
+      setError('Erreur lors de la suppression');
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setShowDeleteModal(false);
+      setAvantageToDelete(null);
+    }
+  };
+
+  // Annuler la suppression
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setAvantageToDelete(null);
+  };
+
+  // Modifier un avantage
+  const handleEdit = (avantage) => {
+    setEditingAvantage(avantage);
+    setFormData({
+      photo: null,
+      paragraphe: avantage.paragraphe
+    });
+    setPreviewImage(null);
+    setShowEditForm(true);
+  };
+
+  // Réinitialiser le formulaire
+  const resetForm = () => {
+    setFormData({ photo: null, paragraphe: '' });
+    setPreviewImage(null);
+    setEditingAvantage(null);
+    setShowAddForm(false);
+    setShowEditForm(false);
+    setShowDeleteModal(false);
+    setAvantageToDelete(null);
+    setError(null);
+    setSuccess(false);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-medium text-gray-900">Avantages sociaux</h2>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            resetForm();
+            setShowAddForm(true);
+          }}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
+        >
+          <Plus size={16} className="mr-2" />
+          Ajouter un avantage
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+          Opération réussie !
+        </div>
+      )}
+
+
+
+      {/* Liste des avantages */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {avantages.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              Aucun avantage social configuré
+            </p>
+          ) : (
+            avantages.map((avantage) => (
+              <div key={avantage.id} className="bg-white p-4 rounded-lg border shadow-sm">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    {avantage.photo && (
+                      <img
+                        src={`http://localhost:8000/storage/${avantage.photo}`}
+                        alt="Avantage"
+                        className="w-16 h-16 object-cover rounded-md"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-gray-800">{avantage.paragraphe}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleEdit(avantage);
+                      }}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDelete(avantage);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Modales séparées - HORS du formulaire principal */}
+      <SettingsPageModals
+        showAddForm={showAddForm}
+        setShowAddForm={setShowAddForm}
+        showEditForm={showEditForm}
+        setShowEditForm={setShowEditForm}
+        showDeleteModal={showDeleteModal}
+        avantageToDelete={avantageToDelete}
+        confirmDelete={confirmDelete}
+        cancelDelete={cancelDelete}
+        formData={formData}
+        handleFormChange={handleFormChange}
+        previewImage={previewImage}
+        editingAvantage={editingAvantage}
+        handleAddSubmit={handleAddSubmit}
+        handleEditSubmit={handleEditSubmit}
+        resetForm={resetForm}
+      />
     </div>
   );
 };
@@ -219,7 +559,8 @@ const SettingsPage = () => {
   const tabs = [
     { id: 'general', label: 'Général', icon: <Settings size={18} /> },
     { id: 'contact', label: 'Contact', icon: <Phone size={18} /> },
-    { id: 'social', label: 'Réseaux sociaux', icon: <Globe size={18} /> }
+    { id: 'social', label: 'Réseaux sociaux', icon: <Globe size={18} /> },
+    { id: 'avantages', label: 'Avantages sociaux', icon: <Gift size={18} /> }
   ];
 
   return (
@@ -441,27 +782,38 @@ const SettingsPage = () => {
                   </div>
                 )}
 
-                <div className="mt-8 flex justify-end">
-                  <button
-                    type="submit"
-                    className={`px-4 py-2 rounded-md text-white flex items-center ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                      }`}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                        Sauvegarder...
-                      </>
-                    ) : (
-                      <>
-                        <Save size={16} className="mr-2" />
-                        Sauvegarder les modifications
-                      </>
-                    )}
-                  </button>
-                </div>
+                {activeTab === 'avantages' ? (
+                  <div>
+                    {/* Fermer le formulaire avant les avantages */}
+                  </div>
+                ) : (
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      type="submit"
+                      className={`px-4 py-2 rounded-md text-white flex items-center ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                          Sauvegarder...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={16} className="mr-2" />
+                          Sauvegarder les modifications
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </form>
+
+              {/* Avantages sociaux HORS du formulaire */}
+              {activeTab === 'avantages' && (
+                <AvantagesSociauxManager />
+              )}
             </div>
           </div>
         </div>

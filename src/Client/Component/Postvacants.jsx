@@ -5,16 +5,6 @@ import insta from "../assets/images/insta.png";
 import kante from "../assets/images/wave.svg";
 import kulosfski from "../assets/images/wave-grey (1).svg";
 
-import icon1 from '../assets/images/offerEmplois/Saving-Piggy-Coins--Streamline-Ultimate.svg';
-import icon2 from '../assets/images/offerEmplois/Performance-Money-Increase--Streamline-Ultimate.svg';
-import icon3 from '../assets/images/offerEmplois/Insurance-Document-Edit--Streamline-Ultimate.svg';
-import icon4 from '../assets/images/offerEmplois/Certified-Diploma-2--Streamline-Ultimate.svg';
-import icon5 from '../assets/images/offerEmplois/Fitness-Dumbbell--Streamline-Ultimate.svg';
-import icon6 from '../assets/images/offerEmplois/Sunbathe--Streamline-Ultimate.svg';
-import icon7 from '../assets/images/offerEmplois/Time-Play-Time-1--Streamline-Ultimate.svg';
-import icon8 from '../assets/images/offerEmplois/Mountain-Bike-2--Streamline-Ultimate.svg';
-import icon9 from '../assets/images/offerEmplois/Idea-Settings-1--Streamline-Ultimate.svg';
-
 import 'aos/dist/aos.css';
 import AOS from 'aos';
 import Per2 from '../assets/images/p2.webp';
@@ -26,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 export default function Postvacants() {
   const { t ,i18n} = useTranslation();
   const [sliderImages, setSliderImages] = useState([]);
+  const [advantages, setAdvantages] = useState([]);
 
   // Updated state variables to match backend requirements
   const [formData, setFormData] = useState({
@@ -126,17 +117,32 @@ export default function Postvacants() {
     });
   }, []);
 
-  const advantages = [
-    { icon: icon1, text: "Salaire 3 500 – 3 900€ pour 37 heures par semaine" },
-    { icon: icon2, text: "600€ net en plus grâce aux avantages non monétaires" },
-    { icon: icon3, text: "Régime de retraite d'entreprise avec subvention allant jusqu'à 100 €" },
-    { icon: icon4, text: "Prise en charge de la totalité des frais de formation" },
-    { icon: icon5, text: "Activités passionnantes en thérapie, formations, groupes, conférences, cours de formation" },
-    { icon: icon6, text: "30 jours de récupération" },
-    { icon: icon7, text: "Vendredi 14 h : début de la fin de semaine" },
-    { icon: icon8, text: "Location de vélos avec jusqu'à 40 € de subvention" },
-    { icon: icon9, text: "Apportez vos idées" }
-  ];
+  // Récupération des avantages sociaux depuis l'API
+  useEffect(() => {
+    const fetchAdvantages = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/avantages-sociaux');
+        setAdvantages(response.data);
+        console.log('Avantages sociaux récupérés:', response.data);
+      } catch (err) {
+        console.error('Erreur lors du chargement des avantages sociaux', err);
+        // En cas d'erreur, utiliser des avantages par défaut sans icônes
+        setAdvantages([
+          { id: 1, photo: null, paragraphe: "Salaire attractif - Salaire 3 500 – 3 900€ pour 37 heures par semaine" },
+          { id: 2, photo: null, paragraphe: "Avantages non monétaires - 600€ net en plus grâce aux avantages non monétaires" },
+          { id: 3, photo: null, paragraphe: "Régime de retraite - Régime de retraite d'entreprise avec subvention allant jusqu'à 100 €" },
+          { id: 4, photo: null, paragraphe: "Formation - Prise en charge de la totalité des frais de formation" },
+          { id: 5, photo: null, paragraphe: "Activités variées - Activités passionnantes en thérapie, formations, groupes, conférences, cours de formation" },
+          { id: 6, photo: null, paragraphe: "Congés - 30 jours de récupération" },
+          { id: 7, photo: null, paragraphe: "Horaires flexibles - Vendredi 14 h : début de la fin de semaine" },
+          { id: 8, photo: null, paragraphe: "Vélos d'entreprise - Location de vélos avec jusqu'à 40 € de subvention" },
+          { id: 9, photo: null, paragraphe: "Innovation - Apportez vos idées" }
+        ]);
+      }
+    };
+
+    fetchAdvantages();
+  }, []);
 
   // Récupération des images du slider depuis l'API
   useEffect(() => {
@@ -149,6 +155,7 @@ export default function Postvacants() {
         });
         const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
         setSliderImages(imagesFromAPI);
+        console.log(response.data);
       } catch (err) {
         console.error('Erreur lors du chargement des images du slider', err);
       }
@@ -162,7 +169,7 @@ export default function Postvacants() {
       {/* section 1 */}
       <div className="w-full h-full overflow-hidden relative">
         <img
-          src={sliderImages}
+          src={sliderImages[0]}
           alt="FAQ"
           className="w-full h-screen object-cover"
         />
@@ -386,7 +393,7 @@ export default function Postvacants() {
           <div className="flex justify-center md:justify-start">
             <div className="w-72 h-72 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full overflow-hidden">
               <img
-                src={Per2}
+                src={sliderImages[1]}
                 alt="Person smiling"
                 className="w-full h-full object-contain object-center"
               />
@@ -412,10 +419,20 @@ export default function Postvacants() {
             <h2 className="text-2xl text-customGreen mt-2">{t('jobOffers.advantagesSubtitle')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            {t('jobOffers.advantagesList', { returnObjects: true }).map((adv, index) => (
-              <div key={index} className="flex flex-col items-center p-4" data-aos="fade-up">
-                <img src={advantages[index].icon} alt="" className="w-24 h-24 object-contain hover:scale-125 transition-all" />
-                <p className="text-blue-900 mt-4 text-center">{adv}</p>
+            {advantages.map((advantage, index) => (
+              <div key={advantage.id || index} className="flex flex-col items-center p-4" data-aos="fade-up">
+                {advantage.photo ? (
+                  <img 
+                    src={`http://localhost:8000/storage/${advantage.photo}`} 
+                    alt="Avantage social" 
+                    className="w-24 h-24 object-cover rounded-lg hover:scale-125 transition-all shadow-md" 
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">Pas d'image</span>
+                  </div>
+                )}
+                <p className="text-blue-900 mt-4 text-center">{advantage.paragraphe}</p>
               </div>
             ))}
           </div>

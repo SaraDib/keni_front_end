@@ -121,20 +121,40 @@
   },
   "contactForm": {
     "title": "نموذج الموعد",
-    "subtitle": "احصل على مواعيد لعلاجات العلاج الطبيعي والوظيفي",
+    "subtitle": "احصل على مواعيد لعلاجات العلاج الطبيعي والعلاج المهني",
     "labels": {
-      "lastName": "الاسم",
-      "firstName": "اللقب",
+      "lastName": "اللقب",
+      "firstName": "الاسم",
       "birthDate": "تاريخ الميلاد",
       "phone": "الهاتف",
       "email": "البريد الإلكتروني",
       "request": "ماذا يمكننا أن نفعل لك؟",
-      "prescriptionType": "نوع الوصفة"
+      "prescriptionType": "نوع الوصفة",
+      "number": "العدد",
+      "physiotherapy": "اختر الحزمة الخاصة بك:"
     },
     "errors": {
-      "requiredField": "هذا الحقل مطلوب",
-      "invalidEmail": "بريد إلكتروني غير صالح",
-      "invalidPhone": "رقم هاتف غير صالح"
+      "lastName": "اللقب مطلوب",
+      "firstName": "الاسم مطلوب",
+      "birthDate": "تاريخ الميلاد مطلوب",
+      "phone": "الهاتف مطلوب",
+      "email": "البريد الإلكتروني مطلوب",
+      "request": "الطلب مطلوب",
+      "prescriptionType": "نوع الوصفة مطلوب",
+      "number": "العدد مطلوب",
+      "physiotherapy": "الحزمة مطلوبة"
+    },
+    "remarks": "ملاحظات",
+    "consent": {
+      "label": "أوافق على الشروط",
+      "message": "يجب أن توافق على أن تتصل بك جلوبال هيلث لتأكيد حجزك."
+    },
+    "globalHealthPackConditions": "شروط حزمة الصحة العالمية",
+    "medicalPrescription": {
+      "question": "هل لديك وصفة طبية؟",
+      "yes": "نعم",
+      "no": "لا",
+      "pleaseIndicate": "يرجى تحديد ما إذا كان لديك وصفة طبية."
     }
   }
 }
