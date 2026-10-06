@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Edit, Trash } from 'lucide-react'; // Import des icônes Lucide React
+import API_BASE_URL from '../../config';
 
 const GestionTypesRecette = () => {
   const [types, setTypes] = useState([]);
@@ -13,7 +14,7 @@ const GestionTypesRecette = () => {
   // Charger les types de recettes depuis l'API
   const fetchTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/types-recette');
+      const response = await axios.get(`${API_BASE_URL}/types-recette`);
       setTypes(response.data);
       setIsLoading(false);
     } catch (error) {
@@ -30,7 +31,7 @@ const GestionTypesRecette = () => {
   const handleAddType = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('http://localhost:8000/api/types-recette', {
+      const response = await axios.post(`${API_BASE_URL}/types-recette`, {
         nom: newType
       }, {
         headers: {
@@ -51,7 +52,7 @@ const GestionTypesRecette = () => {
   const handleDeleteType = async () => {
     try {
       setIsLoading(true);
-      await axios.delete(`http://localhost:8000/api/types-recette/${deleteId}`, {
+      await axios.delete(`${API_BASE_URL}/types-recette/${deleteId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -70,7 +71,7 @@ const GestionTypesRecette = () => {
   const handleEditType = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.put(`http://localhost:8000/api/types-recette/${editType.id}`, {
+      const response = await axios.put(`${API_BASE_URL}/types-recette/${editType.id}`, {
         nom: editType.nom
       }, {
         headers: {

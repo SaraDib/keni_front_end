@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const CandidatesChart = () => {
   const currentYear = new Date().getFullYear();
@@ -8,13 +9,13 @@ const CandidatesChart = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
   useEffect(() => {
-    
-    axios.get('http://127.0.0.1:8000/api/candidatures/stats', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      })
+
+    axios.get(`${API_BASE_URL}/candidatures/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
       .then(response => {
         setCandidatesData(response.data);
         setLoading(false);
@@ -105,11 +106,11 @@ const CandidatesChart = () => {
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-1">
-        <ReactApexChart 
-          options={options} 
-          series={series} 
-          type="bar" 
-          height="100%" 
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="bar"
+          height="100%"
         />
       </div>
       <div className="mt-2 text-center text-sm text-gray-500">

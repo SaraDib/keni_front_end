@@ -4,8 +4,9 @@ import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
 import { Users, Shield, User, PlusCircle, Pencil, Trash2, X } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = API_BASE_URL;
 
 // Rôles non supprimables (tu peux en ajouter)
 const PROTECTED_ROLE_NAMES = ['admin']; // insensible à la casse
@@ -191,13 +192,13 @@ const UsersPage = () => {
   // Options dynamiques pour le select des rôles
   const roleOptions = roles.length
     ? roles.map((r) => ({
-        value: r.nom || r.name,
-        label: r.nom || r.name,
-      }))
+      value: r.nom || r.name,
+      label: r.nom || r.name,
+    }))
     : [
-        { value: 'admin', label: 'Administrateur' },
-        { value: 'user', label: 'Utilisateur' },
-      ];
+      { value: 'admin', label: 'Administrateur' },
+      { value: 'user', label: 'Utilisateur' },
+    ];
 
   // Champs du formulaire utilisateur
   const formFields = [

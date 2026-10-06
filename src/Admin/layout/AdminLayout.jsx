@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Home, User, Settings,FileText, LogOut, Menu, X,Activity,HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers,ClipboardList ,Package} from 'lucide-react';
+import { Home, User, Settings, FileText, LogOut, Menu, X, Activity, HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers, ClipboardList, Package } from 'lucide-react';
 import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 
 
 
@@ -25,17 +26,16 @@ const AdminLayout = () => {
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   // Check if user is logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/admin/login');
-    } else {
-      setIsLoading(false);
+    if (!authLoading && !isAuthenticated) {
+      navigate('/admin/login', { replace: true });
     }
-  }, [navigate]);
-  
+  }, [isAuthenticated, authLoading, navigate]);
+
   // Handle screen resize
   useEffect(() => {
     const handleResize = () => {
@@ -59,7 +59,7 @@ const AdminLayout = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-  
+
   // Get the current page title based on the path
   const getPageTitle = () => {
     const path = location.pathname.split('/').pop() || 'dashboard';
@@ -85,21 +85,25 @@ const AdminLayout = () => {
     link.href = 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-    
+
     // Appliquer la police à tout le document
     document.body.style.fontFamily = "'Open Sans', sans-serif";
-    
+
     return () => {
       document.head.removeChild(link);
     };
   }, []);
 
   // If still loading, show nothing or a loading spinner
-  if (isLoading) {
-    return null; // This will render nothing while checking authentication
-    // Alternatively, you could return a loading spinner:
-    // return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
+  if (authLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900"></div>
+      </div>
+    );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <div className="flex flex-col h-screen bg-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -119,7 +123,7 @@ const AdminLayout = () => {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Desktop (fixed) and Mobile (overlay) */}
-        <aside 
+        <aside
           className={`
             ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
             md:translate-x-0
@@ -129,9 +133,9 @@ const AdminLayout = () => {
             ${isCollapsed && !isMobile ? 'w-20' : 'w-64'}
           `}
         >
-          <Sidebar 
-            isCollapsed={isCollapsed && !isMobile} 
-            setIsCollapsed={setIsCollapsed} 
+          <Sidebar
+            isCollapsed={isCollapsed && !isMobile}
+            setIsCollapsed={setIsCollapsed}
             isMobile={isMobile}
             closeMobileMenu={() => setIsMobileMenuOpen(false)}
           />
@@ -139,7 +143,7 @@ const AdminLayout = () => {
 
         {/* Mobile overlay backdrop */}
         {isMobileMenuOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
@@ -165,12 +169,17 @@ const AdminLayout = () => {
 // Sidebar Component
 const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const location = useLocation();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    navigate('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback navigation if logout fails
+      navigate('/admin/login');
+    }
   };
 
   return (
@@ -203,7 +212,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
             )}
           </div>
         )}
-        
+
         {isMobile && (
           <button
             onClick={closeMobileMenu}
@@ -218,142 +227,142 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
       {/* Navigation Links */}
       <nav className="flex-1 py-4 px-2 overflow-y-auto">
         <ul className="space-y-2">
-          <SidebarLink 
-            to="dashboard" 
-            icon={<Home size={20} />} 
-            label="Tableau de bord" 
+          <SidebarLink
+            to="dashboard"
+            icon={<Home size={20} />}
+            label="Tableau de bord"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin' || location.pathname === '/admin/dashboard'}
           />
-          
+
           {/* Section Services */}
           {(!isCollapsed || isMobile) && (
             <div className="mt-6 mb-2 px-3">
               <h3 className="text-xs uppercase text-gray-400 font-semibold">Services</h3>
             </div>
           )}
-          
-          <SidebarLink 
-            to="services" 
-            icon={<Layers size={20} />} 
-            label="Gestion des Services" 
+
+          <SidebarLink
+            to="services"
+            icon={<Layers size={20} />}
+            label="Gestion des Services"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/services'}
           />
-          
-          <SidebarLink 
-            to="experts" 
-            icon={<Activity size={20} />} 
-            label="Section Experts" 
+
+          <SidebarLink
+            to="experts"
+            icon={<Activity size={20} />}
+            label="Section Experts"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/experts'}
           />
 
-          <SidebarLink 
-            to="about-us" 
-            icon={<Activity size={20} />} 
-            label="About Us Experts" 
+          <SidebarLink
+            to="about-us"
+            icon={<Activity size={20} />}
+            label="About Us Experts"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/about-us'}
           />
 
-           <SidebarLink 
-            to="updates" 
-            icon={<FileText size={20} />} 
-            label="Section Updates" 
+          <SidebarLink
+            to="updates"
+            icon={<FileText size={20} />}
+            label="Section Updates"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/updates'}
           />
 
-          <SidebarLink 
-            to="gestion-recettes" 
-            icon={<ClipboardList size={20} />} 
-            label="Gestion des Recettes" 
+          <SidebarLink
+            to="gestion-recettes"
+            icon={<ClipboardList size={20} />}
+            label="Gestion des Recettes"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/gestion-recettes'}
           />
-          <SidebarLink 
-            to="physiotherapie" 
-            icon={<Package size={20} />} 
-            label="Packs et Services" 
+          <SidebarLink
+            to="physiotherapie"
+            icon={<Package size={20} />}
+            label="Packs et Services"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/physiotherapie'}
           />
-          
+
           {/* Section Pages */}
           {(!isCollapsed || isMobile) && (
             <div className="mt-6 mb-2 px-3">
               <h3 className="text-xs uppercase text-gray-400 font-semibold">Pages</h3>
             </div>
           )}
-          
-          <SidebarLink 
-            to="faq" 
-            icon={<HelpCircle size={20} />} 
-            label="FAQ" 
+
+          <SidebarLink
+            to="faq"
+            icon={<HelpCircle size={20} />}
+            label="FAQ"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/faq'}
           />
-          <SidebarLink 
-            to="health-center" 
-            icon={<Building size={20} />} 
-            label="Centre de global health" 
+          <SidebarLink
+            to="health-center"
+            icon={<Building size={20} />}
+            label="Centre de global health"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/health-center'}
           />
-          <SidebarLink 
-            to="contact" 
-            icon={<Phone size={20} />} 
-            label="Contact" 
+          <SidebarLink
+            to="contact"
+            icon={<Phone size={20} />}
+            label="Contact"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/contact'}
           />
-          <SidebarLink 
-            to="job-offers" 
-            icon={<Briefcase size={20} />} 
-            label="Offres d'emploi" 
+          <SidebarLink
+            to="job-offers"
+            icon={<Briefcase size={20} />}
+            label="Offres d'emploi"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/job-offers'}
           />
-          <SidebarLink 
-            to="people" 
-            icon={<UserCheck size={20} />} 
-            label="L'équipe" 
+          <SidebarLink
+            to="people"
+            icon={<UserCheck size={20} />}
+            label="L'équipe"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/people'}
           />
-          <SidebarLink 
-            to="appointments" 
-            icon={<Clock size={20} />} 
-            label="Rendez-vous" 
+          <SidebarLink
+            to="appointments"
+            icon={<Clock size={20} />}
+            label="Rendez-vous"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/appointments'}
           />
-          <SidebarLink 
-            to="users" 
-            icon={<Users size={20} />} 
-            label="Utilisateurs" 
+          <SidebarLink
+            to="users"
+            icon={<Users size={20} />}
+            label="Utilisateurs"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/users'}
           />
-          <SidebarLink 
-            to="settings" 
-            icon={<Settings size={20} />} 
-            label="Paramètres" 
+          <SidebarLink
+            to="settings"
+            icon={<Settings size={20} />}
+            label="Paramètres"
             isCollapsed={isCollapsed && !isMobile}
             isMobile={isMobile}
             isActive={location.pathname === '/admin/settings'}
@@ -365,9 +374,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
       <div className="p-4 border-t border-gray-700 mt-auto">
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-3 w-full p-2 rounded-md hover:bg-gray-700 text-red-300 hover:text-red-200 ${
-            isCollapsed && !isMobile ? 'justify-center' : ''
-          }`}
+          className={`flex items-center gap-3 w-full p-2 rounded-md hover:bg-gray-700 text-red-300 hover:text-red-200 ${isCollapsed && !isMobile ? 'justify-center' : ''
+            }`}
         >
           <LogOut size={20} />
           {(!isCollapsed || isMobile) && <span>Déconnexion</span>}
@@ -382,11 +390,10 @@ const SidebarLink = ({ to, icon, label, isCollapsed, isMobile, isActive }) => (
   <li>
     <Link
       to={to}
-      className={`flex items-center gap-3 p-2 rounded-md ${
-        isActive 
-          ? 'bg-blue-600 text-white' 
-          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-      } ${isCollapsed ? 'justify-center' : ''}`}
+      className={`flex items-center gap-3 p-2 rounded-md ${isActive
+        ? 'bg-blue-600 text-white'
+        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+        } ${isCollapsed ? 'justify-center' : ''}`}
     >
       {icon}
       {(!isCollapsed || isMobile) && <span>{label}</span>}

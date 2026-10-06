@@ -5,6 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
+import API_BASE_URL from '../../config';
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -20,7 +21,7 @@ const Services = () => {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // States for row management
   const [showRowsModal, setShowRowsModal] = useState(false);
   const [currentServiceRows, setCurrentServiceRows] = useState([]);
@@ -39,9 +40,9 @@ const Services = () => {
   const [showRowForm, setShowRowForm] = useState(false);
 
   // API base URL
-  const API_URL = 'http://localhost:8000/api/services';
-  const ROW_API_URL = 'http://localhost:8000/api/row-services';
-  const TYPE_PHOTOS_API_URL = 'http://localhost:8000/api/type-photos';
+  const API_URL = `${API_BASE_URL}/services`;
+  const ROW_API_URL = `${API_BASE_URL}/row-services`;
+  const TYPE_PHOTOS_API_URL = `${API_BASE_URL}/type-photos`;
 
   // Fetch all services
   const fetchServices = async () => {
@@ -97,7 +98,7 @@ const Services = () => {
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
-    
+
     if (name === 'Photos' && files && files[0]) {
       setFormData({
         ...formData,
@@ -119,14 +120,14 @@ const Services = () => {
 
   const handleAddService = async (e) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('token');
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data'
       };
-      
+
       // Create FormData object for file upload
       const serviceFormData = new FormData();
       serviceFormData.append('ID_Entreprise', formData.ID_Entreprise);
@@ -135,11 +136,11 @@ const Services = () => {
       serviceFormData.append('Descriptions', formData.Descriptions || '');
       serviceFormData.append('DescriptionsAR', formData.DescriptionsAR || ''); // Added Arabic description field
       serviceFormData.append('Etat', formData.Etat ? 1 : 0);
-      
+
       if (formData.Photos instanceof File) {
         serviceFormData.append('Photos', formData.Photos);
       }
-      
+
       if (isEditing) {
         // Update existing service
         await axios.post(`${API_URL}/${formData.ID_Service}`, serviceFormData, { headers });
@@ -147,10 +148,10 @@ const Services = () => {
         // Add new service
         await axios.post(API_URL, serviceFormData, { headers });
       }
-      
+
       // Refresh the services list
       fetchServices();
-      
+
       // Reset form
       setFormData({
         ID_Service: null,
@@ -180,14 +181,14 @@ const Services = () => {
       Photos: null, // Can't edit existing file directly
       Etat: service.Etat
     });
-    
+
     // Set preview image if available
     if (service.Photos) {
-      setPreviewImage(`http://localhost:8000/api/services/${service.ID_Service}/photo`);
+      setPreviewImage(`${API_BASE_URL}/services/${service.ID_Service}/photo`);
     } else {
       setPreviewImage(null);
     }
-    
+
     setIsEditing(true);
   };
 
@@ -224,7 +225,7 @@ const Services = () => {
     try {
       const token = localStorage.getItem('token');
       const service = services.find(s => s.ID_Service === id);
-      
+
       const serviceFormData = new FormData();
       serviceFormData.append('ID_Entreprise', service.ID_Entreprise);
       serviceFormData.append('Nom', service.Nom);
@@ -232,14 +233,14 @@ const Services = () => {
       serviceFormData.append('Descriptions', service.Descriptions || '');
       serviceFormData.append('DescriptionsAR', service.DescriptionsAR || ''); // Added Arabic description field
       serviceFormData.append('Etat', service.Etat ? 0 : 1);
-      
+
       await axios.post(`${API_URL}/${id}?_method=PUT`, serviceFormData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       fetchServices();
     } catch (error) {
       console.error('Error updating service status:', error);
@@ -265,18 +266,22 @@ const Services = () => {
 
   // Handle rich text editor change
   const handleTextEditorChange = (content) => {
-    setRowFormData({
-      ...rowFormData,
-      Text: content
-    });
+    if (content !== rowFormData.Text) {
+      setRowFormData(prev => ({
+        ...prev,
+        Text: content
+      }));
+    }
   };
 
   // Handle rich text editor change for Arabic
   const handleTextEditorChangeAR = (content) => {
-    setRowFormData({
-      ...rowFormData,
-      TextAR: content
-    });
+    if (content !== rowFormData.TextAR) {
+      setRowFormData(prev => ({
+        ...prev,
+        TextAR: content
+      }));
+    }
   };
 
   // Handle adding a new row
@@ -326,7 +331,7 @@ const Services = () => {
   const [rowImage, setRowImage] = useState(null);
   const [rowImage1, setRowImage1] = useState(null);
   const [rowImage2, setRowImage2] = useState(null);
-  
+
   // Add these handlers for the file inputs
   const handleRowImageChange = (e) => {
     console.log("aa");
@@ -334,37 +339,37 @@ const Services = () => {
       setRowImage(e.target.files[0]);
     }
   };
-  
+
   const handleRowImage1Change = (e) => {
     if (e.target.files && e.target.files[0]) {
       setRowImage1(e.target.files[0]);
     }
   };
-  
+
   const handleRowImage2Change = (e) => {
     if (e.target.files && e.target.files[0]) {
       setRowImage2(e.target.files[0]);
     }
   };
-  
+
   // Then update your file input elements to use these handlers
   // Replace the existing file input elements with these:
-  
 
-  
+
+
   // Finally, update your handleRowSubmit function to send the photos after row submission
   const handleRowSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('token');
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       };
-      
+
       console.log('Submitting row data:', rowFormData);
-      
+
       let rowResponse;
       if (isEditingRow) {
         // Update existing row
@@ -373,48 +378,48 @@ const Services = () => {
         // Add new row
         rowResponse = await axios.post(ROW_API_URL, rowFormData, { headers });
       }
-      
+
       // Get the row ID (either from the response for new rows or from state for edited rows)
       const rowId = isEditingRow ? currentRowId : rowResponse.data.data.ID_Row;
       console.log('Row ID for photo upload:', rowId);
-      
+
       // Handle photo uploads based on the selected type
-      if (rowFormData.ID_Type_Photo === '1' && rowImage) {
+      if (rowFormData.ID_Type_Photo == '1' && rowImage) {
         console.log('Uploading single photo for type 1');
         // Upload single photo for type 1
         const photoFormData = new FormData();
         photoFormData.append('ID_Row', rowId);
         photoFormData.append('Photo', rowImage);
-        
-        await axios.post('http://localhost:8000/api/photos', photoFormData, {
+
+        await axios.post(`${API_BASE_URL}/photos`, photoFormData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         });
-      } else if (rowFormData.ID_Type_Photo === '2') {
+      } else if (rowFormData.ID_Type_Photo == '2') {
         // Upload two photos for type 2 (if provided)
         if (rowImage1) {
           console.log('Uploading first photo for type 2');
           const photoFormData1 = new FormData();
           photoFormData1.append('ID_Row', rowId);
           photoFormData1.append('Photo', rowImage1);
-          
-          await axios.post('http://localhost:8000/api/photos', photoFormData1, {
+
+          await axios.post(`${API_BASE_URL}/photos`, photoFormData1, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
             }
           });
         }
-        
+
         if (rowImage2) {
           console.log('Uploading second photo for type 2');
           const photoFormData2 = new FormData();
           photoFormData2.append('ID_Row', rowId);
           photoFormData2.append('Photo', rowImage2);
-          
-          await axios.post('http://localhost:8000/api/photos', photoFormData2, {
+
+          await axios.post(`${API_BASE_URL}/photos`, photoFormData2, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
@@ -422,10 +427,10 @@ const Services = () => {
           });
         }
       }
-      
+
       // Refresh the rows list
       fetchServiceRows(currentServiceId);
-      
+
       // Reset form and state
       setRowFormData({
         ID_Service: currentServiceId,
@@ -444,8 +449,8 @@ const Services = () => {
 
   // Define columns for the rows table
   const rowColumns = [
-    { 
-      header: "Type Photo", 
+    {
+      header: "Type Photo",
       accessor: "ID_Type_Photo",
       render: (item) => {
         const typePhoto = typePhotos.find(tp => tp.ID_Type_Photo === item.ID_Type_Photo);
@@ -463,7 +468,7 @@ const Services = () => {
     <div className="p-4 md:p-6">
       <h1 className="text-xl md:text-2xl font-bold">Gestion des Services</h1>
       <p className="mt-4 mb-6">Ajoutez, modifiez ou supprimez les services proposés par votre établissement.</p>
-      
+
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg shadow">
@@ -477,7 +482,7 @@ const Services = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-red-50 p-4 rounded-lg shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -489,7 +494,7 @@ const Services = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-green-50 p-4 rounded-lg shadow">
           <div className="flex justify-between items-start">
             <div>
@@ -502,7 +507,7 @@ const Services = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Formulaire d'ajout/modification */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <h2 className="text-lg font-semibold mb-4">{isEditing ? 'Modifier un service' : 'Ajouter un nouveau service'}</h2>
@@ -519,7 +524,7 @@ const Services = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nom du service (Arabe)</label>
               <input
@@ -533,7 +538,7 @@ const Services = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
@@ -544,7 +549,7 @@ const Services = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             ></textarea>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description (Arabe)</label>
             <textarea
@@ -556,7 +561,7 @@ const Services = () => {
               dir="rtl"
             ></textarea>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
@@ -571,7 +576,7 @@ const Services = () => {
                 <span className="ml-2 text-sm text-gray-700">Actif</span>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
               <div className="flex items-center space-x-4">
@@ -594,7 +599,7 @@ const Services = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-3">
             {isEditing && (
               <button
@@ -614,13 +619,13 @@ const Services = () => {
           </div>
         </form>
       </div>
-      
+
       {/* Liste des services */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold">Liste des services</h2>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -646,7 +651,7 @@ const Services = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {service.Photos ? (
                         <img
-                          src={`http://localhost:8000/api/services/${service.ID_Service}/photo`}
+                          src={`${API_BASE_URL}/services/${service.ID_Service}/photo`}
                           alt={service.Nom}
                           className="h-10 w-10 rounded-full object-cover"
                           onError={(e) => {
@@ -668,11 +673,10 @@ const Services = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => toggleServiceStatus(service.ID_Service)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          service.Etat
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${service.Etat
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {service.Etat ? (
                           <>
@@ -717,7 +721,7 @@ const Services = () => {
           </table>
         </div>
       </div>
-      
+
       {/* Modal for managing rows */}
       {showRowsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -731,7 +735,7 @@ const Services = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             {showRowForm ? (
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-4">{isEditingRow ? 'Modifier une ligne' : 'Ajouter une ligne'}</h3>
@@ -754,45 +758,45 @@ const Services = () => {
                         ))}
                       </select>
                     </div>
-                    
+
                     {/* Conditional file upload fields based on ID_Type_Photo */}
-                    {rowFormData.ID_Type_Photo === '1' && (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-      <input
-        type="file"
-        name="image"
-        onChange={handleRowImageChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        accept="image/*"
-      />
-    </div>
-  )}
-  
-  {rowFormData.ID_Type_Photo === '2' && (
-    <div className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Image 1</label>
-        <input
-          type="file"
-          name="image1"
-          onChange={handleRowImage1Change}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          accept="image/*"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Image 2</label>
-        <input
-          type="file"
-          name="image2"
-          onChange={handleRowImage2Change}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          accept="image/*"
-        />
-      </div>
-    </div>
-  )}
+                    {rowFormData.ID_Type_Photo == '1' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                        <input
+                          type="file"
+                          name="image"
+                          onChange={handleRowImageChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          accept="image/*"
+                        />
+                      </div>
+                    )}
+
+                    {rowFormData.ID_Type_Photo == '2' && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Image 1</label>
+                          <input
+                            type="file"
+                            name="image1"
+                            onChange={handleRowImage1Change}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            accept="image/*"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Image 2</label>
+                          <input
+                            type="file"
+                            name="image2"
+                            onChange={handleRowImage2Change}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            accept="image/*"
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Classement</label>
                       <input
@@ -804,7 +808,7 @@ const Services = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Texte</label>
                     <div className="quill-container">
@@ -812,59 +816,29 @@ const Services = () => {
                         theme="snow"
                         value={rowFormData.Text}
                         onChange={handleTextEditorChange}
-                        modules={{
-                          toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            [{ 'color': [] }, { 'background': [] }],
-                            ['link', 'image'],
-                            ['clean']
-                          ],
-                        }}
-                        formats={[
-                          'header',
-                          'bold', 'italic', 'underline', 'strike',
-                          'list', 'bullet',
-                          'color', 'background',
-                          'link', 'image'
-                        ]}
+                        modules={quillModules}
+                        formats={quillFormats}
                         className="h-48"
                       />
                     </div>
                   </div>
-                  
-                  <div style={{marginTop:"50px"}}>
+
+                  <div style={{ marginTop: "50px" }}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Texte (Arabe)</label>
                     <div className="quill-container">
                       <ReactQuill
                         theme="snow"
                         value={rowFormData.TextAR}
                         onChange={handleTextEditorChangeAR}
-                        modules={{
-                          toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            [{ 'color': [] }, { 'background': [] }],
-                            ['link', 'image'],
-                            ['clean']
-                          ],
-                        }}
-                        formats={[
-                          'header',
-                          'bold', 'italic', 'underline', 'strike',
-                          'list', 'bullet',
-                          'color', 'background',
-                          'link', 'image'
-                        ]}
+                        modules={quillModules}
+                        formats={quillFormats}
                         className="h-48"
                         dir="rtl"
                       />
                     </div>
                   </div>
-                  
-                  <div className="flex justify-end space-x-3" style={{marginTop:"60px"}}>
+
+                  <div className="flex justify-end space-x-3" style={{ marginTop: "60px" }}>
                     <button
                       type="button"
                       onClick={() => setShowRowForm(false)}
@@ -890,16 +864,16 @@ const Services = () => {
                 Ajouter une ligne
               </button>
             )}
-            
+
             {/* Table of rows */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     {rowColumns.map((column, index) => (
-                      <th 
+                      <th
                         key={index}
-                        scope="col" 
+                        scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         {column.header}
@@ -963,7 +937,7 @@ const quillModules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
     [{ 'color': [] }, { 'background': [] }],
     ['link', 'image'],
     ['clean']

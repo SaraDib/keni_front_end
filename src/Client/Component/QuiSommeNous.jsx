@@ -10,6 +10,7 @@ import insta from '../assets/images/insta.png';
 import OpacityComponent from './util/OpacityComponent';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import API_BASE_URL from '../../config';
 
 export default function QuiSommeNous() {
   const { t, i18n } = useTranslation();
@@ -18,10 +19,11 @@ export default function QuiSommeNous() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEmployeeIndex, setCurrentEmployeeIndex] = useState(null);
   const [sliderImages, setSliderImages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const fetchAboutUs = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/about-us');
+      const response = await axios.get(`${API_BASE_URL}/about-us`);
       setAboutUsList(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading about us:', error);
@@ -30,7 +32,8 @@ export default function QuiSommeNous() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/equipes');
+      const response = await axios.get(`${API_BASE_URL}/equipes`);
+      console.log('Employees from API:', response.data);
       setEmployees(response.data);
     } catch (error) {
       console.error('Error loading employees:', error);
@@ -52,6 +55,15 @@ export default function QuiSommeNous() {
       once: true,
     });
   }, []);
+
+  // Slider interval
+  useEffect(() => {
+    if (sliderImages.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sliderImages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [sliderImages]);
 
   // Open modal with the clicked employee's index
   const openModal = (index) => {
@@ -100,20 +112,20 @@ export default function QuiSommeNous() {
   // Combine descriptions from all active sections
   const descriptionItems = aboutUsList
     .filter(section => section.active)
-    .flatMap(section => 
+    .flatMap(section =>
       parseDescription(i18n.language === 'ar' ? section.description_ar : section.description_fr)
     );
 
-    // Récupération des images du slider depuis l'API
+  // Récupération des images du slider depuis l'API
   useEffect(() => {
     const fetchSliderImages = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/slider', {
+        const response = await axios.get(`${API_BASE_URL}/slider`, {
           params: {
             nom_page: 'qui sommes nous' // ici tu mets le nom de la page
           }
         });
-        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        const imagesFromAPI = response.data.map(img => `${API_BASE_URL.replace('/api', '/storage')}/${img.Path}`);
         setSliderImages(imagesFromAPI);
       } catch (err) {
         console.error('Erreur lors du chargement des images du slider', err);
@@ -126,21 +138,32 @@ export default function QuiSommeNous() {
     <>
       {/* Header Section */}
       <div className="w-full h-screen overflow-hidden relative">
-        <img src={sliderImages} alt="Qui Sommes-Nous" className="w-full h-full object-cover" />
+        {sliderImages.map((image, index) => (
+          <img
+            key={index}
+            src={image}
+            alt={`Slide ${index}`}
+            className={`absolute w-full h-full object-cover transition-transform duration-1000 ease-in-out ${index === currentIndex
+              ? 'translate-x-0'
+              : index < currentIndex
+                ? '-translate-x-full'
+                : 'translate-x-full'
+              }`}
+          />
+        ))}
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
           <div
-  key={i18n.language} // force le rerender quand la langue change
-  data-aos="zoom-in"
-  className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-4 ${
-    i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
-  }`}
->
-            <h1 className="max-sm:text-5xl sm:text-6xl font-dmsans mb-2">{t('aboutUs.pageTitle')}</h1>
-            <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">
+            key={i18n.language} // force le rerender quand la langue change
+            data-aos="zoom-in"
+            className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-4 ${i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+              }`}
+          >
+            <h1 className="max-sm:text-4xl sm:text-[48px] font-dmsans mb-2">{t('aboutUs.pageTitle')}</h1>
+            <h2 className="text-customGreen sm:text-[28px] font-dmsans max-sm:text-2xl">
               {t('header.subtitle')}
             </h2>
           </div>
-          
+
           <div className="absolute bottom-0 w-full">
             <img src={wave} alt="kante" className="w-full" />
           </div>
@@ -148,24 +171,24 @@ export default function QuiSommeNous() {
       </div>
 
       <div className="bg-white h-[30px] md:h-[50px] lg:h-[70px]" />
-    {/* Icônes des réseaux sociaux */}
-              <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
-                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
-                  <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                    <img src={fb} alt="facebook" className="w-full" />
-                  </div>
-                </a>
-                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
-                  <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                    <img src={insta} alt="instagram" className="w-full" />
-                  </div>
-                </a>
-              </div>
-             
+      {/* Icônes des réseaux sociaux */}
+      <div className="hidden md:flex fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex-row items-end justify-self-end gap-4 sm:flex-col w-12 z-40">
+        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+          <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+            <img src={fb} alt="facebook" className="w-full" />
+          </div>
+        </a>
+        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+          <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+            <img src={insta} alt="instagram" className="w-full" />
+          </div>
+        </a>
+      </div>
+
       {/* Historique Section */}
-      <div className="bg-white py-8 md:py-12 px-4 md:px-8 lg:px-10">
+      <div className="bg-white py-8 md:py-12 px-4 md:px-8 lg:px-10" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
         {descriptionItems.length > 0 && (
-          <div className="text-blue-800 text-2xl md:text-3xl font-open-sans mb-6 md:mb-8 text-center md:text-left">
+          <div className={`text-blue-800 text-xl md:text-2xl font-open-sans mb-6 md:mb-8 text-center ${i18n.language === 'ar' ? 'md:text-right' : 'md:text-left'}`}>
             {t('aboutUs.pageTitle')}
           </div>
         )}
@@ -174,9 +197,9 @@ export default function QuiSommeNous() {
             descriptionItems.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center text-sm md:text-base lg:text-lg font-thin text-center md:text-left"
+                className={`flex items-center text-sm md:text-base lg:text-lg font-thin text-center ${i18n.language === 'ar' ? 'md:text-right' : 'md:text-left'}`}
               >
-                <img src={fleche} alt="Flèche" className="inline h-3 md:h-4 mr-3 md:mr-4" />
+                <img src={fleche} alt="Flèche" className={`inline h-3 md:h-4 ${i18n.language === 'ar' ? 'ml-3 md:ml-4 rotate-180' : 'mr-3 md:mr-4'}`} />
                 {item}
               </div>
             ))
@@ -190,13 +213,13 @@ export default function QuiSommeNous() {
       </div>
 
       {/* Équipe Section */}
-      <div className="bg-gray-100 px-4 md:px-8 lg:px-10 pb-12 md:pb-16">
-        <div className="text-blue-800 text-2xl md:text-3xl font-open-sans mb-8 md:mb-10 text-center md:text-left">
+      <div className="bg-gray-100 px-4 md:px-8 lg:px-10 pb-12 md:pb-16" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className={`text-blue-800 text-xl md:text-2xl font-open-sans mb-8 md:mb-10 text-center ${i18n.language === 'ar' ? 'md:text-right' : 'md:text-left'}`}>
           {t('aboutUs.teamTitle')}
         </div>
 
         {/* Gestion Subsection */}
-        <div id="gestion" className="text-blue-800 text-lg md:text-xl font-open-sans mb-6 md:mb-8 text-center md:text-left">
+        <div id="gestion" className={`text-blue-800 text-base md:text-lg font-open-sans mb-6 md:mb-8 text-center ${i18n.language === 'ar' ? 'md:text-right' : 'md:text-left'}`}>
           {t('aboutUs.managementTitle')}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 mx-auto max-w-4xl">
@@ -207,7 +230,7 @@ export default function QuiSommeNous() {
                 onClick={() => openModal(employees.findIndex(emp => emp.ID_Equipe === employee.ID_Equipe))}
               >
                 <img
-                  src={`http://localhost:8000/api/equipes/${employee.ID_Equipe}/image`}
+                  src={`${API_BASE_URL}/equipes/${employee.ID_Equipe}/image`}
                   className="w-full h-full object-contain rounded-full"
                   alt={employee.Nom}
                 />
@@ -219,7 +242,7 @@ export default function QuiSommeNous() {
         </div>
 
         {/* Équipe (Medical) Subsection */}
-        <div id="equipe" className="text-blue-800 text-lg md:text-xl font-open-sans mt-12 md:mt-16 mb-6 md:mb-8 text-center md:text-left">
+        <div id="equipe" className={`text-blue-800 text-base md:text-lg font-open-sans mt-12 md:mt-16 mb-6 md:mb-8 text-center ${i18n.language === 'ar' ? 'md:text-right' : 'md:text-left'}`}>
           {t('aboutUs.medicalTeamTitle')}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mx-auto max-w-6xl">
@@ -230,7 +253,7 @@ export default function QuiSommeNous() {
                 onClick={() => openModal(employees.findIndex(emp => emp.ID_Equipe === employee.ID_Equipe))}
               >
                 <img
-                  src={`http://localhost:8000/api/equipes/${employee.ID_Equipe}/image`}
+                  src={`${API_BASE_URL}/equipes/${employee.ID_Equipe}/image`}
                   className="w-full h-full object-contain rounded-full"
                   alt={employee.Nom}
                 />
@@ -248,7 +271,7 @@ export default function QuiSommeNous() {
           <div className="bg-white p-4 md:p-6 lg:p-8 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md relative">
             <div className="w-full h-full bg-white rounded-full overflow-hidden">
               <img
-                src={`http://localhost:8000/api/equipes/${employees[currentEmployeeIndex].ID_Equipe}/image`}
+                src={`${API_BASE_URL}/equipes/${employees[currentEmployeeIndex].ID_Equipe}/image`}
                 alt={i18n.language === 'ar' ? employees[currentEmployeeIndex].NomAR : employees[currentEmployeeIndex].Nom}
                 className="w-full h-full object-cover rounded-full"
               />

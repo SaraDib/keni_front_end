@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const TrafficSourcesChart = () => {
   const [series, setSeries] = useState([]);
@@ -15,7 +16,7 @@ const TrafficSourcesChart = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get("http://127.0.0.1:8000/api/pays-data", {
+    axios.get(`${API_BASE_URL}/pays-data`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {

@@ -5,6 +5,7 @@ import WhatsApp from "../../assets/images/whatsappBlue.png";
 import LanguageSwitcher from "../util/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import API_BASE_URL from "../../../config";
 
 export default function BlueNavbar() {
   const { t, i18n } = useTranslation();
@@ -12,6 +13,8 @@ export default function BlueNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [services, setServices] = useState([]);
   const [logoUrl, setLogoUrl] = useState(""); // logo dynamique
+  const [phone, setPhone] = useState("0201 9776650"); // default
+  const [whatsapp, setWhatsapp] = useState("1234567890"); // default
   const location = useLocation();
 
   const isArabic = i18n.language === "ar";
@@ -22,20 +25,26 @@ export default function BlueNavbar() {
 
   // Fetch services
   useEffect(() => {
-    fetch("http://localhost:8000/api/services")
+    fetch(`${API_BASE_URL}/services`)
       .then((r) => r.json())
       .then((data) => setServices(data || []))
       .catch((e) => console.error("Error fetching services:", e));
   }, []);
 
-  // Fetch entreprise info (logo)
+  // Fetch entreprise info (logo, phone, whatsapp)
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/entreprises/1") // remplace 1 par l'ID correct
+      .get(`${API_BASE_URL}/entreprises/1`) // remplace 1 par l'ID correct
       .then((res) => {
         const entreprise = res.data.data || res.data;
         if (entreprise.Logo) {
-          setLogoUrl(`http://localhost:8000/storage/${entreprise.Logo}`);
+          setLogoUrl(`${API_BASE_URL.replace('/api', '/storage')}/${entreprise.Logo}`);
+        }
+        if (entreprise.Telephone) {
+          setPhone(entreprise.Telephone);
+        }
+        if (entreprise.Whatsapp) {
+          setWhatsapp(entreprise.Whatsapp);
         }
       })
       .catch((err) => console.error("Erreur récupération entreprise:", err));
@@ -56,17 +65,15 @@ export default function BlueNavbar() {
 
   // Logo
   const LogoBlock = (
-    <Link to="/" className="text-xl font-bold text-white z-50 flex-shrink-0">
+    <Link to="/" className="text-lg font-bold text-white z-50 flex-shrink-0">
       {logoUrl ? (
         <img
           src={logoUrl}
           alt="Logo"
-          className="w-64 max-sm:w-44 max-sm:h-16 flex-shrink-0"
+          className="w-56 max-sm:w-44 max-sm:h-16 flex-shrink-0"
         />
       ) : (
-        <div className="w-64 max-sm:w-44 max-sm:h-16 bg-gray-200 flex items-center justify-center text-blue-700">
-          Logo
-        </div>
+        <div className="w-56 max-sm:w-44 max-sm:h-16 flex-shrink-0" />
       )}
     </Link>
   );
@@ -75,7 +82,7 @@ export default function BlueNavbar() {
   const ContactsBlock = (
     <div className="hidden xl:flex items-center gap-x-2">
       <a
-        href="https://wa.me/1234567890"
+        href={`https://wa.me/${whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-x-2 bg-white border-2 border-solid px-2 py-1 rounded-full hover:border-blue-800 hover:bg-customGreen"
@@ -85,14 +92,14 @@ export default function BlueNavbar() {
       </a>
 
       <button
-  className="flex items-center gap-x-2 bg-white border-2 border-solid px-2 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen"
-  style={{ borderColor: "#1A2A7B", color: "#1A2A7B" }}
->
-  <img src={Phone} alt="Phone" className="inline m-2 w-5" />
-  <span className="text-sm" style={{ direction: "ltr" }}>
-    0201 9776650
-  </span>
-</button>
+        className="flex items-center gap-x-2 bg-white border-2 border-solid px-2 py-2 rounded-full hover:border-blue-800 hover:bg-customGreen"
+        style={{ borderColor: "#1A2A7B", color: "#1A2A7B" }}
+      >
+        <img src={Phone} alt="Phone" className="inline m-2 w-5" />
+        <span className="text-sm" style={{ direction: "ltr" }}>
+          {phone}
+        </span>
+      </button>
 
     </div>
   );
@@ -105,17 +112,14 @@ export default function BlueNavbar() {
     >
       {/* === HEADER DESKTOP / MOBILE TOP === */}
       <div
-        className={`container mx-auto max-sm:mx-0 flex items-center p-4 px-3 gap-x-6 ${
-          isArabic ? "pr-6" : "pl-6"
-        }`}
+        className={`w-full flex items-center p-4 px-3 gap-x-6 transition-opacity duration-300 ${isArabic ? "pr-6" : "pl-6"} ${isMobileMenuOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
       >
         {LogoBlock}
 
         {/* === HAMBURGER pour mobiles === */}
         <button
-          className={`lg:hidden flex flex-col justify-center items-center z-50 ${
-            isArabic ? "order-last" : "order-last"
-          }`}
+          className={`lg:hidden flex flex-col justify-center items-center z-50 ${isArabic ? "order-last" : "order-last"
+            }`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -134,9 +138,8 @@ export default function BlueNavbar() {
         <div className="hidden lg:flex flex-1 justify-center items-center gap-x-8">
           <Link
             to="/"
-            className={`${linkStyle} ${
-              isActive("/") ? "text-white" : "text-gray-300"
-            } hover:text-white text-lg`}
+            className={`${linkStyle} ${isActive("/") ? "text-white" : "text-gray-300"
+              } hover:text-white text-base`}
             style={{ "--after-width": isActive("/") ? "100%" : "0" }}
           >
             {t("navbar.start")}
@@ -147,11 +150,10 @@ export default function BlueNavbar() {
             <button
               onMouseEnter={() => setIsOpen(true)}
               onMouseLeave={() => setIsOpen(false)}
-              className={`${linkStyle} ${
-                services.some((s) => isActive(`/service/${s.ID_Service}`))
-                  ? "text-white"
-                  : "text-gray-300"
-              } hover:text-white flex items-center text-lg`}
+              className={`${linkStyle} ${services.some((s) => isActive(`/service/${s.ID_Service}`))
+                ? "text-white"
+                : "text-gray-300"
+                } hover:text-white flex items-center text-base`}
               style={{
                 "--after-width": services.some((s) =>
                   isActive(`/service/${s.ID_Service}`)
@@ -168,20 +170,18 @@ export default function BlueNavbar() {
               <div
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
-                className={`absolute top-7 ${
-                  isArabic ? "right-0 text-right" : "left-0 text-left"
-                } bg-white w-56 shadow-lg`}
+                className={`absolute top-7 ${isArabic ? "right-0 text-right" : "left-0 text-left"
+                  } bg-white w-56 shadow-lg`}
                 style={{ color: "#1A2A7B" }}
               >
                 {services.map((service) => (
                   <Link
                     key={service.ID_Service}
                     to={`/service/${service.ID_Service}`}
-                    className={`block w-full px-6 py-2 hover:bg-customGreen text-lg ${
-                      isActive(`/service/${service.ID_Service}`)
-                        ? "bg-customGreen relative"
-                        : ""
-                    }`}
+                    className={`block w-full px-6 py-2 hover:bg-customGreen text-base ${isActive(`/service/${service.ID_Service}`)
+                      ? "bg-customGreen relative"
+                      : ""
+                      }`}
                   >
                     {getServiceName(service)}
                     {isActive(`/service/${service.ID_Service}`) && (
@@ -197,9 +197,8 @@ export default function BlueNavbar() {
             <Link
               key={path}
               to={path}
-              className={`${linkStyle} whitespace-nowrap text-lg sm:text-base ${
-                isActive(path) ? "text-white" : "text-gray-300"
-              } hover:text-white`}
+              className={`${linkStyle} whitespace-nowrap text-base sm:text-sm ${isActive(path) ? "text-white" : "text-gray-300"
+                } hover:text-white`}
               style={{ "--after-width": isActive(path) ? "100%" : "0" }}
             >
               {[t("navbar.about"), t("navbar.jobs"), t("navbar.faq"), t("navbar.contact")][index]}
@@ -217,9 +216,8 @@ export default function BlueNavbar() {
 
       {/* === MOBILE (overlay) === */}
       <div
-        className={`fixed lg:hidden inset-0 w-full h-full transition-opacity duration-300 z-40 ${
-          isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed lg:hidden inset-0 w-full h-full transition-opacity duration-300 z-[60] ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         style={{ backgroundColor: "#1A2A7B" }}
       >
         <div
@@ -238,17 +236,15 @@ export default function BlueNavbar() {
 
         <div className="pt-28 pb-24 h-full overflow-y-auto">
           <div
-            className={`px-6 flex flex-col gap-y-6 ${
-              isArabic ? "text-right" : "text-left"
-            }`}
+            className={`px-6 flex flex-col gap-y-6 ${isArabic ? "text-right" : "text-left"
+              }`}
           >
             <Link
               to="/"
-              className={`text-lg font-medium py-2 border-b border-gray-200 ${
-                isActive("/")
-                  ? "text-white font-bold"
-                  : "text-gray-300 hover:text-white"
-              }`}
+              className={`text-base font-medium py-2 border-b border-gray-200 ${isActive("/")
+                ? "text-white font-bold"
+                : "text-gray-300 hover:text-white"
+                }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {t("navbar.start")}
@@ -258,17 +254,15 @@ export default function BlueNavbar() {
             <div className="flex flex-col">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`text-lg font-medium py-2 border-b border-gray-200 text-left flex justify-between items-center ${
-                  services.some((s) => isActive(`/service/${s.ID_Service}`))
-                    ? "text-white font-bold"
-                    : "text-gray-300"
-                }`}
+                className={`text-base font-medium py-2 border-b border-gray-200 text-left flex justify-between items-center ${services.some((s) => isActive(`/service/${s.ID_Service}`))
+                  ? "text-white font-bold"
+                  : "text-gray-300"
+                  }`}
               >
                 {t("navbar.services")}
                 <span
-                  className={`transition-transform duration-300 ${
-                    isOpen ? "rotate-180" : ""
-                  } ${isArabic ? "mr-1" : "ml-1"}`}
+                  className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                    } ${isArabic ? "mr-1" : "ml-1"}`}
                 >
                   ▾
                 </span>
@@ -281,11 +275,10 @@ export default function BlueNavbar() {
                     <Link
                       key={service.ID_Service}
                       to={`/service/${service.ID_Service}`}
-                      className={`py-1 ${
-                        isActive(`/service/${service.ID_Service}`)
-                          ? "text-white font-bold"
-                          : "text-gray-400 hover:text-white"
-                      }`}
+                      className={`py-1 ${isActive(`/service/${service.ID_Service}`)
+                        ? "text-white font-bold"
+                        : "text-gray-400 hover:text-white"
+                        }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {getServiceName(service)}
@@ -299,9 +292,8 @@ export default function BlueNavbar() {
               <Link
                 key={path}
                 to={path}
-                className={`text-lg font-medium py-2 border-b border-gray-200 ${
-                  isActive(path) ? "text-white font-bold" : "text-gray-300 hover:text-white"
-                }`}
+                className={`text-lg font-medium py-2 border-b border-gray-200 ${isActive(path) ? "text-white font-bold" : "text-gray-300 hover:text-white"
+                  }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {[t("navbar.about"), t("navbar.jobs"), t("navbar.faq"), t("navbar.contact")][index]}
@@ -312,19 +304,18 @@ export default function BlueNavbar() {
 
         {/* Boutons bas mobile */}
         <div
-          className={`fixed bottom-0 left-0 right-0 p-4 flex justify-center gap-x-4 ${
-            isArabic ? "flex-row-reverse" : ""
-          }`}
+          className={`fixed bottom-0 left-0 right-0 p-4 flex justify-center gap-x-4 ${isArabic ? "flex-row-reverse" : ""
+            }`}
           style={{ backgroundColor: "#1A2A7B" }}
         >
           <a
-            href="https://wa.me/1234567890"
+            href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-x-2 bg-white px-4 max-sm:pr-2 py-3 rounded-full hover:bg-customGreen"
             style={{ color: "#1A2A7B" }}
           >
-            <img src={WhatsApp} alt="WhatsApp" className="size-6 inline" />
+            <img src={WhatsApp} alt="WhatsApp" className="w-6 h-6 inline" />
           </a>
 
           <button
@@ -332,7 +323,7 @@ export default function BlueNavbar() {
             style={{ borderColor: '#1A2A7B', color: '#1A2A7B' }}
           >
             <img src={Phone} alt="Phone" className="inline m-2 w-5 sm:w-4 md:w-4" />
-            <span className="text-sm mr-5">0201 9776650</span>
+            <span className="text-sm mr-5">{phone}</span>
           </button>
         </div>
       </div>

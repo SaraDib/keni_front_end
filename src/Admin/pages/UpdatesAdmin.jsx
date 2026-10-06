@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Plus, Edit, Trash, Check, X, Image as ImageIcon } from 'lucide-react';
+import axios from 'axios';
+import API_BASE_URL from '../../config';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -19,7 +20,7 @@ const UpdatesAdmin = () => {
   const [isEditing, setIsEditing] = useState(false); // True when editing or creating
 
   const token = localStorage.getItem('token');
-  const API_URL = 'http://localhost:8000/api/updates';
+  const API_URL = `${API_BASE_URL}/updates`;
 
   const fetchUpdate = async () => {
     try {
@@ -40,7 +41,8 @@ const UpdatesAdmin = () => {
           description_ar: data.description_ar || '',
           active: data.active || true,
         });
-        setPreviewImage(data.image_path ? `http://localhost:8000${data.image_path}` : null);
+        const storageBase = API_BASE_URL.replace('/api', '/storage');
+        setPreviewImage(data.image_path ? `${storageBase}/${data.image_path}` : null);
         setIsEditing(true); // Editing mode if update exists
       } else {
         resetForm();
@@ -63,63 +65,71 @@ const UpdatesAdmin = () => {
       setImage(files[0]);
       setPreviewImage(URL.createObjectURL(files[0]));
     } else if (type === 'checkbox') {
-      setFormData({ ...formData, [name]: checked });
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleDescriptionChange = (field, content) => {
-    setFormData({ ...formData, [field]: content });
+    setFormData((prev) => ({ ...prev, [field]: content }));
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
-    };
+    e.preventDefault();
+    try {
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      };
 
-    const updateFormData = new FormData();
-    updateFormData.append('title_fr', formData.title_fr);
-    updateFormData.append('title_ar', formData.title_ar);
-    updateFormData.append('description_fr', formData.description_fr);
-    updateFormData.append('description_ar', formData.description_ar);
-    updateFormData.append('active', formData.active ? '1' : '0');
-    if (image) updateFormData.append('image', image);
+      const updateFormData = new FormData();
+      updateFormData.append('title_fr', formData.title_fr);
+      updateFormData.append('title_ar', formData.title_ar);
+      updateFormData.append('description_fr', formData.description_fr);
+      updateFormData.append('description_ar', formData.description_ar);
+      updateFormData.append('active', formData.active ? '1' : '0');
+      if (image) updateFormData.append('image', image);
 
-    if (formData.ID_Updates) {
-  // POST vers /updates/{id} pour modifier
-  await axios.post(`${API_URL}/${formData.ID_Updates}`, updateFormData, { headers });
-} else {
-  const response = await axios.post(API_URL, updateFormData, { headers });
-  setFormData((prev) => ({
-    ...prev,
-    ID_Updates: response.data.ID_Updates || response.data.id,
-  }));
-}
+      if (formData.ID_Updates) {
+        // POST vers /updates/{id} pour modifier avec method spoofing pour Laravel
+        updateFormData.append('_method', 'PUT');
+        await axios.post(`${API_URL}/${formData.ID_Updates}`, updateFormData, { headers });
+      } else {
+        const response = await axios.post(API_URL, updateFormData, { headers });
+        setFormData((prev) => ({
+          ...prev,
+          ID_Updates: response.data.ID_Updates || response.data.id,
+        }));
+      }
 
 
-    fetchUpdate();
-    alert(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
-  } catch (error) {
-    console.error('Erreur:', error.response ? error.response.data : error.message);
-    alert(
-      error.response?.data?.message ||
+      fetchUpdate();
+      alert(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
+    } catch (error) {
+      console.error('Erreur:', error.response ? error.response.data : error.message);
+      alert(
+        error.response?.data?.message ||
         'Échec de l’enregistrement de la mise à jour. Voir la console pour plus de détails.'
-    );
-  }
-};
+      );
+    }
+  };
 
 
-  const handleDelete = async () => {
-    if (!formData.ID_Updates) {
+  const handleDelete = async (id) => {
+    const targetId = (id && (typeof id === 'string' || typeof id === 'number')) ? id : formData.ID_Updates;
+
+    if (!targetId) {
       alert('Aucune mise à jour à supprimer.');
       return;
     }
+
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette mise à jour ?')) {
+      return;
+    }
+
     try {
-      await axios.delete(`${API_URL}/${formData.ID_Updates}`, {
+      await axios.delete(`${API_URL}/${targetId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       resetForm();
@@ -129,6 +139,21 @@ const UpdatesAdmin = () => {
       console.error('Error deleting update:', error);
       alert('Échec de la suppression de la mise à jour. Voir la console pour plus de détails.');
     }
+  };
+
+  const handleEdit = (updateItem) => {
+    setFormData({
+      ID_Updates: updateItem.ID_Updates,
+      title_fr: updateItem.title_fr || '',
+      title_ar: updateItem.title_ar || '',
+      description_fr: updateItem.description_fr || '',
+      description_ar: updateItem.description_ar || '',
+      active: updateItem.active,
+    });
+    const storageBase = API_BASE_URL.replace('/api', '/storage');
+    setPreviewImage(updateItem.image_path ? `${storageBase}/${updateItem.image_path}` : null);
+    setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetForm = () => {
@@ -240,7 +265,7 @@ const UpdatesAdmin = () => {
             {update && (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => handleDelete(formData.ID_Updates)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Supprimer
@@ -269,12 +294,13 @@ const UpdatesAdmin = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {!update ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
                     Aucun contenu disponible
                   </td>
                 </tr>
@@ -283,7 +309,7 @@ const UpdatesAdmin = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {update.image_path ? (
                       <img
-                        src={`http://localhost:8000/api/updates/${update.ID_Updates}/image`}
+                        src={`${API_BASE_URL.replace('/api', '/storage')}/${update.image_path}`}
                         alt={update.title_fr}
                         className="h-10 w-10 rounded-full object-cover"
                         onError={(e) => { e.target.src = '/default-image.png'; }}
@@ -300,9 +326,8 @@ const UpdatesAdmin = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        update.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${update.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}
                     >
                       {update.active ? (
                         <>
@@ -314,6 +339,20 @@ const UpdatesAdmin = () => {
                         </>
                       )}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleEdit(update)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-3"
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(update.ID_Updates)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <Trash size={18} />
+                    </button>
                   </td>
                 </tr>
               )}

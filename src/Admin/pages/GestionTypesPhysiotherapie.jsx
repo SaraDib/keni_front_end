@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Edit, Trash } from 'lucide-react'; // Import des icônes Lucide React
+import API_BASE_URL from '../../config';
 
 const GestionTypesPhysiotherapie = () => {
   const [types, setTypes] = useState([]);
@@ -13,7 +14,7 @@ const GestionTypesPhysiotherapie = () => {
   // Charger les packs et services depuis l'API
   const fetchTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/physiotherapie');
+      const response = await axios.get(`${API_BASE_URL}/physiotherapie`);
       setTypes(response.data);
       setIsLoading(false);
     } catch (error) {
@@ -30,7 +31,7 @@ const GestionTypesPhysiotherapie = () => {
   const handleAddType = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('http://localhost:8000/api/physiotherapie', { nom: newType }, {
+      const response = await axios.post(`${API_BASE_URL}/physiotherapie`, { nom: newType }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -49,7 +50,7 @@ const GestionTypesPhysiotherapie = () => {
   const handleDeleteType = async () => {
     try {
       setIsLoading(true);
-      await axios.delete(`http://localhost:8000/api/physiotherapie/${deleteId}`, {
+      await axios.delete(`${API_BASE_URL}/physiotherapie/${deleteId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -68,7 +69,7 @@ const GestionTypesPhysiotherapie = () => {
   const handleEditType = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.put(`http://localhost:8000/api/physiotherapie/${editType.id}`, { nom: editType.nom }, {
+      const response = await axios.put(`${API_BASE_URL}/physiotherapie/${editType.id}`, { nom: editType.nom }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

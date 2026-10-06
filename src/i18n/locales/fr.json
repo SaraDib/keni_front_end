@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "GlobalHealth",
+    "title": "Global Health",
     "subtitle": "Therapy & Training Center",
     "appointment": "Prenez rendez-vous dès maintenant"
   },
@@ -50,9 +50,9 @@
   "aboutUs": {
     "pageTitle": "GlobalHealth",
     "sectionTitle": "Qui sommes-nous",
-    "teamTitle": "L'équipe de Physio Essen",
+    "teamTitle": "L'équipe de GlobalHealth",
     "managementTitle": "Gestion",
-    "medicalTeamTitle": "Équipe Médicale",
+    "medicalTeamTitle": "L'équipe de GlobalHealth",
     "closeButton": "Fermer",
     "prevEmployee": "Employé précédent",
     "nextEmployee": "Employé suivant",
@@ -64,9 +64,9 @@
       "Mise en place d'un nouveau système de gestion des rendez-vous"
     ]
   },
-  "faq":{
+  "faq": {
     "title": "GlobalHealth",
-    "subtitle":"Therapy & Training Center"
+    "subtitle": "Therapy & Training Center"
   },
   "faqs": {
     "title": "Informations utiles/FAQ",
@@ -98,7 +98,7 @@
     "motivationLetterLabel": "Lettre de motivation",
     "cvLabel": "Envoyez-nous vos Curriculum Vitae (CV)",
     "submitButton": "Envoyer",
-    "contactPersonText": "Bonjour, appelez-moi simplement Alexandre. Je suis la personne de contact pour votre candidature.",
+    "contactPersonText": "Bonjour, appelez-moi simplement Jalal. Je suis la personne de contact pour votre candidature.",
     "advantagesTitle": "Avantages sociaux",
     "advantagesSubtitle": "Tous vos avantages en un coup d'œil",
     "advantagesList": [
@@ -127,7 +127,7 @@
       "phone": "Téléphone",
       "email": "Email",
       "request": "Que pouvons-nous faire pour vous?",
-      "prescriptionType": "Type de recette",
+      "prescriptionType": "Type d'ordonnance",
       "number": "Nombre",
       "physiotherapy": "Choisissez votre Pack:"
     },
@@ -138,7 +138,7 @@
       "phone": "Le téléphone est requis",
       "email": "L'email est requis",
       "request": "La demande est requise",
-      "prescriptionType": "Le type de recette est requis",
+      "prescriptionType": "Le type d'ordonnance est requis",
       "number": "Le nombre est requis",
       "physiotherapy": "Le pack est requis"
     },

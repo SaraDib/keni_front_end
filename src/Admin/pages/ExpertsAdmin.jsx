@@ -1,8 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { Edit, Trash, Check, Plus, X, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
-import { Edit,Trash, Check,Plus,X, Image as ImageIcon } from 'lucide-react';
+import API_BASE_URL from '../../config';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import toast, { Toaster } from 'react-hot-toast';
+
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link', 'image'],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'color', 'background',
+  'link', 'image'
+];
 
 const ExpertsAdmin = () => {
   const [experts, setExperts] = useState([]);
@@ -19,8 +40,10 @@ const ExpertsAdmin = () => {
   const [previewVideo, setPreviewVideo] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const API_URL = 'http://localhost:8000/api/experts';
+  const API_URL = `${API_BASE_URL}/experts`;
 
   const fetchExperts = async () => {
     try {
@@ -42,9 +65,10 @@ const ExpertsAdmin = () => {
           DescriptionAR: expert.DescriptionAR || '',
           Etat: expert.Etat,
         });
-        setPreviewVideo(expert.VideoURL ? `http://localhost:8000${expert.VideoURL}` : null);
-        setPreviewImage(expert.ImagePath ? `http://localhost:8000${expert.ImagePath}` : null);
+        setPreviewVideo(expert.VideoURL ? `${API_BASE_URL}/experts/${expert.ID_Expert}/video` : null);
+        setPreviewImage(expert.ImagePath ? `${API_BASE_URL}/experts/${expert.ID_Expert}/image` : null);
         setIsEditing(true);
+        console.log('>>> fetchExperts: Expert loaded and form pre-filled', expert);
       } else {
         resetForm();
       }
@@ -56,6 +80,13 @@ const ExpertsAdmin = () => {
   useEffect(() => {
     fetchExperts();
   }, []);
+
+  // Sync descriptions when an expert is loaded for editing to ensure ReactQuill updates
+  useEffect(() => {
+    if (isEditing && formData.ID_Expert) {
+      console.log('>>> Syncing descriptions for editor:', formData.DescriptionFR);
+    }
+  }, [isEditing, formData.ID_Expert]);
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
@@ -74,6 +105,9 @@ const ExpertsAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('>>> handleSubmit triggered');
+    setIsLoading(true);
+    setUploadProgress(0);
     try {
       const token = localStorage.getItem('token');
       const headers = {
@@ -88,28 +122,66 @@ const ExpertsAdmin = () => {
       expertFormData.append('DescriptionAR', formData.DescriptionAR);
       expertFormData.append('Etat', formData.Etat ? 1 : 0);
       if (formData.VideoURL instanceof File) {
+        if (formData.VideoURL.size > 50 * 1024 * 1024) { // 50MB Limit
+          toast.error('La vidéo est trop lourde (Max 50Mo).');
+          return;
+        }
         expertFormData.append('VideoURL', formData.VideoURL);
       }
       if (formData.Image instanceof File) {
+        if (formData.Image.size > 5 * 1024 * 1024) { // 5MB Limit
+          toast.error('L’image est trop lourde (Max 5Mo).');
+          return;
+        }
         expertFormData.append('Image', formData.Image);
       }
 
-      if (experts.length > 0) {
-        // Update the existing expert
-        await axios.post(`${API_URL}/${experts[0].ID_Expert}?_method=PUT`, expertFormData, { headers });
-      } else {
-        // Create a new expert
-        await axios.post(API_URL, expertFormData, { headers });
+      console.log('>>> Sending Expert data:', Array.from(expertFormData.entries()));
+
+      try {
+        const axiosConfig = {
+          headers,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        };
+
+        if (experts.length > 0) {
+          // Update the existing expert
+          await axios.post(`${API_URL}/${experts[0].ID_Expert}?_method=PUT`, expertFormData, axiosConfig);
+          toast.success('Section Experts mise à jour avec succès !');
+        } else {
+          // Create a new expert
+          await axios.post(API_URL, expertFormData, axiosConfig);
+          toast.success('Section Experts créée avec succès !');
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 413) {
+          toast.error('Erreur 413 : Les fichiers sont trop lourds pour le serveur.');
+        } else {
+          throw err;
+        }
       }
 
       fetchExperts();
       setIsEditing(false); // Reset to non-editing state after submit
     } catch (error) {
       console.error('Error saving expert:', error);
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errors = error.response.data.errors;
+        const firstError = Object.values(errors)[0][0];
+        toast.error(`Erreur : ${firstError}`);
+      } else {
+        toast.error('Erreur lors de l’enregistrement. Vérifiez la console.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEdit = (expert) => {
+    console.log('>>> Editing expert:', expert);
     setFormData({
       ID_Expert: expert.ID_Expert,
       VideoURL: null,
@@ -120,8 +192,8 @@ const ExpertsAdmin = () => {
       DescriptionAR: expert.DescriptionAR || '',
       Etat: expert.Etat,
     });
-    setPreviewVideo(expert.VideoURL ? `http://localhost:8000${expert.VideoURL}` : null);
-    setPreviewImage(expert.ImagePath ? `http://localhost:8000${expert.ImagePath}` : null);
+    setPreviewVideo(expert.VideoURL ? `${API_BASE_URL}/experts/${expert.ID_Expert}/video` : null);
+    setPreviewImage(expert.ImagePath ? `${API_BASE_URL}/experts/${expert.ID_Expert}/image` : null);
     setIsEditing(true);
   };
 
@@ -163,11 +235,36 @@ const ExpertsAdmin = () => {
     });
     setPreviewVideo(null);
     setPreviewImage(null);
+    setFormData(prev => ({
+      ...prev,
+      DescriptionFR: '',
+      DescriptionAR: ''
+    }));
     setIsEditing(false);
   };
 
+  console.log('>>> Rendering ExpertsAdmin. Experts:', experts.length, 'isEditing:', isEditing);
+
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 relative">
+      <Toaster position="top-right" />
+
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-[100] flex flex-col items-center justify-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+          <p className="text-xl font-semibold">Téléchargement en cours... {uploadProgress}%</p>
+
+          <div className="w-64 h-4 bg-gray-700 rounded-full mt-4 overflow-hidden border border-gray-600">
+            <div
+              className="h-full bg-blue-500 transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+
+          <p className="text-sm opacity-75 mt-4 italic">Veuillez patienter, envoi des fichiers vers le serveur...</p>
+        </div>
+      )}
+
       <h1 className="text-xl md:text-2xl font-bold">Gestion de la section Experts</h1>
       <p className="mt-4 mb-6">Configurez la section unique 'Experts en santé et bien-être' de la page d'accueil.</p>
 
@@ -259,7 +356,6 @@ const ExpertsAdmin = () => {
                 value={formData.TitleFR}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
                 disabled={experts.length > 0 && !isEditing}
               />
             </div>
@@ -271,7 +367,6 @@ const ExpertsAdmin = () => {
                 value={formData.TitleAR}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
                 dir="rtl"
                 disabled={experts.length > 0 && !isEditing}
               />
@@ -280,9 +375,14 @@ const ExpertsAdmin = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
             <ReactQuill
+              key={`fr-${formData.ID_Expert}`}
               theme="snow"
               value={formData.DescriptionFR}
-              onChange={(content) => setFormData({ ...formData, DescriptionFR: content })}
+              onChange={(content) => {
+                if (content !== formData.DescriptionFR) {
+                  setFormData(prev => ({ ...prev, DescriptionFR: content }));
+                }
+              }}
               modules={quillModules}
               formats={quillFormats}
               className="h-48 mb-12"
@@ -292,9 +392,14 @@ const ExpertsAdmin = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description (Arabe)</label>
             <ReactQuill
+              key={`ar-${formData.ID_Expert}`}
               theme="snow"
               value={formData.DescriptionAR}
-              onChange={(content) => setFormData({ ...formData, DescriptionAR: content })}
+              onChange={(content) => {
+                if (content !== formData.DescriptionAR) {
+                  setFormData(prev => ({ ...prev, DescriptionAR: content }));
+                }
+              }}
               modules={quillModules}
               formats={quillFormats}
               className="h-48 mb-12"
@@ -328,11 +433,16 @@ const ExpertsAdmin = () => {
               </button>
             )}
             <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              disabled={experts.length > 0 && !isEditing}
+              type="button"
+              onClick={(e) => {
+                console.log('>>> Manual button trigger');
+                handleSubmit(e);
+              }}
+              disabled={isLoading}
+              className={`px-4 py-2 text-white rounded-md transition-all ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
             >
-              {experts.length > 0 ? 'Mettre à jour' : 'Créer'}
+              {isLoading ? 'Envoi...' : (experts.length > 0 ? 'Mettre à jour' : 'Enregistrer')}
             </button>
           </div>
         </form>
@@ -368,7 +478,7 @@ const ExpertsAdmin = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {expert.VideoURL ? (
                         <video
-                          src={`http://localhost:8000/api/experts/${expert.ID_Expert}/video`}
+                          src={`${API_BASE_URL}/experts/${expert.ID_Expert}/video`}
                           className="h-10 w-10 object-cover rounded"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -381,7 +491,7 @@ const ExpertsAdmin = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {expert.ImagePath ? (
                         <img
-                          src={`http://localhost:8000/api/experts/${expert.ID_Expert}/image`}
+                          src={`${API_BASE_URL}/experts/${expert.ID_Expert}/image`}
                           alt={expert.TitleFR}
                           className="h-10 w-10 rounded-full object-cover"
                           onError={(e) => {
@@ -399,9 +509,8 @@ const ExpertsAdmin = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => toggleStatus(expert.ID_Expert)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          expert.Etat ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${expert.Etat ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {expert.Etat ? (
                           <>
@@ -440,24 +549,5 @@ const ExpertsAdmin = () => {
     </div>
   );
 };
-
-const quillModules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    [{ 'color': [] }, { 'background': [] }],
-    ['link', 'image'],
-    ['clean']
-  ],
-};
-
-const quillFormats = [
-  'header',
-  'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet',
-  'color', 'background',
-  'link', 'image'
-];
 
 export default ExpertsAdmin;

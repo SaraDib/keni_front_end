@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
 import { Users, Phone, Mail, Briefcase } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const People = () => {
   const [people, setPeople] = useState([]);
@@ -15,7 +16,7 @@ const People = () => {
   const fetchPeople = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:8000/api/equipes', {
+      const response = await axios.get(`${API_BASE_URL}/equipes`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -37,12 +38,12 @@ const People = () => {
 
   // Définition des colonnes du tableau
   const columns = [
-    { 
-      header: "Image", 
+    {
+      header: "Image",
       accessor: "Image",
       render: (item) => (
         <img
-          src={`http://localhost:8000/api/equipes/${item.ID_Equipe}/image`}
+          src={`${API_BASE_URL}/equipes/${item.ID_Equipe}/image`}
           alt={item.Nom}
           className="w-10 h-10 rounded-full object-cover"
           onError={(e) => {
@@ -51,12 +52,12 @@ const People = () => {
         />
       )
     },
-    { 
-      header: "Nom Complet", 
+    {
+      header: "Nom Complet",
       accessor: "Nom"
     },
-    { 
-      header: "Profession", 
+    {
+      header: "Profession",
       accessor: "Profession",
       render: (item) => (
         <div className="flex items-center">
@@ -80,10 +81,10 @@ const People = () => {
   const formFields = [
     { name: "Nom", label: "Nom Complet", type: "text", required: true },
     { name: "NomAR", label: "Nom Complet (Arabe)", type: "text", required: true },
-    { 
-      name: "Profession", 
-      label: "Profession", 
-      type: "select", 
+    {
+      name: "Profession",
+      label: "Profession",
+      type: "select",
       required: true,
       options: [
         { value: "gestion", label: "Gestion" },
@@ -113,8 +114,8 @@ const People = () => {
     try {
       setIsLoading(true);
       if (Array.isArray(id)) {
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/equipes/${singleId}`, {
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/equipes/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -122,7 +123,7 @@ const People = () => {
           })
         ));
       } else {
-        await axios.delete(`http://localhost:8000/api/equipes/${id}`, {
+        await axios.delete(`${API_BASE_URL}/equipes/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -144,10 +145,10 @@ const People = () => {
     try {
       setIsLoading(true);
       const data = new FormData();
-      
+
       // Ajouter ID_Entreprise = 1
       data.append('ID_Entreprise', 1);
-      
+
       // Ajouter tous les champs au FormData
       Object.keys(formData).forEach(key => {
         if (key === 'Image') {
@@ -172,7 +173,7 @@ const People = () => {
           data.append('Image', currentPerson.Image || '');
         }
 
-        await axios.post(`http://localhost:8000/api/equipes/${currentPerson.ID_Equipe}`, data, {
+        await axios.post(`${API_BASE_URL}/equipes/${currentPerson.ID_Equipe}`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -180,14 +181,14 @@ const People = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://localhost:8000/api/equipes', data, {
+        await axios.post(`${API_BASE_URL}/equipes`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
         });
       }
-      
+
       await fetchPeople();
       setShowForm(false);
       setError(null);
@@ -205,7 +206,7 @@ const People = () => {
         <Users className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">L'équipe</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les membres de votre équipe et leurs informations.
       </p>
@@ -221,7 +222,7 @@ const People = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : showForm ? (
-        <CrudForm 
+        <CrudForm
           title="membre de l'équipe"
           fields={formFields}
           initialData={currentPerson}
@@ -230,7 +231,7 @@ const People = () => {
           isEdit={!!currentPerson}
         />
       ) : (
-        <CrudTable 
+        <CrudTable
           title="Membres de l'équipe"
           columns={columns}
           data={people}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const AppointmentsChart = () => {
   const currentYear = new Date().getFullYear();
@@ -8,61 +9,85 @@ const AppointmentsChart = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-  axios
-    .get("http://127.0.0.1:8000/api/rendez-vous", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
+    const fetchData = async () => {
+      try {
+        const [typesRes, apptsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/types-recette`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_BASE_URL}/rendez-vous`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          })
+        ]);
+
+        const allMonths = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+          'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+        // Filtrer par année en cours d'abord pour extraire les types pertinents
+        const currentYearData = apptsRes.data.filter(item => {
+          const date = new Date(item.created_at);
+          return date.getFullYear() === currentYear;
+        });
+
+        // Extraire les types uniquement présents dans les données de l'année en cours
+        const activeTypesInYear = [...new Set(currentYearData.map(item => item.Type_recette).filter(Boolean))];
+
+        // Si aucun type n'is found for the current year, we stick to the types defined in the database
+        const finalTypes = activeTypesInYear.length > 0
+          ? activeTypesInYear
+          : typesRes.data.map(t => t.nom);
+
+        console.log('>>> All Appointments from API:', apptsRes.data);
+        console.log('>>> Current Year for filter:', currentYear);
+
+        // Initialiser mappedData avec tous les mois et les types détectés
+        const mappedData = {};
+        allMonths.forEach(m => {
+          mappedData[m] = {
+            month: m,
+            details: finalTypes.map(type => ({ type, count: 0 }))
+          };
+        });
+
+        // Compter les rendez-vous pour l'année en cours
+        currentYearData.forEach(item => {
+          const date = new Date(item.created_at);
+          const monthIndex = date.getMonth();
+          const month = allMonths[monthIndex];
+
+          if (!mappedData[month]) return;
+
+          const typeEntry = mappedData[month].details.find(d => d.type === item.Type_recette);
+          if (typeEntry) {
+            typeEntry.count += (item.nombre || 1);
+          }
+        });
+
+        setAppointments(Object.values(mappedData));
+      } catch (err) {
+        console.error("Erreur lors du chargement des données du dashboard :", err);
+      }
+    };
+
+    fetchData();
+  }, [token, currentYear]);
+
+  // Déduire les types dynamiques à partir des données
+  const types = appointmentsData[0]?.details.map(d => d.type) || [];
+
+  const series = types.map((type, index) => ({
+    name: type,
+    data: appointmentsData.map(item => {
+      const found = item.details.find(d => d.type === type);
+      return found ? found.count : 0;
     })
-    .then((res) => {
-      // Tableau fixe de tous les mois en français
-      const allMonths = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
-                         'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+  }));
 
-      // Initialiser mappedData avec tous les mois
-      const mappedData = {};
-      allMonths.forEach(m => {
-        mappedData[m] = { 
-          month: m, 
-          details: [
-            { type: 'Privé', count: 0 },
-            { type: 'Statutaire', count: 0 }
-          ]
-        };
-      });
-
-      // Parcourir les données récupérées et ajouter les counts aux mois correspondants
-      res.data.forEach(item => {
-        const date = new Date(item.created_at);
-        const monthIndex = date.getMonth(); // 0 = Janvier, 1 = Février, ...
-        const month = allMonths[monthIndex]; // récupère le mois en français
-
-        if (!mappedData[month]) return;
-
-        if (item.Type_recette === 'Privé') mappedData[month].details[0].count += item.nombre;
-        else if (item.Type_recette === 'Statutaire') mappedData[month].details[1].count += item.nombre;
-      });
-
-      // Mettre à jour le state avec toutes les données des mois
-      setAppointments(Object.values(mappedData));
-    })
-    .catch(err => console.error("Erreur lors du chargement des rendez-vous :", err));
-}, [token]);
-
-
-
- const series = [
-    {
-      name: 'Privé',
-      data: appointmentsData.map(item => item.details?.[0]?.count || 0)
-    },
-    {
-      name: 'Statutaire',
-      data: appointmentsData.map(item => item.details?.[1]?.count || 0)
-    }
-  ];
-
+  // Palette de couleurs plus variée pour distinguer les types
+  const chartColors = ['#0ea5e9', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308'];
 
   const options = {
     chart: {
@@ -77,21 +102,24 @@ const AppointmentsChart = () => {
     xaxis: { categories: appointmentsData.map(item => item.month) },
     yaxis: { title: { text: 'Nombre de rendez-vous' } },
     legend: { position: 'bottom' },
-    colors: ['#3b82f6', '#1d4ed8', '#1e3a8a'],
+    colors: chartColors,
     fill: { opacity: 1 },
     tooltip: { y: { formatter: val => val + " rendez-vous" } },
     dataLabels: { enabled: false },
-    title: { text: `Rendez-vous par mois en ${currentYear}`, align: 'center' },
+    title: { text: `Historique complet des rendez-vous par mois`, align: 'center' },
   };
 
-  const totalAppointments = appointmentsData.reduce((sum, item) => 
-    sum + (item.details?.[0]?.count || 0) + (item.details?.[1]?.count || 0) + (item.details?.[2]?.count || 0), 0
+  const totalAppointments = appointmentsData.reduce((sum, month) =>
+    sum + month.details.reduce((mSum, d) => mSum + d.count, 0), 0
   );
 
-   const totalByType = {
-    'Privé': appointmentsData.reduce((sum, item) => sum + (item.details?.[0]?.count || 0), 0),
-    'Statutaire': appointmentsData.reduce((sum, item) => sum + (item.details?.[1]?.count || 0), 0)
-  };
+  const totalByType = types.reduce((acc, type) => {
+    acc[type] = appointmentsData.reduce((sum, month) => {
+      const found = month.details.find(d => d.type === type);
+      return sum + (found ? found.count : 0);
+    }, 0);
+    return acc;
+  }, {});
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -101,14 +129,15 @@ const AppointmentsChart = () => {
       <div className="mt-2 text-center text-sm text-gray-500">
         <div>Total: <span className="font-semibold">{totalAppointments}</span> rendez-vous en {currentYear}</div>
         <div className="flex flex-wrap justify-center mt-2 text-xs">
-          <div className="flex items-center mx-2 mb-1">
-            <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-            <span>Privé: {totalByType['Privé']}</span>
-          </div>
-          <div className="flex items-center mx-2 mb-1">
-            <div className="w-3 h-3 bg-blue-900 rounded-full mr-1"></div>
-            <span>Statutaire: {totalByType['Statutaire']}</span>
-          </div>
+          {types.map((type, idx) => (
+            <div key={type} className="flex items-center mx-2 mb-1">
+              <div
+                className="w-3 h-3 rounded-full mr-1"
+                style={{ backgroundColor: chartColors[idx % chartColors.length] }}
+              ></div>
+              <span>{type}: {totalByType[type]}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

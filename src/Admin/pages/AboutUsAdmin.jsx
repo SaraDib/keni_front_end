@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Check, X, Edit, Trash, Plus } from 'lucide-react';
+import API_BASE_URL from '../../config';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -16,7 +17,7 @@ const AboutUsAdmin = () => {
   const [errors, setErrors] = useState({});
 
   const token = localStorage.getItem('token');
-  const API_URL = 'http://localhost:8000/api/about-us';
+  const API_URL = `${API_BASE_URL}/about-us`;
 
   const fetchAboutUs = async () => {
     if (!token) {
@@ -327,9 +328,8 @@ const AboutUsAdmin = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          section.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${section.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                       >
                         {section.active ? (
                           <>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import API_BASE_URL from "../../../config";
 
 function Mapfaq({ question, reponse, questionAR, reponseAR }) {
   const { i18n } = useTranslation();
@@ -17,9 +18,8 @@ function Mapfaq({ question, reponse, questionAR, reponseAR }) {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         {/* Question */}
         <button
-          className={`w-full text-lg sm:text-xl font-semibold hover:text-blue-800 focus:outline-none text-blue-700 ${
-            isArabic ? "text-right" : "text-left"
-          }`}
+          className={`w-full text-lg sm:text-xl font-semibold hover:text-blue-800 focus:outline-none text-blue-700 ${isArabic ? "text-right" : "text-left"
+            }`}
           onClick={toggleAfficherplus}
           dir={isArabic ? "rtl" : "ltr"}
         >
@@ -61,7 +61,7 @@ function Faq() {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://localhost:8000/api/faqs")
+      .get(`${API_BASE_URL}/faqs`)
       .then((response) => {
         setFaqData(response.data);
         setLoading(false);

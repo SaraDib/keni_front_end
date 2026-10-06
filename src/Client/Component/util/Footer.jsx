@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import API_BASE_URL from "../../../config";
 import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 import image22 from "../../assets/images/icons8-@-50 (1).png";
 import telephone from "../../assets/images/icons8-téléphone-50.png";
@@ -16,7 +17,7 @@ function Footer() {
     const fetchCentres = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:8000/api/centres");
+        const response = await axios.get(`${API_BASE_URL}/centres`);
         setCentres(response.data);
         setLoading(false);
       } catch (error) {
@@ -57,8 +58,8 @@ function Footer() {
 
     // Add handicap access info if available
     if (centre.Handicapes === 1) {
-      infos.push({ 
-        icon: handicap, 
+      infos.push({
+        icon: handicap,
         text: t('footer.handicapAccess', 'Accès sans obstacle') // Default fallback if translation key doesn't exist
       });
     }
@@ -67,7 +68,7 @@ function Footer() {
     const hours = centre.horaires.map(horaire => {
       return {
         jour: i18n.language === 'ar' && horaire.Day_Start_AR ? horaire.Day_Start_AR : horaire.Day_Start,
-        horaire: horaire.isClosed === 1 
+        horaire: horaire.isClosed === 1
           ? t('footer.closed', 'Fermé') // Use translation key for 'closed'
           : `${horaire.Time_Start.substring(0, 5)} - ${horaire.Time_End.substring(0, 5)}`
       };
@@ -97,7 +98,7 @@ function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Titre principal */}
         <div className="text-[#1a2a7b] text-3xl sm:text-4xl font-bold text-center mb-10">
-           {t("footer.title")}
+          {t("footer.title")}
         </div>
 
         {/* Sections */}

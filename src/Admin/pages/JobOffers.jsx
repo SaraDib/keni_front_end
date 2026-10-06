@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CrudTable from '../components/CrudTable';
 import { Briefcase, Download } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const JobOffers = () => {
   const [applications, setApplications] = useState([]);
@@ -12,7 +13,7 @@ const JobOffers = () => {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:8000/api/offres-emploi', {
+      const response = await axios.get(`${API_BASE_URL}/offres-emploi`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -35,7 +36,7 @@ const JobOffers = () => {
   // Télécharger un fichier
   const handleDownload = async (type, id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/offres-emploi/${id}/${type}`, {
+      const response = await axios.get(`${API_BASE_URL}/offres-emploi/${id}/${type}`, {
         responseType: 'blob',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -59,8 +60,8 @@ const JobOffers = () => {
 
   // Définition des colonnes du tableau
   const columns = [
-    { 
-      header: "Nom complet", 
+    {
+      header: "Nom complet",
       accessor: "Nom",
       render: (item) => (
         <div className="font-medium">{`${item.Salutation} ${item.Nom}`}</div>
@@ -76,8 +77,8 @@ const JobOffers = () => {
         </div>
       )
     },
-    { 
-      header: "Contact", 
+    {
+      header: "Contact",
       accessor: "contact",
       render: (item) => (
         <div>
@@ -86,15 +87,15 @@ const JobOffers = () => {
         </div>
       )
     },
-    { 
-      header: "Profession", 
+    {
+      header: "Profession",
       accessor: "Profession",
       render: (item) => (
         <div className="text-sm">{item.Profession}</div>
       )
     },
-    { 
-      header: "Documents", 
+    {
+      header: "Documents",
       accessor: "documents",
       render: (item) => (
         <div className="space-y-2">
@@ -117,8 +118,8 @@ const JobOffers = () => {
         </div>
       )
     },
-    { 
-      header: "Date", 
+    {
+      header: "Date",
       accessor: "created_at",
       render: (item) => (
         <div className="text-sm text-gray-500">
@@ -140,8 +141,8 @@ const JobOffers = () => {
       setIsLoading(true);
       if (Array.isArray(id)) {
         // Suppression multiple
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/offres-emploi/${singleId}`, {
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/offres-emploi/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -150,7 +151,7 @@ const JobOffers = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://localhost:8000/api/offres-emploi/${id}`, {
+        await axios.delete(`${API_BASE_URL}/offres-emploi/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -173,7 +174,7 @@ const JobOffers = () => {
         <Briefcase className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">Candidatures</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les candidatures reçues via le formulaire de recrutement du site.
       </p>
@@ -189,7 +190,7 @@ const JobOffers = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <CrudTable 
+        <CrudTable
           title="Candidatures"
           columns={columns}
           data={applications}

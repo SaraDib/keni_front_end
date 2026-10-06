@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
 import { Calendar, Filter, Eye } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -19,7 +20,7 @@ const Appointments = () => {
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:8000/api/rendez-vous', {
+      const response = await axios.get(`${API_BASE_URL}/rendez-vous`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -45,22 +46,22 @@ const Appointments = () => {
     if (filters.type !== 'all' && appointment.Type_recette !== filters.type) {
       return false;
     }
-    
+
     if (filters.service === 'physiotherapie' && appointment.Physiotherapie !== 'Oui') {
       return false;
     }
-    
+
     if (filters.service === 'ergotherapie' && appointment.Ergotherapie !== 'Oui') {
       return false;
     }
-    
+
     return true;
   });
 
   // Définition des colonnes du tableau
   const columns = [
-    { 
-      header: "Patient", 
+    {
+      header: "Patient",
       accessor: "patient",
       render: (item) => (
         <div>
@@ -69,8 +70,8 @@ const Appointments = () => {
         </div>
       )
     },
-    { 
-      header: "Contact", 
+    {
+      header: "Contact",
       accessor: "contact",
       render: (item) => (
         <div>
@@ -79,8 +80,8 @@ const Appointments = () => {
         </div>
       )
     },
-    { 
-      header: "Consultation", 
+    {
+      header: "Consultation",
       accessor: "consultation",
       render: (item) => (
         <div>
@@ -89,8 +90,8 @@ const Appointments = () => {
         </div>
       )
     },
-    { 
-      header: "Services", 
+    {
+      header: "Services",
       accessor: "services",
       render: (item) => (
         <div className="space-y-1">
@@ -112,8 +113,8 @@ const Appointments = () => {
         </div>
       )
     },
-    { 
-      header: "Remarque", 
+    {
+      header: "Remarque",
       accessor: "Remarque",
       render: (item) => (
         <div className="max-w-xs truncate" title={item.Remarque}>
@@ -121,8 +122,8 @@ const Appointments = () => {
         </div>
       )
     },
-    { 
-      header: "Date", 
+    {
+      header: "Date",
       accessor: "created_at",
       render: (item) => (
         <div className="text-sm text-gray-500">
@@ -157,8 +158,8 @@ const Appointments = () => {
       setIsLoading(true);
       if (Array.isArray(id)) {
         // Suppression multiple
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/rendez-vous/${singleId}`, {
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/rendez-vous/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -167,7 +168,7 @@ const Appointments = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://localhost:8000/api/rendez-vous/${id}`, {
+        await axios.delete(`${API_BASE_URL}/rendez-vous/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -225,7 +226,7 @@ const Appointments = () => {
         <Calendar className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">Rendez-vous</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les rendez-vous reçus via le formulaire de prise de rendez-vous du site.
       </p>
@@ -241,7 +242,7 @@ const Appointments = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : showDetails ? (
-        <CrudForm 
+        <CrudForm
           title="Détails du rendez-vous"
           fields={detailFields}
           initialData={currentAppointment}
@@ -300,7 +301,7 @@ const Appointments = () => {
             </div>
           </div>
 
-          <CrudTable 
+          <CrudTable
             title="Liste des rendez-vous"
             columns={columns}
             data={filteredAppointments}

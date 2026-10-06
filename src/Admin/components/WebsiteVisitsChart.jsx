@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const WebsiteVisitsChart = () => {
   const currentYear = new Date().getFullYear();
@@ -15,39 +16,39 @@ const WebsiteVisitsChart = () => {
   useEffect(() => {
     const token = localStorage.getItem('token'); // Récupère le token
 
-    
+
 
     // Récupérer le résumé global
-    axios.get('http://127.0.0.1:8000/api/visits-summary', {
+    axios.get(`${API_BASE_URL}/visits-summary`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => {
-      setTotals({
-        totalVisits: res.data.totalVisits,
-        uniqueVisitors: res.data.uniqueVisitors,
-        pageViews: res.data.pageViews || res.data.totalVisits
-      });
-    })
-    .catch(console.error);
+      .then(res => {
+        setTotals({
+          totalVisits: res.data.totalVisits || 0,
+          uniqueVisitors: res.data.uniqueVisitors || 0,
+          pageViews: res.data.pageViews || res.data.totalVisits || 0
+        });
+      })
+      .catch(console.error);
 
     // Récupérer les données par mois
-    axios.get('http://127.0.0.1:8000/api/visits-monthly', {
+    axios.get(`${API_BASE_URL}/visits-monthly`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => {
-      const monthsFr = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-      const data = monthsFr.map((m, idx) => {
-        const monthData = res.data.find(d => d.month === idx + 1);
-        return {
-          month: m,
-          visits: monthData ? monthData.visits : 0,
-          uniqueVisitors: monthData ? monthData.uniqueVisitors : 0,
-          pageViews: monthData ? monthData.visits : 0
-        };
-      });
-      setMonthlyData(data);
-    })
-    .catch(console.error);
+      .then(res => {
+        const monthsFr = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+        const data = monthsFr.map((m, idx) => {
+          const monthData = (res.data || []).find(d => d.month === idx + 1);
+          return {
+            month: m,
+            visits: monthData ? monthData.visits : 0,
+            uniqueVisitors: monthData ? monthData.uniqueVisitors : 0,
+            pageViews: monthData ? monthData.visits : 0
+          };
+        });
+        setMonthlyData(data);
+      })
+      .catch(console.error);
 
   }, []);
 

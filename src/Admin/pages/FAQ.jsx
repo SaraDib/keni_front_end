@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
 import { HelpCircle } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const FAQ = () => {
   const [faqs, setFaqs] = useState([]);
@@ -15,7 +16,7 @@ const FAQ = () => {
   const fetchFaqs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/faqs', {
+      const response = await axios.get(`${API_BASE_URL}/faqs`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setFaqs(response.data);
@@ -35,13 +36,14 @@ const FAQ = () => {
   // Colonnes du tableau
   const columns = [
     { header: "Question (Fr)", accessor: "Question" },
-    { header: "Question (Ar)", accessor: "QuestionAR",
+    {
+      header: "Question (Ar)", accessor: "QuestionAR",
       render: (item) => (
         <div className="text-right" dir="rtl">{item.QuestionAR}</div>
       )
     },
-    { 
-      header: "Réponse (Fr)", 
+    {
+      header: "Réponse (Fr)",
       accessor: "Reponse",
       render: (item) => (
         <div className="max-w-xs truncate" title={item.Reponse}>
@@ -49,8 +51,8 @@ const FAQ = () => {
         </div>
       )
     },
-    { 
-      header: "Réponse (Ar)", 
+    {
+      header: "Réponse (Ar)",
       accessor: "ReponseAR",
       render: (item) => (
         <div className="max-w-xs truncate text-right" dir="rtl" title={item.ReponseAR}>
@@ -88,11 +90,11 @@ const FAQ = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       if (Array.isArray(id)) {
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/faqs/${singleId}`, { headers })
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/faqs/${singleId}`, { headers })
         ));
       } else {
-        await axios.delete(`http://localhost:8000/api/faqs/${id}`, { headers });
+        await axios.delete(`${API_BASE_URL}/faqs/${id}`, { headers });
       }
 
       await fetchFaqs();
@@ -118,9 +120,9 @@ const FAQ = () => {
       };
 
       if (currentFaq) {
-        await axios.put(`http://localhost:8000/api/faqs/${currentFaq.ID_FAQ}`, dataWithEnterprise, { headers });
+        await axios.put(`${API_BASE_URL}/faqs/${currentFaq.ID_FAQ}`, dataWithEnterprise, { headers });
       } else {
-        await axios.post('http://localhost:8000/api/faqs', dataWithEnterprise, { headers });
+        await axios.post(`${API_BASE_URL}/faqs`, dataWithEnterprise, { headers });
       }
 
       await fetchFaqs();
@@ -140,7 +142,7 @@ const FAQ = () => {
         <HelpCircle className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">FAQ</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les questions fréquemment posées qui apparaîtront sur votre site (FR & AR).
       </p>
@@ -156,7 +158,7 @@ const FAQ = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : showForm ? (
-        <CrudForm 
+        <CrudForm
           title="FAQ"
           fields={formFields}
           initialData={currentFaq}
@@ -165,14 +167,14 @@ const FAQ = () => {
           isEdit={!!currentFaq}
         />
       ) : (
-        <CrudTable 
+        <CrudTable
           title="Questions fréquemment posées"
           columns={columns}
           data={faqs}
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          idField="ID_FAQ" 
+          idField="ID_FAQ"
           emptyMessage="Aucune FAQ disponible. Cliquez sur 'Ajouter' pour créer votre première FAQ."
         />
       )}

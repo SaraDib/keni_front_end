@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
 import { Building, Clock, Check, X } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const HealthCenter = () => {
   // État pour stocker les données
@@ -19,24 +20,24 @@ const HealthCenter = () => {
     try {
       setIsLoading(true);
       const [centersResponse, hoursResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/centres', {
+        axios.get(`${API_BASE_URL}/centres`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }),
-        axios.get('http://localhost:8000/api/horaires', {
+        axios.get(`${API_BASE_URL}/horaires`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
       ]);
-      
+
       // Combiner les centres avec leurs horaires
       const centersWithHours = centersResponse.data.map(center => ({
         ...center,
         horaires: hoursResponse.data.filter(hour => hour.ID_Center === center.ID_Center)
       }));
-      
+
       setCenters(centersWithHours);
       setError(null);
     } catch (err) {
@@ -58,8 +59,8 @@ const HealthCenter = () => {
     { header: "Téléphone", accessor: "Telephone" },
     { header: "Fixe", accessor: "Fix" },
     { header: "Email", accessor: "Email" },
-    { 
-      header: "Accès handicapés", 
+    {
+      header: "Accès handicapés",
       accessor: "Handicapes",
       render: (item) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.Handicapes ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -68,11 +69,11 @@ const HealthCenter = () => {
         </span>
       )
     },
-    { 
-      header: "Horaires", 
+    {
+      header: "Horaires",
       accessor: "horaires",
       render: (item) => (
-        <button 
+        <button
           onClick={(e) => {
             e.stopPropagation();
             handleViewHours(item);
@@ -89,18 +90,18 @@ const HealthCenter = () => {
   // Définition des colonnes du tableau des horaires
   const hoursColumns = [
     { header: "Jour", accessor: "Day_Start" },
-    { 
-      header: "Ouverture", 
+    {
+      header: "Ouverture",
       accessor: "Time_Start",
       render: (item) => item.isClosed ? "-" : item.Time_Start
     },
-    { 
-      header: "Fermeture", 
+    {
+      header: "Fermeture",
       accessor: "Time_End",
       render: (item) => item.isClosed ? "-" : item.Time_End
     },
-    { 
-      header: "Statut", 
+    {
+      header: "Statut",
       accessor: "isClosed",
       render: (item) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.isClosed ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
@@ -112,8 +113,10 @@ const HealthCenter = () => {
 
   // Définition des champs du formulaire
   const formFields = [
-    { name: "Nom", label: "Nom du centre", type: "text", required: true },
-    { name: "Adresse", label: "Adresse", type: "text", required: true, fullWidth: true },
+    { name: "Nom", label: "Nom du centre (FR)", type: "text", required: true },
+    { name: "NomAR", label: "Nom du centre (AR)", type: "text", required: true },
+    { name: "Adresse", label: "Adresse (FR)", type: "text", required: true, fullWidth: true },
+    { name: "AdresseAR", label: "Adresse (AR)", type: "text", required: true, fullWidth: true },
     { name: "Telephone", label: "Téléphone mobile", type: "tel", required: true },
     { name: "Fix", label: "Téléphone fixe", type: "tel", required: true },
     { name: "Email", label: "Email", type: "email", required: true },
@@ -123,10 +126,10 @@ const HealthCenter = () => {
 
   // Définition des champs du formulaire des horaires
   const hoursFormFields = [
-    { 
-      name: "Day_Start", 
-      label: "Jour", 
-      type: "select", 
+    {
+      name: "Day_Start",
+      label: "Jour",
+      type: "select",
       required: true,
       options: [
         { value: "Lundi", label: "Lundi" },
@@ -138,9 +141,9 @@ const HealthCenter = () => {
         { value: "Dimanche", label: "Dimanche" }
       ]
     },
-    { 
-      name: "isClosed", 
-      label: "Fermé", 
+    {
+      name: "isClosed",
+      label: "Fermé",
       type: "checkbox",
       onChange: (e, formData, setFormData) => {
         // Si le jour est marqué comme fermé, réinitialiser les heures
@@ -154,16 +157,16 @@ const HealthCenter = () => {
         }
       }
     },
-    { 
-      name: "Time_Start", 
-      label: "Heure d'ouverture", 
+    {
+      name: "Time_Start",
+      label: "Heure d'ouverture",
       type: "time",
       required: (formData) => !formData.isClosed,
       disabled: (formData) => formData.isClosed
     },
-    { 
-      name: "Time_End", 
-      label: "Heure de fermeture", 
+    {
+      name: "Time_End",
+      label: "Heure de fermeture",
       type: "time",
       required: (formData) => !formData.isClosed,
       disabled: (formData) => formData.isClosed
@@ -188,8 +191,8 @@ const HealthCenter = () => {
       setIsLoading(true);
       if (Array.isArray(id)) {
         // Suppression multiple
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/centres/${singleId}`, {
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/centres/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -197,7 +200,7 @@ const HealthCenter = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://localhost:8000/api/centres/${id}`, {
+        await axios.delete(`${API_BASE_URL}/centres/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -235,7 +238,7 @@ const HealthCenter = () => {
   const handleDeleteHour = async (id) => {
     try {
       setIsLoading(true);
-      await axios.delete(`http://localhost:8000/api/horaires/${id}`, {
+      await axios.delete(`${API_BASE_URL}/horaires/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -259,10 +262,12 @@ const HealthCenter = () => {
         ...formData,
         ID_Entreprise: 1
       };
-      
+
+      console.log('>>> Sending Center data:', dataToSend);
+
       if (currentCenter) {
         // Mise à jour
-        await axios.put(`http://localhost:8000/api/centres/${currentCenter.ID_Center}`, dataToSend, {
+        await axios.put(`${API_BASE_URL}/centres/${currentCenter.ID_Center}`, dataToSend, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -270,7 +275,7 @@ const HealthCenter = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://localhost:8000/api/centres', dataToSend, {
+        await axios.post(`${API_BASE_URL}/centres`, dataToSend, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -281,7 +286,14 @@ const HealthCenter = () => {
       setShowForm(false);
       setError(null);
     } catch (err) {
-      setError('Erreur lors de l\'enregistrement du centre');
+      if (err.response && err.response.data) {
+        console.error('>>> Backend Validation Errors:', err.response.data);
+        const backendErrors = err.response.data.errors;
+        const firstError = backendErrors ? Object.values(backendErrors)[0][0] : err.response.data.message;
+        setError(`Erreur : ${firstError}`);
+      } else {
+        setError('Erreur lors de l\'enregistrement du centre');
+      }
       console.error('Erreur:', err);
     } finally {
       setIsLoading(false);
@@ -292,19 +304,32 @@ const HealthCenter = () => {
   const handleHourSubmit = async (formData) => {
     try {
       setIsLoading(true);
+
+      const dayAR = {
+        "Lundi": "الاثنين",
+        "Mardi": "الثلاثاء",
+        "Mercredi": "الأربعاء",
+        "Jeudi": "الخميس",
+        "Vendredi": "الجمعة",
+        "Samedi": "السبت",
+        "Dimanche": "الأحد"
+      };
+
       // Format the data to match the database schema
       const hourData = {
         ID_Center: currentCenter.ID_Center,
         Day_Start: formData.Day_Start,
-        Day_End: formData.Day_Start, // Same as Day_Start as requested
-        Time_Start: formData.isClosed ? "00:00" : formData.Time_Start,
-        Time_End: formData.isClosed ? "00:00" : formData.Time_End,
+        Day_Start_AR: dayAR[formData.Day_Start] || formData.Day_Start,
+        Time_Start: formData.isClosed ? "00:00" : (formData.Time_Start ? formData.Time_Start.substring(0, 5) : "00:00"),
+        Time_End: formData.isClosed ? "00:00" : (formData.Time_End ? formData.Time_End.substring(0, 5) : "00:00"),
         isClosed: formData.isClosed ? 1 : 0
       };
-      
+
+      console.log('>>> Sending Hour data:', hourData);
+
       if (currentHours) {
         // Mise à jour
-        await axios.put(`http://localhost:8000/api/horaires/${currentHours.ID_Horaire}`, hourData, {
+        await axios.put(`${API_BASE_URL}/horaires/${currentHours.ID_Horaire}`, hourData, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -312,7 +337,7 @@ const HealthCenter = () => {
         });
       } else {
         // Ajout
-        await axios.post('http://localhost:8000/api/horaires', hourData, {
+        await axios.post(`${API_BASE_URL}/horaires`, hourData, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -324,7 +349,14 @@ const HealthCenter = () => {
       setCurrentHours(null);
       setError(null);
     } catch (err) {
-      setError('Erreur lors de l\'enregistrement de l\'horaire');
+      if (err.response && err.response.data) {
+        console.error('>>> Backend Hour Validation Errors:', err.response.data);
+        const backendErrors = err.response.data.errors;
+        const firstError = backendErrors ? Object.values(backendErrors)[0][0] : err.response.data.message;
+        setError(`Erreur horaire : ${firstError}`);
+      } else {
+        setError('Erreur lors de l\'enregistrement de l\'horaire');
+      }
       console.error('Erreur:', err);
     } finally {
       setIsLoading(false);
@@ -337,7 +369,7 @@ const HealthCenter = () => {
         <Building className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">Centre de global health</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les informations sur vos centres de santé et leurs horaires d'ouverture.
       </p>
@@ -353,7 +385,7 @@ const HealthCenter = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : showForm ? (
-        <CrudForm 
+        <CrudForm
           title="centre de santé"
           fields={formFields}
           initialData={currentCenter}
@@ -374,20 +406,20 @@ const HealthCenter = () => {
               Retour
             </button>
           </div>
-          
-          <CrudTable 
+
+          <CrudTable
             title="Horaires"
             columns={hoursColumns}
             data={currentCenter.horaires || []}
             onAdd={handleAddHour}
             onEdit={handleEditHour}
             onDelete={handleDeleteHour}
-            idField="ID_Horaire" 
+            idField="ID_Horaire"
             emptyMessage="Aucun horaire défini. Cliquez sur 'Ajouter' pour créer le premier horaire."
           />
-          
+
           {showHoursForm && (
-            <CrudForm 
+            <CrudForm
               title="horaire"
               fields={hoursFormFields}
               initialData={currentHours}
@@ -398,14 +430,14 @@ const HealthCenter = () => {
           )}
         </div>
       ) : (
-        <CrudTable 
+        <CrudTable
           title="Centres de santé"
           columns={columns}
           data={centers}
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          idField="ID_Center" 
+          idField="ID_Center"
           emptyMessage="Aucun centre de santé disponible. Cliquez sur 'Ajouter' pour créer votre premier centre."
         />
       )}

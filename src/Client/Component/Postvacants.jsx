@@ -12,9 +12,10 @@ import OpacityComponent from "./util/OpacityComponent";
 import axios from "axios";
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import API_BASE_URL from '../../config';
 
 export default function Postvacants() {
-  const { t ,i18n} = useTranslation();
+  const { t, i18n } = useTranslation();
   const [sliderImages, setSliderImages] = useState([]);
   const [advantages, setAdvantages] = useState([]);
 
@@ -73,7 +74,7 @@ export default function Postvacants() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/offres-emploi", submitData, {
+      const response = await axios.post(`${API_BASE_URL}/offres-emploi`, submitData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -121,7 +122,7 @@ export default function Postvacants() {
   useEffect(() => {
     const fetchAdvantages = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/avantages-sociaux');
+        const response = await axios.get(`${API_BASE_URL}/avantages-sociaux`);
         setAdvantages(response.data);
         console.log('Avantages sociaux récupérés:', response.data);
       } catch (err) {
@@ -148,12 +149,12 @@ export default function Postvacants() {
   useEffect(() => {
     const fetchSliderImages = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/slider', {
+        const response = await axios.get(`${API_BASE_URL}/slider`, {
           params: {
             nom_page: "offres d'emploi" // ici tu mets le nom de la page
           }
         });
-        const imagesFromAPI = response.data.map(img => `http://localhost:8000/storage/${img.Path}`);
+        const imagesFromAPI = response.data.map(img => `${API_BASE_URL.replace('/api', '/storage')}/${img.Path}`);
         setSliderImages(imagesFromAPI);
         console.log(response.data);
       } catch (err) {
@@ -175,14 +176,13 @@ export default function Postvacants() {
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
 
-<div
-  key={i18n.language} // force le rerender quand la langue change
-  data-aos="zoom-in"
-  className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-7 ${
-    i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
-  }`}
->            <h1 className="max-sm:text-4xl sm:text-6xl font-dmsans mb-2 ">{t('jobOffers.pageTitle')}</h1>
-            <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">
+          <div
+            key={i18n.language} // force le rerender quand la langue change
+            data-aos="zoom-in"
+            className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-7 ${i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'
+              }`}
+          >            <h1 className="max-sm:text-3xl sm:text-[48px] font-dmsans mb-2 ">{t('jobOffers.pageTitle')}</h1>
+            <h2 className="text-customGreen sm:text-[28px] font-dmsans max-sm:text-2xl">
               {t('header.subtitle')}
             </h2>
           </div>
@@ -194,30 +194,30 @@ export default function Postvacants() {
           </div>
         </div>
       </div>
-{/* Icônes des réseaux sociaux */}
-          <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
-              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                <img src={fb} alt="facebook" className="w-full" />
-              </div>
-            </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
-              <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                <img src={insta} alt="instagram" className="w-full" />
-              </div>
-            </a>
+      {/* Icônes des réseaux sociaux */}
+      <div className="hidden md:flex fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex-row items-end justify-self-end gap-4 sm:flex-col w-12 z-40">
+        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+          <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+            <img src={fb} alt="facebook" className="w-full" />
           </div>
-         
+        </a>
+        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+          <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+            <img src={insta} alt="instagram" className="w-full" />
+          </div>
+        </a>
+      </div>
+
       {/* section 2 */}
       <div className="flex flex-col md:flex-row items-center bg-white 
         lg:pt-10 max-sm:py-14 sm:py-10
         lg:px-56 max-sm:px-8 sm:px-10">
         {/* Left Side - Form */}
         <div className="md:w-3/4 w-full" data-aos="fade-right">
-          <h2 className="text-3xl text-blue-800 font-semibold">
+          <h2 className="text-2xl text-blue-800 font-semibold">
             {t('jobOffers.formTitle')}
           </h2>
-          <p className="text-customGreen text-lg mt-2">
+          <p className="text-customGreen text-base mt-2">
             {t('jobOffers.formSubtitle')}
           </p>
 
@@ -415,20 +415,20 @@ export default function Postvacants() {
 
         <div className="mx-auto bg-[#f3f3f3] py-12 px-6 sm:px-16 md:px-32 text-2xl">
           <div className="justify-start flex flex-col" data-aos="fade-up">
-            <h1 className="text-4xl font-bold text-[#1a2a7b]">{t('jobOffers.advantagesTitle')}</h1>
-            <h2 className="text-2xl text-customGreen mt-2">{t('jobOffers.advantagesSubtitle')}</h2>
+            <h1 className="text-3xl font-bold text-[#1a2a7b]">{t('jobOffers.advantagesTitle')}</h1>
+            <h2 className="text-xl text-customGreen mt-2">{t('jobOffers.advantagesSubtitle')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {advantages.map((advantage, index) => (
               <div key={advantage.id || index} className="flex flex-col items-center p-4" data-aos="fade-up">
                 {advantage.photo ? (
-                  <img 
-                    src={`http://localhost:8000/storage/${advantage.photo}`} 
-                    alt="Avantage social" 
-                    className="w-24 h-24 object-cover rounded-lg hover:scale-125 transition-all shadow-md" 
+                  <img
+                    src={`${API_BASE_URL.replace('/api', '/storage')}/${advantage.photo}`}
+                    alt="Avantage social"
+                    className="w-56 h-56 object-cover rounded-lg hover:scale-105 transition-all shadow-md"
                   />
                 ) : (
-                  <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <div className="w-56 h-56 bg-gray-200 rounded-lg flex items-center justify-center">
                     <span className="text-gray-400 text-sm">Pas d'image</span>
                   </div>
                 )}

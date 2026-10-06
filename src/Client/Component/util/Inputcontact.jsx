@@ -3,6 +3,7 @@ import axios from 'axios';
 import 'aos/dist/aos.css';
 import AOS from 'aos';
 import { useTranslation } from 'react-i18next';
+import API_BASE_URL from '../../../config';
 
 function Inputcontact() {
   const { t } = useTranslation();
@@ -41,8 +42,8 @@ function Inputcontact() {
     const fetchOptions = async () => {
       try {
         const [typesRecetteResponse, physiotherapieResponse] = await Promise.all([
-          axios.get('http://localhost:8000/api/types-recette'),
-          axios.get('http://localhost:8000/api/physiotherapie'),
+          axios.get(`${API_BASE_URL}/types-recette`),
+          axios.get(`${API_BASE_URL}/physiotherapie`),
         ]);
 
         setTypesRecetteOptions(typesRecetteResponse.data);
@@ -62,7 +63,7 @@ function Inputcontact() {
   const handleTherapyChange = (optionNom) => {
     // Vérifier si Pack Santé Globale est sélectionné
     const isPackSanteGlobale = optionNom === 'Pack Santé Globale (5–20 séances : kinésithérapie avec ordonnance + entraînement fonctionnel + bilans de suivi + option massage thérapeutique)';
-    
+
     if (isPackSanteGlobale) {
       if (physiotherapieOptions.includes(optionNom)) {
         // Désélection du Pack Santé Globale
@@ -113,12 +114,12 @@ function Inputcontact() {
       Physiotherapie: physiotherapieOptions.join(', ') || null,
       Remarque: formData.Remarque || null,
       hasOrdonnance: hasOrdonnance || null,
-     
+
       consentement: consentement,
     };
 
     try {
-      const response = await axios.post('http://localhost:8000/api/rendez-vous', payload);
+      const response = await axios.post(`${API_BASE_URL}/rendez-vous`, payload);
       console.log('Submission successful:', response.data);
       setSubmitSuccess(true);
 
@@ -156,7 +157,7 @@ function Inputcontact() {
     if (!consentement) {
       return true;
     }
-    
+
     // Si Pack Santé Globale est sélectionné
     if (packSanteGlobaleSelected) {
       // Désactivé si pas de réponse à la question ordonnance
@@ -172,7 +173,7 @@ function Inputcontact() {
         return true;
       }
     }
-    
+
     // Désactivé pendant la soumission
     return isSubmitting;
   };
@@ -188,10 +189,10 @@ function Inputcontact() {
       >
         <form onSubmit={handleSubmit}>
           <div className="pt-4 flex flex-col gap-8 max-sm:pl-4">
-            <h1 className="text-4xl text-[#1a2a7b] font-semibold max-sm:text-2xl">
+            <h1 className="text-3xl text-[#1a2a7b] font-semibold max-sm:text-2xl">
               {t('contactForm.title')}
             </h1>
-            <h2 className="text-2xl text-customGreen max-sm:text-xl">
+            <h2 className="text-xl text-customGreen max-sm:text-lg">
               {t('contactForm.subtitle')}
             </h2>
           </div>
@@ -200,7 +201,7 @@ function Inputcontact() {
           <div className="relative ml-0 pt-10 flex flex-col gap-5 max-sm:ml-4 max-sm:mt-6">
             {[{ field: 'Nom', label: t('contactForm.labels.lastName') }, { field: 'Prenom', label: t('contactForm.labels.firstName') }].map((item) => (
               <div key={item.field} className="flex flex-col gap-0 justify-center">
-                <h4 className="text-2xl text-gray-600 ml-2 max-sm:text-xl">{item.label}</h4>
+                <h4 className="text-xl text-gray-600 ml-2 max-sm:text-lg">{item.label}</h4>
                 <input
                   name={item.field}
                   type="text"
@@ -217,7 +218,7 @@ function Inputcontact() {
 
             {/* Date de naissance */}
             <div className="flex flex-col gap-0 justify-center">
-              <h4 className="text-2xl text-gray-600 ml-2 max-sm:text-xl">{t('contactForm.labels.birthDate')}</h4>
+              <h4 className="text-xl text-gray-600 ml-2 max-sm:text-lg">{t('contactForm.labels.birthDate')}</h4>
               <input
                 name="Date_Naissance"
                 type="date"
@@ -235,7 +236,7 @@ function Inputcontact() {
             <div className="flex flex-row justify-between max-[1280.60px]:flex-col gap-32 max-sm:gap-4 max-sm:flex-col">
               {[{ name: 'Tel', type: 'tel', label: t('contactForm.labels.phone') }, { name: 'Email', type: 'email', label: t('contactForm.labels.email') }].map((field) => (
                 <div key={field.name} className="flex flex-col gap-0 justify-center">
-                  <h4 className="text-2xl text-gray-600 ml-2 max-sm:text-xl">{field.label}</h4>
+                  <h4 className="text-xl text-gray-600 ml-2 max-sm:text-lg">{field.label}</h4>
                   <input
                     name={field.name}
                     type={field.type}
@@ -253,7 +254,7 @@ function Inputcontact() {
 
             {/* Faire */}
             <div className="flex flex-col gap-0 justify-center">
-              <h4 className="text-2xl text-gray-600 ml-2 max-sm:text-xl">{t('contactForm.labels.request')}</h4>
+              <h4 className="text-xl text-gray-600 ml-2 max-sm:text-lg">{t('contactForm.labels.request')}</h4>
               <input
                 name="Faire"
                 type="text"
@@ -270,7 +271,7 @@ function Inputcontact() {
 
           {/* Type recette */}
           <div className="mt-6 ml-10 flex flex-col gap-2 max-sm:ml-4">
-            <h1 className="text-2xl text-gray-600 max-sm:text-xl">{t('contactForm.labels.prescriptionType')}</h1>
+            <h1 className="text-xl text-gray-600 max-sm:text-lg">{t('contactForm.labels.prescriptionType')}</h1>
             <div className="flex flex-col gap-2">
               {typesRecetteOptions.map((label) => (
                 <div key={label.id} className="flex items-center gap-2">
@@ -284,7 +285,7 @@ function Inputcontact() {
                     required
                     className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor={`type_recette-${label.id}`} className="text-gray-700 text-lg cursor-pointer max-sm:text-base">
+                  <label htmlFor={`type_recette-${label.id}`} className="text-gray-700 text-base cursor-pointer max-sm:text-sm">
                     {label.nom}
                   </label>
                 </div>
@@ -297,7 +298,7 @@ function Inputcontact() {
 
           {/* Physiothérapie */}
           <div className="ml-10 flex flex-col gap-6 max-sm:ml-4 mt-4">
-            <h1 className="text-2xl text-gray-600 max-sm:text-xl">{t('contactForm.labels.physiotherapy')}</h1>
+            <h1 className="text-xl text-gray-600 max-sm:text-lg">{t('contactForm.labels.physiotherapy')}</h1>
             <div className="flex flex-col gap-2">
               {physiotherapieData.map((option) => (
                 <div key={option.id} className="flex items-center gap-2">
@@ -309,7 +310,7 @@ function Inputcontact() {
                     onChange={() => handleTherapyChange(option.nom)}
                     className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor={`physio-${option.id}`} className="text-gray-700 text-lg cursor-pointer max-sm:text-base">
+                  <label htmlFor={`physio-${option.id}`} className="text-gray-700 text-base cursor-pointer max-sm:text-sm">
                     {option.nom}
                   </label>
                 </div>
@@ -320,8 +321,8 @@ function Inputcontact() {
           {/* Conditions spéciales pour Pack Santé Globale */}
           {packSanteGlobaleSelected && (
             <div className="ml-10 flex flex-col gap-4 max-sm:ml-4 mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h2 className="text-xl text-blue-800 font-semibold">{t('contactForm.globalHealthPackConditions')}</h2>
-              
+              <h2 className="text-lg text-blue-800 font-semibold">{t('contactForm.globalHealthPackConditions')}</h2>
+
               {/* Question ordonnance médicale */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-lg text-gray-700">{t('contactForm.medicalPrescription.question')}</h4>
@@ -397,11 +398,11 @@ function Inputcontact() {
             </div>
           )}
 
-          
+
 
           {/* Remarque et bouton */}
           <div className="pl-4 flex flex-col gap-2 max-sm:ml-4 mt-8 max-sm:pb-5">
-            <label htmlFor="remarques" className="text-gray-600 text-2xl max-sm:text-xl">{t('contactForm.remarks')}</label>
+            <label htmlFor="remarques" className="text-gray-600 text-xl max-sm:text-lg">{t('contactForm.remarks')}</label>
             <textarea
               name="Remarque"
               id="remarques"
@@ -410,13 +411,13 @@ function Inputcontact() {
               className="w-full max-sm:w-5/6 max-sm:ml-5 h-20 p-2 border border-gray-300 bg-gray-100 rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-black"
             ></textarea>
             {/* Message de validation pour le consentement */}
-          {!consentement && (
-            <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg max-sm:ml-4">
-              <p className="text-yellow-700 text-sm">
-                {t('contactForm.consent.message')}
-              </p>
-            </div>
-          )}
+            {!consentement && (
+              <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg max-sm:ml-4">
+                <p className="text-yellow-700 text-sm">
+                  {t('contactForm.consent.message')}
+                </p>
+              </div>
+            )}
             {/* Consentement obligatoire */}
             <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-start gap-3">
@@ -437,7 +438,7 @@ function Inputcontact() {
             </div>
 
             {submitError && submitError.Remarque && <p className="text-red-500 mt-1 ml-2">{submitError.Remarque[0]}</p>}
-            
+
             {submitSuccess && <p className="text-green-500 mt-1 ml-2">Votre réservation a été soumise avec succès!</p>}
             {submitError && submitError.general && <p className="text-red-500 mt-1 ml-2">{submitError.general}</p>}
             <button

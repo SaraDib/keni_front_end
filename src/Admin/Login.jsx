@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from './context/AuthContext';
 import logo from './assets/globalhealthy.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -15,11 +16,10 @@ const LoginPage = () => {
 
   // Check if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/admin/dashboard');
+    if (isAuthenticated) {
+      navigate('/admin/dashboard', { replace: true });
     }
-  }, [navigate]);
+  }, [isAuthenticated]); // navigate is stable, no need to include it
 
   const handleChange = (e) => {
     setFormData({
@@ -33,30 +33,13 @@ const LoginPage = () => {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const response = await axios.post('http://localhost:8000/api/login', {
-        Email: formData.email,
-        password: formData.password
-      });
+    const result = await login(formData.email, formData.password);
 
-      if (response.data && response.data.token) {
-        // Store token in localStorage
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userData', JSON.stringify(response.data.user));
-        
-        // Redirect to dashboard
-        navigate('/admin/dashboard');
-      } else {
-        setError('Authentication failed. Please check your credentials.');
-      }
-    } catch (err) {
-      setError(
-        err.response?.data?.message || 
-        'An error occurred during login. Please try again.'
-      );
-    } finally {
+    if (!result.success) {
+      setError(result.error);
       setIsLoading(false);
     }
+    // Success navigation is handled inside login() in AuthContext
   };
 
   return (

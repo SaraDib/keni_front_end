@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CrudTable from '../components/CrudTable';
 import { MessageSquare } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 
 const Contact = () => {
   const [contacts, setContacts] = useState([]);
@@ -12,7 +13,7 @@ const Contact = () => {
   const fetchContacts = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:8000/api/contact-us', {
+      const response = await axios.get(`${API_BASE_URL}/contact-us`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -34,15 +35,15 @@ const Contact = () => {
 
   // Définition des colonnes du tableau
   const columns = [
-    { 
-      header: "Nom complet", 
+    {
+      header: "Nom complet",
       accessor: "Nom",
       render: (item) => (
         <div className="font-medium">{item.Nom}</div>
       )
     },
-    { 
-      header: "Contact", 
+    {
+      header: "Contact",
       accessor: "contact",
       render: (item) => (
         <div>
@@ -51,8 +52,8 @@ const Contact = () => {
         </div>
       )
     },
-    { 
-      header: "Message", 
+    {
+      header: "Message",
       accessor: "Message",
       render: (item) => (
         <div className="max-w-md truncate" title={item.Message}>
@@ -60,8 +61,8 @@ const Contact = () => {
         </div>
       )
     },
-    { 
-      header: "Date", 
+    {
+      header: "Date",
       accessor: "created_at",
       render: (item) => (
         <div className="text-sm text-gray-500">
@@ -83,8 +84,8 @@ const Contact = () => {
       setIsLoading(true);
       if (Array.isArray(id)) {
         // Suppression multiple
-        await Promise.all(id.map(singleId => 
-          axios.delete(`http://localhost:8000/api/contact-us/${singleId}`, {
+        await Promise.all(id.map(singleId =>
+          axios.delete(`${API_BASE_URL}/contact-us/${singleId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
@@ -93,7 +94,7 @@ const Contact = () => {
         ));
       } else {
         // Suppression unique
-        await axios.delete(`http://localhost:8000/api/contact-us/${id}`, {
+        await axios.delete(`${API_BASE_URL}/contact-us/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
@@ -116,7 +117,7 @@ const Contact = () => {
         <MessageSquare className="text-blue-500 mr-2" size={24} />
         <h1 className="text-xl md:text-2xl font-bold">Messages de contact</h1>
       </div>
-      
+
       <p className="mb-6 text-gray-600">
         Gérez les messages de contact reçus via le formulaire de contact du site.
       </p>
@@ -132,7 +133,7 @@ const Contact = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <CrudTable 
+        <CrudTable
           title="Messages de contact"
           columns={columns}
           data={contacts}

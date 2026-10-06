@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route , Navigate} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import ScrollTop from "./Client/Component/util/ScrollTop";
 
@@ -38,69 +38,68 @@ import AboutUsAdmin from './Admin/pages/AboutUsAdmin';
 import GestionPhysiotherapie from './Admin/pages/GestionTypesPhysiotherapie';
 import GestionRecettes from './Admin/pages/GestionRecettes';
 import axios from 'axios';
+import { AuthProvider } from './Admin/context/AuthContext';
+import API_BASE_URL from './config';
+
 function App() {
-  useEffect(() => { console.log(window.UC_UI);
+  console.log('App component rendering. API_BASE_URL:', API_BASE_URL);
+  useEffect(() => {
     // Tracker la visite actuelle
-        axios.post('http://127.0.0.1:8000/api/track-visit')
-        .catch(console.error);
-   }, []);
+    axios.post(`${API_BASE_URL}/track-visit`)
+      .catch(console.error);
+  }, []);
 
   return (
     <Router>
-      <ScrollTop />
-      <Routes>
-  <Route key="client" path="/" element={<Layout />}>
-    <Route index element={<Commencer />} />
-    <Route path="service/:id" element={<ServicesEN />} />
-    <Route path="physiotherapie" element={<Physiotherapie />} />
-    <Route path="ergotherapie" element={<Ergotherapie />} />
-    <Route path="formation" element={<Formation />} />
-    <Route path="prevention" element={<Prevention />} />
-    <Route path="sportsDeReadaptation" element={<SportsDeReadaptation />} />
-    <Route path="TRena" element={<TRena />} />
-    <Route path="conseilsNutritionnels" element={<ConseilsNutritionnels />} />
-    <Route path="autresServices" element={<AutresServices />} />
-    <Route path="quiSommesNous" element={<QuiSommesNous />} />
-    <Route path="Offresdemploi" element={<PostesVacants />} />
-    <Route path="contact" element={<PageContact />} />
-    <Route path="faq" element={<PageFAQ />} />
-    <Route path="ServiceTest" element={<ServiceTest />} />
-    <Route path="*" element={<NotFound />} />
-  </Route>
+      <AuthProvider>
+        <ScrollTop />
+        <Routes>
+          <Route key="client" path="/" element={<Layout />}>
+            <Route index element={<Commencer />} />
+            <Route path="service/:id" element={<ServicesEN />} />
+            <Route path="physiotherapie" element={<Physiotherapie />} />
+            <Route path="ergotherapie" element={<Ergotherapie />} />
+            <Route path="formation" element={<Formation />} />
+            <Route path="prevention" element={<Prevention />} />
+            <Route path="sportsDeReadaptation" element={<SportsDeReadaptation />} />
+            <Route path="TRena" element={<TRena />} />
+            <Route path="conseilsNutritionnels" element={<ConseilsNutritionnels />} />
+            <Route path="autresServices" element={<AutresServices />} />
+            <Route path="quiSommesNous" element={<QuiSommesNous />} />
+            <Route path="Offresdemploi" element={<PostesVacants />} />
+            <Route path="contact" element={<PageContact />} />
+            <Route path="faq" element={<PageFAQ />} />
+            <Route path="ServiceTest" element={<ServiceTest />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
 
-<Route path="admin">
-  {/* Change from absolute path "/login" to relative path "login" */}
-  <Route key="login" path="login" element={<LoginPage />} />
-
-  <Route
-    key="admin-layout"
-    element={<AdminLayout />}
-  >
-    <Route index element={<Navigate to="dashboard" replace />} />
-    <Route path="dashboard" element={<Dashboard />} />
-    <Route path="experts" element={<ExpertsAdmin/>} />
-    <Route path="updates" element={<UpdatesAdmin/>} />
-
-    
-    <Route path="about-us" element={<AboutUsAdmin/>} />
-
-    <Route path="gestion-recettes" element={<GestionRecettes />} />
-    <Route path="physiotherapie" element={<GestionPhysiotherapie />} />
-
-
-    <Route path="faq" element={<FAQ />} />
-    <Route path="health-center" element={<HealthCenter />} />
-    <Route path="contact" element={<Contact />} />
-    <Route path="job-offers" element={<JobOffers />} />
-    <Route path="people" element={<People />} />
-    <Route path="appointments" element={<Appointments />} />
-    <Route path="settings" element={<SettingsPage />} />
-    <Route path="users" element={<UsersPage />} />
-    <Route path="services" element={<Services />} />
-    <Route path="*" element={<Navigate to="dashboard" replace />} />
-  </Route>
-</Route>
-      </Routes>
+          <Route path="admin">
+            <Route key="login" path="login" element={<LoginPage />} />
+            <Route
+              key="admin-layout"
+              element={<AdminLayout />}
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="experts" element={<ExpertsAdmin />} />
+              <Route path="updates" element={<UpdatesAdmin />} />
+              <Route path="about-us" element={<AboutUsAdmin />} />
+              <Route path="gestion-recettes" element={<GestionRecettes />} />
+              <Route path="physiotherapie" element={<GestionPhysiotherapie />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="health-center" element={<HealthCenter />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="job-offers" element={<JobOffers />} />
+              <Route path="people" element={<People />} />
+              <Route path="appointments" element={<Appointments />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="services" element={<Services />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

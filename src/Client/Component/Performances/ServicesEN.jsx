@@ -1,9 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import OpacityComponent from "../util/OpacityComponent";
 import Services1 from "../util/Services1";
+import API_BASE_URL from "../../../config";
 
 export default function ServicesEN() {
     const { id } = useParams();
@@ -14,7 +14,8 @@ export default function ServicesEN() {
     useEffect(() => {
         const fetchServiceData = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/services/${id}`);
+                const response = await axios.get(`${API_BASE_URL}/services/${id}`);
+                console.log('Service EN Data Response:', response.data);
                 setServiceData(response.data);
                 setLoading(false);
             } catch (err) {

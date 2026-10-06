@@ -3,6 +3,7 @@ import { Settings, Save, Upload, Phone, Globe, Mail, MapPin, Facebook, Instagram
 import { FaWhatsapp } from "react-icons/fa";
 import axios from 'axios';
 import SettingsPageModals from './SettingsPageModals';
+import API_BASE_URL from '../../config';
 
 // Composant pour gérer les sliders
 const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
@@ -17,7 +18,7 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
       const formData = new FormData();
       newSliderImages.forEach(file => formData.append('sliderImages[]', file));
       formData.append('nom_page', nomPage);
-      const response = await axios.post('http://localhost:8000/api/slider', formData, {
+      const response = await axios.post(`${API_BASE_URL}/slider`, formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
       });
       setSliderImages(prev => [...prev, ...response.data.data]);
@@ -30,7 +31,7 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
   // Supprimer une image existante
   const handleDeleteSliderImage = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/slider/${id}`, {
+      await axios.delete(`${API_BASE_URL}/slider/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSliderImages(prev => prev.filter(img => img.ID_Image !== id && img.id !== id));
@@ -56,7 +57,7 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
         {/* Images existantes */}
         {sliderImages.map((img, index) => (
           <div key={img.ID_Image || img.id} className="relative w-32 h-20 border rounded overflow-hidden">
-            <img src={`http://localhost:8000/storage/${img.Path}`} alt={`Slider ${index + 1}`} className="w-full h-full object-cover" />
+            <img src={`${API_BASE_URL.replace('/api', '/storage')}/${img.Path}`} alt={`Slider ${index + 1}`} className="w-full h-full object-cover" />
             <button
               type="button"
               onClick={() => handleDeleteSliderImage(img.ID_Image || img.id)}
@@ -93,67 +94,67 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
           </div>
         ))}
 
-{/* Ajouter */}
-{(() => {
-  const totalImages = sliderImages.length + newSliderImages.length;
-  
-  // Pour les pages "commencer" et "contact" : pas de limite
-  if (nomPage === 'commencer' || nomPage === 'contact') {
-    return (
-      <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-        + Ajouter
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-        />
-      </label>
-    );
-  }
-  
-  // Pour les offres d'emploi : maximum 2 images
-  if (nomPage === "offres d'emploi") {
-    if (totalImages < 2) {
-      return (
-        <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-          + Ajouter ({totalImages}/2)
-          <input
-            type="file"
-            multiple={totalImages === 0}
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const files = Array.from(e.target.files);
-              const remainingSlots = 2 - totalImages;
-              const filesToAdd = files.slice(0, remainingSlots);
-              setNewSliderImages([...newSliderImages, ...filesToAdd]);
-            }}
-          />
-        </label>
-      );
-    }
-    return null;
-  }
-  
-  // Pour les autres pages : maximum 1 image
-  if (totalImages === 0) {
-    return (
-      <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-        + Ajouter
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-        />
-      </label>
-    );
-  }
-  
-  return null;
-})()}
+        {/* Ajouter */}
+        {(() => {
+          const totalImages = sliderImages.length + newSliderImages.length;
+
+          // Pour les pages "commencer" et "contact" : pas de limite
+          if (nomPage === 'commencer' || nomPage === 'contact') {
+            return (
+              <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+                + Ajouter
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+                />
+              </label>
+            );
+          }
+
+          // Pour les offres d'emploi : maximum 2 images
+          if (nomPage === "offres d'emploi") {
+            if (totalImages < 2) {
+              return (
+                <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+                  + Ajouter ({totalImages}/2)
+                  <input
+                    type="file"
+                    multiple={totalImages === 0}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      const remainingSlots = 2 - totalImages;
+                      const filesToAdd = files.slice(0, remainingSlots);
+                      setNewSliderImages([...newSliderImages, ...filesToAdd]);
+                    }}
+                  />
+                </label>
+              );
+            }
+            return null;
+          }
+
+          // Pour les autres pages : maximum 1 image
+          if (totalImages === 0) {
+            return (
+              <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
+                + Ajouter
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+                />
+              </label>
+            );
+          }
+
+          return null;
+        })()}
 
 
 
@@ -194,7 +195,7 @@ const AvantagesSociauxManager = () => {
   // Récupérer les avantages sociaux
   const fetchAvantages = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/avantages-sociaux', {
+      const response = await axios.get(`${API_BASE_URL}/avantages-sociaux`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAvantages(response.data);
@@ -224,13 +225,13 @@ const AvantagesSociauxManager = () => {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     try {
       const submitData = new FormData();
       submitData.append('photo', formData.photo);
       submitData.append('paragraphe', formData.paragraphe);
 
-      const response = await axios.post('http://localhost:8000/api/avantages-sociaux', submitData, {
+      const response = await axios.post(`${API_BASE_URL}/avantages-sociaux`, submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -265,10 +266,10 @@ const AvantagesSociauxManager = () => {
       formDataToSend.append('paragraphe', formData.paragraphe);
       formDataToSend.append('_method', 'PUT');
 
-      await axios.post(`http://localhost:8000/api/avantages-sociaux/${editingAvantage.id}`, formDataToSend, {
-        headers: { 
+      await axios.post(`${API_BASE_URL}/avantages-sociaux/${editingAvantage.id}`, formDataToSend, {
+        headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -292,7 +293,7 @@ const AvantagesSociauxManager = () => {
     if (!avantageToDelete) return;
 
     try {
-      await axios.delete(`http://localhost:8000/api/avantages-sociaux/${avantageToDelete.id}`, {
+      await axios.delete(`${API_BASE_URL}/avantages-sociaux/${avantageToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess(true);
@@ -387,7 +388,7 @@ const AvantagesSociauxManager = () => {
                   <div className="flex items-start space-x-4">
                     {avantage.photo && (
                       <img
-                        src={`http://localhost:8000/storage/${avantage.photo}`}
+                        src={`${API_BASE_URL.replace('/api', '/storage')}/${avantage.photo}`}
                         alt="Avantage"
                         className="w-16 h-16 object-cover rounded-md"
                       />
@@ -459,7 +460,10 @@ const SettingsPage = () => {
     Email: '',
     Adresse: '',
     Facebook: '',
-    Instagram: ''
+    Instagram: '',
+    CouleurBackground: '#333333',
+    ImageBackground: '',
+    backgroundPreview: ''
   });
 
   const [sliderImages, setSliderImages] = useState([]);
@@ -469,13 +473,13 @@ const SettingsPage = () => {
   const [success, setSuccess] = useState(false);
 
   const token = localStorage.getItem('token');
-  const STORAGE_BASE = "http://localhost:8000/storage";
+  const STORAGE_BASE = API_BASE_URL.replace('/api', '/storage');
 
   // Charger les paramètres
   const fetchSettings = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:8000/api/entreprises/1', {
+      const response = await axios.get(`${API_BASE_URL}/entreprises/1`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const entrepriseData = response.data.data || response.data;
@@ -490,7 +494,10 @@ const SettingsPage = () => {
         Adresse: entrepriseData.Adresse || '',
         Facebook: entrepriseData.Facebook || '',
         Instagram: entrepriseData.Instagram || '',
-        logoPreview: entrepriseData.Logo ? `${STORAGE_BASE}/${entrepriseData.Logo}` : '/images/logo.png'
+        CouleurBackground: entrepriseData.CouleurBackground || '#333333',
+        ImageBackground: entrepriseData.ImageBackground || '',
+        logoPreview: entrepriseData.Logo ? `${STORAGE_BASE}/${entrepriseData.Logo}` : '/images/logo.png',
+        backgroundPreview: entrepriseData.ImageBackground ? `${STORAGE_BASE}/${entrepriseData.ImageBackground}` : ''
       });
 
       setError(null);
@@ -505,7 +512,7 @@ const SettingsPage = () => {
   // Charger les images du slider
   const fetchSliderImages = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/slider');
+      const response = await axios.get(`${API_BASE_URL}/slider`);
       setSliderImages(response.data || []);
     } catch (err) {
       console.error('Erreur lors du chargement des images du slider', err);
@@ -522,6 +529,8 @@ const SettingsPage = () => {
     const { name, value, files } = e.target;
     if (name === 'Logo' && files && files[0]) {
       setSettings(prev => ({ ...prev, [name]: files[0], logoPreview: URL.createObjectURL(files[0]) }));
+    } else if (name === 'ImageBackground' && files && files[0]) {
+      setSettings(prev => ({ ...prev, [name]: files[0], backgroundPreview: URL.createObjectURL(files[0]) }));
     } else {
       setSettings(prev => ({ ...prev, [name]: value }));
     }
@@ -537,12 +546,16 @@ const SettingsPage = () => {
 
       const formData = new FormData();
       Object.keys(settings).forEach(key => {
-        if (key === 'logoPreview') return;
-        if (key === 'Logo' && settings[key] instanceof File) formData.append('Logo', settings[key]);
-        else if (key !== 'Logo' && settings[key] != null) formData.append(key, settings[key]);
+        if (key === 'logoPreview' || key === 'backgroundPreview') return;
+        if ((key === 'Logo' || key === 'ImageBackground') && settings[key] instanceof File) {
+          formData.append(key, settings[key]);
+        }
+        else if (key !== 'Logo' && key !== 'ImageBackground' && settings[key] != null) {
+          formData.append(key, settings[key]);
+        }
       });
 
-      await axios.post(`http://localhost:8000/api/entreprises/${settings.ID_Entreprise}`, formData, {
+      await axios.post(`${API_BASE_URL}/entreprises/${settings.ID_Entreprise}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
       });
 
@@ -642,6 +655,56 @@ const SettingsPage = () => {
                             />
                           </label>
                           <p className="mt-1 text-xs text-gray-500">PNG, JPG ou GIF. Taille recommandée: 200x200px</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Couleur Background */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Couleur de fond (Hero Global Health)</label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="color"
+                          name="CouleurBackground"
+                          value={settings.CouleurBackground}
+                          onChange={handleChange}
+                          className="h-10 w-20 cursor-pointer rounded border border-gray-300"
+                        />
+                        <input
+                          type="text"
+                          name="CouleurBackground"
+                          value={settings.CouleurBackground}
+                          onChange={handleChange}
+                          className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 uppercase"
+                          placeholder="#333333"
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">C'est la couleur qui s'affiche derrière le texte "GLOBAL HEALTH".</p>
+                    </div>
+
+                    {/* Image Background */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Image d'arrière-plan (Section Contact)</label>
+                      <div className="flex items-center">
+                        <div className="w-40 h-24 bg-gray-100 rounded-md overflow-hidden mr-4 flex items-center justify-center border">
+                          {settings.backgroundPreview ? (
+                            <img src={settings.backgroundPreview} alt="Background" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="text-gray-400 text-xs text-center p-2">Aucune image (Image par défaut utilisée)</div>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block">
+                            <span className="sr-only">Choisir une image</span>
+                            <input
+                              type="file"
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                              accept="image/*"
+                              onChange={handleChange}
+                              name="ImageBackground"
+                            />
+                          </label>
+                          <p className="mt-1 text-xs text-gray-500">Cette image s'affiche derrière les boutons "Prendre RDV". Taille recommandée: 1920x1080px</p>
                         </div>
                       </div>
                     </div>
@@ -816,9 +879,9 @@ const SettingsPage = () => {
               )}
             </div>
           </div>
-        </div>
+        </div >
       )}
-    </div>
+    </div >
   );
 };
 

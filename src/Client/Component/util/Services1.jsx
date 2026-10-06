@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import 'aos/dist/aos.css'; 
+import 'aos/dist/aos.css';
 import AOS from 'aos';
 import { useTranslation } from 'react-i18next';
 
 import Wave from '../../assets/images/wave.svg'
 import fb from "../../assets/images/fb.png";
 import insta from "../../assets/images/insta.png";
+import API_BASE_URL from '../../../config';
 
 function Services1({ serviceData }) {
-  const { i18n } = useTranslation(); 
+  const { i18n } = useTranslation();
   const [firstRowService, setFirstRowService] = useState(null);
   const [otherRows, setOtherRows] = useState([]);
 
@@ -24,7 +25,7 @@ function Services1({ serviceData }) {
       setFirstRowService(serviceData.row_services.find(s => s.Classement === 1));
       setOtherRows(serviceData.row_services
         .filter(s => s.Classement !== 1)
-        .sort((a,b) => a.Classement - b.Classement)
+        .sort((a, b) => a.Classement - b.Classement)
       );
     }
   }, [serviceData]);
@@ -40,9 +41,9 @@ function Services1({ serviceData }) {
     <div>
       {/* Hero */}
       <div className="w-full h-screen overflow-hidden relative">
-        <img 
-          src={`http://localhost:8000/api/services/${serviceData.ID_Service}/photo`} 
-          alt="Service" 
+        <img
+          src={`${API_BASE_URL}/services/${serviceData.ID_Service}/photo`}
+          alt="Service"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col justify-between">
@@ -51,44 +52,44 @@ function Services1({ serviceData }) {
             data-aos="zoom-in"
             className={`absolute bottom-1/2 sm:bottom-1/3 max-sm:bottom-1/3 flex flex-col max-sm:left-0 sm:flex sm:justify-start text-white p-4 ${i18n.language === 'ar' ? 'lg:mr-14' : 'lg:ml-14'}`}
           >
-            <h1 className="max-sm:text-5xl sm:text-6xl font-dmsans mb-2">{getLocalizedText(serviceData, 'Nom')}</h1>
-            <h2 className="text-customGreen sm:text-4xl font-dmsans max-sm:text-2xl">{getLocalizedText(serviceData, 'Descriptions')}</h2>
+            <h1 className="max-sm:text-4xl sm:text-[48px] font-dmsans mb-2">{getLocalizedText(serviceData, 'Nom')}</h1>
+            <h2 className="text-customGreen sm:text-[28px] font-dmsans max-sm:text-2xl">{getLocalizedText(serviceData, 'Descriptions')}</h2>
           </div>
 
           {/* Icônes des réseaux sociaux */}
-                    <div className="fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex flex-row items-end justify-self-end gap-4 sm:flex-col w-16 z-50">
-                      <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
-                        <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                          <img src={fb} alt="facebook" className="w-full" />
-                        </div>
-                      </a>
-                      <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
-                        <div className="bg-white rounded-full w-12 sm:w-14 hover:translate-x-4 transition-all cursor-pointer">
-                          <img src={insta} alt="instagram" className="w-full" />
-                        </div>
-                      </a>
-                    </div>
+          <div className="hidden md:flex fixed top-2/4 sm:bottom-6 left-24 max-sm:left-6 max-sm:bottom-32 sm:right-16 flex-row items-end justify-self-end gap-4 sm:flex-col w-12 z-40">
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+                <img src={fb} alt="facebook" className="w-full" />
+              </div>
+            </a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-full w-10 sm:w-11 hover:translate-x-4 transition-all cursor-pointer shadow-lg p-2.5 flex items-center justify-center">
+                <img src={insta} alt="instagram" className="w-full" />
+              </div>
+            </a>
+          </div>
 
           <div className="absolute bottom-0 w-full">
-            <img src={Wave} alt="wave" className="w-full"/>
+            <img src={Wave} alt="wave" className="w-full" />
           </div>
         </div>
       </div>
 
       {/* First Row */}
-     {/* FIRST ROW — même organisation que la capture */}
+      {/* FIRST ROW — même organisation que la capture */}
       {firstRowService && (
         <section className="bg-white">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
             {/* Titre (prend le titre du row s’il existe, sinon le nom du service) */}
-            <h2 className="text-3xl md:text-4xl font-dmsans text-[#1f3e8a] mb-6">
+            <h2 className="text-2xl md:text-3xl font-dmsans text-[#1f3e8a] mb-6">
               {getLocalizedText(firstRowService, 'Titre') ||
                 getLocalizedText(serviceData, 'Nom')}
             </h2>
 
             {/* Paragraphe */}
             <div
-              className="prose max-w-none text-lg mb-10"
+              className="prose max-w-none text-base mb-10"
               dangerouslySetInnerHTML={{
                 __html:
                   i18n.language === 'ar' && firstRowService.TextAR
@@ -102,7 +103,7 @@ function Services1({ serviceData }) {
               {firstRowService.photos?.[0] && (
                 <div data-aos="fade-right" className="rounded-md overflow-hidden">
                   <img
-                    src={`http://localhost:8000/api/photos/${firstRowService.photos[0].ID_Photo}/image`}
+                    src={`${API_BASE_URL}/photos/${firstRowService.photos[0].ID_Photo}/image`}
                     alt="row-1"
                     className="w-full h-[420px] object-cover"
                   />
@@ -111,7 +112,7 @@ function Services1({ serviceData }) {
               {firstRowService.photos?.[1] ? (
                 <div data-aos="fade-left" className="rounded-md overflow-hidden">
                   <img
-                    src={`http://localhost:8000/api/photos/${firstRowService.photos[1].ID_Photo}/image`}
+                    src={`${API_BASE_URL}/photos/${firstRowService.photos[1].ID_Photo}/image`}
                     alt="row-2"
                     className="w-full h-[420px] object-cover"
                   />
@@ -140,7 +141,7 @@ function Services1({ serviceData }) {
                 {/* Image */}
                 <div data-aos="fade-left" className="w-2/5 max-sm:w-full max-sm:p-4">
                   {service.photos && service.photos.length > 0 && (
-                    <img src={`http://localhost:8000/api/photos/${service.photos[0].ID_Photo}/image`} alt="service" className="w-full h-auto object-cover"/>
+                    <img src={`${API_BASE_URL}/photos/${service.photos[0].ID_Photo}/image`} alt="service" className="w-full h-auto object-cover" />
                   )}
                 </div>
               </>
@@ -149,7 +150,7 @@ function Services1({ serviceData }) {
                 {/* Image */}
                 <div data-aos="fade-right" className="w-2/5 max-sm:w-full max-sm:p-4">
                   {service.photos && service.photos.length > 0 && (
-                    <img src={`http://localhost:8000/api/photos/${service.photos[0].ID_Photo}/image`} alt="service" className="w-full h-auto object-cover"/>
+                    <img src={`${API_BASE_URL}/photos/${service.photos[0].ID_Photo}/image`} alt="service" className="w-full h-auto object-cover" />
                   )}
                 </div>
                 {/* Texte */}

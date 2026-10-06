@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import API_BASE_URL from '../../config';
 
 const SettingsPageModals = ({
   showAddForm,
@@ -38,8 +39,8 @@ const SettingsPageModals = ({
               </button>
             </div>
 
-            <form 
-              className="space-y-4" 
+            <form
+              className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -146,7 +147,7 @@ const SettingsPageModals = ({
                 )}
                 {editingAvantage && editingAvantage.photo && !previewImage && (
                   <img
-                    src={`http://localhost:8000/storage/${editingAvantage.photo}`}
+                    src={`${API_BASE_URL.replace('/api', '/storage')}/${editingAvantage.photo}`}
                     alt="Image actuelle"
                     className="mt-2 w-32 h-32 object-cover rounded-md"
                   />
@@ -210,13 +211,13 @@ const SettingsPageModals = ({
               <p className="text-gray-700 mb-4">
                 Êtes-vous sûr de vouloir supprimer cet avantage social ?
               </p>
-              
+
               {/* Aperçu de l'avantage à supprimer */}
               <div className="bg-gray-50 p-4 rounded-lg border">
                 <div className="flex items-start space-x-4">
                   {avantageToDelete.photo && (
                     <img
-                      src={`http://localhost:8000/storage/${avantageToDelete.photo}`}
+                      src={`${API_BASE_URL.replace('/api', '/storage')}/${avantageToDelete.photo}`}
                       alt="Avantage à supprimer"
                       className="w-16 h-16 object-cover rounded-md"
                     />
@@ -228,7 +229,7 @@ const SettingsPageModals = ({
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-red-600 text-sm mt-3 font-medium">
                 Cette action est irréversible.
               </p>
