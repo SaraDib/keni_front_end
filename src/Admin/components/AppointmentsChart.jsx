@@ -3,6 +3,11 @@ import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
 
+// Palette et styles communs aux graphiques du back-office
+const CHART_COLORS = ['#1E3A8A', '#9FB873', '#3C5DB5', '#8EA6DD', '#F59E0B', '#14B8A6'];
+const FONT_FAMILY = "'Open Sans', sans-serif";
+const AXIS_LABEL_STYLE = { colors: '#6B7280', fontSize: '12px', fontFamily: FONT_FAMILY };
+
 const AppointmentsChart = () => {
   const currentYear = new Date().getFullYear();
   const [appointmentsData, setAppointments] = useState([]);
@@ -86,27 +91,33 @@ const AppointmentsChart = () => {
     })
   }));
 
-  // Palette de couleurs plus variée pour distinguer les types
-  const chartColors = ['#0ea5e9', '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308'];
-
   const options = {
     chart: {
       type: 'bar',
-      height: 350,
       stacked: true,
       toolbar: { show: false },
       zoom: { enabled: false },
-      fontFamily: "'Open Sans', sans-serif",
+      fontFamily: FONT_FAMILY,
     },
-    plotOptions: { bar: { horizontal: false, borderRadius: 5, columnWidth: '60%' } },
-    xaxis: { categories: appointmentsData.map(item => item.month) },
-    yaxis: { title: { text: 'Nombre de rendez-vous' } },
-    legend: { position: 'bottom' },
-    colors: chartColors,
+    plotOptions: { bar: { horizontal: false, borderRadius: 4, columnWidth: '60%' } },
+    xaxis: {
+      categories: appointmentsData.map(item => item.month),
+      labels: { style: AXIS_LABEL_STYLE },
+      axisBorder: { color: '#E5E7EB' },
+      axisTicks: { color: '#E5E7EB' },
+    },
+    yaxis: { labels: { style: AXIS_LABEL_STYLE } },
+    grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
+    // La légende (avec les totaux par type) est rendue sous le graphique
+    legend: { show: false },
+    colors: CHART_COLORS,
     fill: { opacity: 1 },
     tooltip: { y: { formatter: val => val + " rendez-vous" } },
     dataLabels: { enabled: false },
-    title: { text: `Historique complet des rendez-vous par mois`, align: 'center' },
+    noData: {
+      text: 'Aucune donnée disponible',
+      style: { color: '#6B7280', fontSize: '13px', fontFamily: FONT_FAMILY },
+    },
   };
 
   const totalAppointments = appointmentsData.reduce((sum, month) =>
@@ -122,23 +133,29 @@ const AppointmentsChart = () => {
   }, {});
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1">
-        <ReactApexChart options={options} series={series} type="bar" height="100%" />
+    <div className="flex h-full w-full flex-col">
+      <div className="min-h-0 flex-1">
+        <ReactApexChart options={options} series={series} type="bar" height="100%" width="100%" />
       </div>
-      <div className="mt-2 text-center text-sm text-gray-500">
-        <div>Total: <span className="font-semibold">{totalAppointments}</span> rendez-vous en {currentYear}</div>
-        <div className="flex flex-wrap justify-center mt-2 text-xs">
-          {types.map((type, idx) => (
-            <div key={type} className="flex items-center mx-2 mb-1">
-              <div
-                className="w-3 h-3 rounded-full mr-1"
-                style={{ backgroundColor: chartColors[idx % chartColors.length] }}
-              ></div>
-              <span>{type}: {totalByType[type]}</span>
-            </div>
-          ))}
+      <div className="mt-2 text-center text-xs text-gray-500">
+        <div>
+          Total : <span className="font-semibold text-gray-900">{totalAppointments}</span> rendez-vous en {currentYear}
         </div>
+        {types.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-gray-600">
+            {types.map((type, idx) => (
+              <div key={type} className="flex items-center gap-1.5">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }}
+                />
+                <span>
+                  {type} : <span className="font-semibold text-gray-900">{totalByType[type]}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

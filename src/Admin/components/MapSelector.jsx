@@ -40,20 +40,22 @@ const MapSelector = ({ value, onChange }) => {
 
   return (
     <div className="map-container">
-      <p className="text-sm text-gray-500 mb-2">Cliquez sur la carte pour sélectionner la position du centre</p>
-      <MapContainer 
-        center={position} 
-        zoom={6} 
-        style={{ height: '400px', width: '100%', borderRadius: '0.375rem' }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <LocationMarker position={position} setPosition={setPosition} />
-      </MapContainer>
-      <div className="mt-2 text-sm text-gray-600">
-        Position: {position[0].toFixed(6)}, {position[1].toFixed(6)}
+      <p className="mb-2 text-xs text-gray-500">Cliquez sur la carte pour sélectionner la position du centre</p>
+      <div className="overflow-hidden rounded-lg border border-gray-300">
+        <MapContainer
+          center={position}
+          zoom={6}
+          style={{ height: '400px', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <LocationMarker position={position} setPosition={setPosition} />
+        </MapContainer>
+      </div>
+      <div className="mt-2 text-xs text-gray-500">
+        Position : <span className="font-mono text-gray-700">{position[0].toFixed(6)}, {position[1].toFixed(6)}</span>
       </div>
     </div>
   );

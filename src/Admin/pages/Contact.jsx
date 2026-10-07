@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import { MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import { PageHeader, Alert, LoadingState } from '../ui';
 
 const Contact = () => {
   const [contacts, setContacts] = useState([]);
@@ -39,7 +40,7 @@ const Contact = () => {
       header: "Nom complet",
       accessor: "Nom",
       render: (item) => (
-        <div className="font-medium">{item.Nom}</div>
+        <div className="font-medium text-gray-900">{item.Nom}</div>
       )
     },
     {
@@ -47,7 +48,7 @@ const Contact = () => {
       accessor: "contact",
       render: (item) => (
         <div>
-          <div className="text-sm">{item.Email}</div>
+          <div className="text-sm text-gray-900">{item.Email}</div>
           <div className="text-xs text-gray-500">{item.Telephone}</div>
         </div>
       )
@@ -65,7 +66,7 @@ const Contact = () => {
       header: "Date",
       accessor: "created_at",
       render: (item) => (
-        <div className="text-sm text-gray-500">
+        <div className="whitespace-nowrap text-sm text-gray-500">
           {new Date(item.created_at).toLocaleDateString('fr-FR', {
             year: 'numeric',
             month: 'long',
@@ -112,26 +113,17 @@ const Contact = () => {
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <MessageSquare className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Messages de contact</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={MessageSquare}
+        title="Messages de contact"
+        description="Gérez les messages reçus via le formulaire de contact du site."
+      />
 
-      <p className="mb-6 text-gray-600">
-        Gérez les messages de contact reçus via le formulaire de contact du site.
-      </p>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <LoadingState />
       ) : (
         <CrudTable
           title="Messages de contact"

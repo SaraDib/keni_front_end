@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
-import { Users, Phone, Mail, Briefcase } from 'lucide-react';
+import { Users, Briefcase } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import { PageHeader, Alert, LoadingState } from '../ui';
 
 const People = () => {
   const [people, setPeople] = useState([]);
@@ -45,7 +46,7 @@ const People = () => {
         <img
           src={`${API_BASE_URL}/equipes/${item.ID_Equipe}/image`}
           alt={item.Nom}
-          className="w-10 h-10 rounded-full object-cover"
+          className="h-10 w-10 rounded-full bg-gray-100 object-cover ring-1 ring-gray-200"
           onError={(e) => {
             e.target.src = '/default-profile.png'; // Image par défaut en cas d'erreur
           }}
@@ -54,14 +55,15 @@ const People = () => {
     },
     {
       header: "Nom Complet",
-      accessor: "Nom"
+      accessor: "Nom",
+      render: (item) => <span className="font-medium text-gray-900">{item.Nom}</span>
     },
     {
       header: "Profession",
       accessor: "Profession",
       render: (item) => (
-        <div className="flex items-center">
-          <Briefcase size={16} className="mr-1 text-gray-500" />
+        <div className="flex items-center gap-1.5">
+          <Briefcase size={15} className="text-gray-400" />
           <span>{item.Profession}</span>
         </div>
       )
@@ -71,7 +73,7 @@ const People = () => {
       accessor: "Description",
       render: (item) => (
         <div className="max-w-xs truncate" title={item.Description}>
-          {item.Description || "Aucune description"}
+          {item.Description || <span className="text-gray-400">Aucune description</span>}
         </div>
       )
     }
@@ -201,26 +203,17 @@ const People = () => {
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <Users className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">L'équipe</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={Users}
+        title="L'équipe"
+        description="Gérez les membres de votre équipe et leurs informations."
+      />
 
-      <p className="mb-6 text-gray-600">
-        Gérez les membres de votre équipe et leurs informations.
-      </p>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <LoadingState />
       ) : showForm ? (
         <CrudForm
           title="membre de l'équipe"

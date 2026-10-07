@@ -3,6 +3,7 @@ import CrudTable from '../components/CrudTable';
 import { Briefcase, Download } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import { PageHeader, Button, Alert, LoadingState } from '../ui';
 
 const JobOffers = () => {
   const [applications, setApplications] = useState([]);
@@ -64,7 +65,7 @@ const JobOffers = () => {
       header: "Nom complet",
       accessor: "Nom",
       render: (item) => (
-        <div className="font-medium">{`${item.Salutation} ${item.Nom}`}</div>
+        <div className="font-medium text-gray-900">{`${item.Salutation} ${item.Nom}`}</div>
       )
     },
     {
@@ -98,23 +99,23 @@ const JobOffers = () => {
       header: "Documents",
       accessor: "documents",
       render: (item) => (
-        <div className="space-y-2">
-          <button
+        <div className="flex flex-col items-start gap-1.5">
+          <Button
+            variant="link"
+            icon={Download}
             onClick={() => handleDownload('cv', item.ID_Offres_Emploi)}
-            className="flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
             disabled={!item.CV}
           >
-            <Download size={16} className="mr-1" />
             CV
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="link"
+            icon={Download}
             onClick={() => handleDownload('lettre', item.ID_Offres_Emploi)}
-            className="flex items-center px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
             disabled={!item.lettre}
           >
-            <Download size={16} className="mr-1" />
             Lettre de motivation
-          </button>
+          </Button>
         </div>
       )
     },
@@ -169,26 +170,17 @@ const JobOffers = () => {
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <Briefcase className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Candidatures</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={Briefcase}
+        title="Candidatures"
+        description="Gérez les candidatures reçues via le formulaire de recrutement du site."
+      />
 
-      <p className="mb-6 text-gray-600">
-        Gérez les candidatures reçues via le formulaire de recrutement du site.
-      </p>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <LoadingState />
       ) : (
         <CrudTable
           title="Candidatures"

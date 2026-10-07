@@ -3,9 +3,19 @@ import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
 
-const WebsiteVisitsChart = () => {
-  const currentYear = new Date().getFullYear();
+// Palette et styles communs aux graphiques du back-office
+const CHART_COLORS = ['#1E3A8A', '#9FB873', '#3C5DB5', '#8EA6DD', '#F59E0B', '#14B8A6'];
+const FONT_FAMILY = "'Open Sans', sans-serif";
+const AXIS_LABEL_STYLE = { colors: '#6B7280', fontSize: '12px', fontFamily: FONT_FAMILY };
 
+const StatTile = ({ value, label }) => (
+  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="text-sm font-semibold text-gray-900">{value}</div>
+    <div className="mt-0.5 truncate text-xs text-gray-500">{label}</div>
+  </div>
+);
+
+const WebsiteVisitsChart = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [totals, setTotals] = useState({
     totalVisits: 0,
@@ -62,9 +72,9 @@ const WebsiteVisitsChart = () => {
   const options = {
     chart: {
       type: 'area',
-      height: 350,
       toolbar: { show: false },
-      fontFamily: "'Open Sans', sans-serif",
+      zoom: { enabled: false },
+      fontFamily: FONT_FAMILY,
       animations: {
         enabled: true,
         easing: 'easeinout',
@@ -74,15 +84,25 @@ const WebsiteVisitsChart = () => {
       }
     },
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2 },
-    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3, stops: [0, 90, 100] } },
-    xaxis: { categories: monthlyData.map(item => item.month), labels: { style: { fontFamily: "'Open Sans', sans-serif" } } },
-    yaxis: { title: { text: 'Nombre', style: { fontFamily: "'Open Sans', sans-serif" } }, labels: { style: { fontFamily: "'Open Sans', sans-serif" } } },
-    colors: ['#6366f1', '#8b5cf6', '#a855f7'],
-    tooltip: { y: { formatter: val => val }, theme: 'dark' },
-    legend: { position: 'top', horizontalAlign: 'right', fontFamily: "'Open Sans', sans-serif" },
-    grid: { borderColor: '#f1f1f1', row: { colors: ['transparent', 'transparent'], opacity: 0.5 } },
-    title: { text: `Trafic du site web en ${currentYear}`, align: 'center', style: { fontSize: '14px', fontWeight: 'bold', fontFamily: "'Open Sans', sans-serif", color: '#334155' } }
+    stroke: { curve: 'smooth', width: 2.5 },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.25, opacityTo: 0.02, stops: [0, 90, 100] } },
+    xaxis: {
+      categories: monthlyData.map(item => item.month),
+      labels: { style: AXIS_LABEL_STYLE },
+      axisBorder: { color: '#E5E7EB' },
+      axisTicks: { color: '#E5E7EB' },
+    },
+    yaxis: { labels: { style: AXIS_LABEL_STYLE } },
+    colors: CHART_COLORS,
+    tooltip: { y: { formatter: val => val } },
+    legend: {
+      position: 'bottom',
+      fontFamily: FONT_FAMILY,
+      fontSize: '12px',
+      labels: { colors: '#4B5563' },
+      markers: { radius: 12 },
+    },
+    grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
   };
 
   const bounceRate = totals.totalVisits
@@ -90,27 +110,15 @@ const WebsiteVisitsChart = () => {
     : 0;
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1">
-        <ReactApexChart options={options} series={series} type="area" height="100%" />
+    <div className="flex h-full w-full flex-col">
+      <div className="min-h-0 flex-1">
+        <ReactApexChart options={options} series={series} type="area" height="100%" width="100%" />
       </div>
-      <div className="grid grid-cols-4 gap-2 mt-2 text-center text-xs">
-        <div className="bg-indigo-50 p-2 rounded">
-          <div className="font-semibold text-indigo-600">{totals.totalVisits.toLocaleString()}</div>
-          <div className="text-gray-500">Visites</div>
-        </div>
-        <div className="bg-purple-50 p-2 rounded">
-          <div className="font-semibold text-purple-600">{totals.uniqueVisitors.toLocaleString()}</div>
-          <div className="text-gray-500">Visiteurs uniques</div>
-        </div>
-        <div className="bg-fuchsia-50 p-2 rounded">
-          <div className="font-semibold text-fuchsia-600">{totals.pageViews.toLocaleString()}</div>
-          <div className="text-gray-500">Pages vues</div>
-        </div>
-        <div className="bg-gray-50 p-2 rounded">
-          <div className="font-semibold text-gray-600">{bounceRate}%</div>
-          <div className="text-gray-500">Taux de rebond</div>
-        </div>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+        <StatTile value={totals.totalVisits.toLocaleString()} label="Visites" />
+        <StatTile value={totals.uniqueVisitors.toLocaleString()} label="Visiteurs uniques" />
+        <StatTile value={totals.pageViews.toLocaleString()} label="Pages vues" />
+        <StatTile value={`${bounceRate}%`} label="Taux de rebond" />
       </div>
     </div>
   );

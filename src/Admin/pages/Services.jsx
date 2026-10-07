@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Edit, Trash, Check, X, Image, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, Image, Layers, Briefcase } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import CrudTable from '../components/CrudTable';
-import CrudForm from '../components/CrudForm';
+import {
+  PageHeader, Card, StatCard, Button, IconButton, Field, Input, Textarea, Select, FileInput, Checkbox,
+  FormActions, Table, THead, TBody, Th, Tr, Td, TableEmpty, RowActions, Badge, Modal, useConfirm,
+} from '../ui';
+import toast from 'react-hot-toast';
 import API_BASE_URL from '../../config';
 
 const Services = () => {
+  const { confirm, confirmDialog } = useConfirm();
   const [services, setServices] = useState([]);
   const [formData, setFormData] = useState({
     ID_Service: null,
@@ -193,6 +197,9 @@ const Services = () => {
   };
 
   const handleDeleteService = async (id) => {
+    if (!(await confirm({ message: 'Êtes-vous sûr de vouloir supprimer ce service et toutes ses lignes ? Cette action est irréversible.' }))) {
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${API_URL}/${id}`, {
@@ -201,8 +208,10 @@ const Services = () => {
         }
       });
       fetchServices();
+      toast.success('Service supprimé avec succès');
     } catch (error) {
       console.error('Error deleting service:', error);
+      toast.error('Échec de la suppression du service.');
     }
   };
 
@@ -313,6 +322,9 @@ const Services = () => {
 
   // Handle deleting a row
   const handleDeleteRow = async (id) => {
+    if (!(await confirm({ message: 'Êtes-vous sûr de vouloir supprimer cette ligne ? Cette action est irréversible.' }))) {
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${ROW_API_URL}/${id}`, {
@@ -321,8 +333,10 @@ const Services = () => {
         }
       });
       fetchServiceRows(currentServiceId);
+      toast.success('Ligne supprimée avec succès');
     } catch (error) {
       console.error('Error deleting row:', error);
+      toast.error('Échec de la suppression de la ligne.');
     }
   };
 
@@ -465,467 +479,373 @@ const Services = () => {
   const inactiveServices = services.length - activeServices;
 
   return (
-    <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold">Gestion des Services</h1>
-      <p className="mt-4 mb-6">Ajoutez, modifiez ou supprimez les services proposés par votre établissement.</p>
+    <div>
+      {confirmDialog}
+      <PageHeader
+        icon={Briefcase}
+        title="Gestion des services"
+        description="Ajoutez, modifiez ou supprimez les services proposés par votre établissement."
+      />
 
-      {/* Statistiques rapides */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Services Actifs</p>
-              <h3 className="text-blue-600 text-2xl font-bold mt-1">{activeServices}</h3>
-            </div>
-            <div className="bg-blue-100 p-2 rounded-full">
-              <Check className="text-blue-500" size={20} />
-            </div>
-          </div>
+      <div className="space-y-6">
+        {/* Statistiques rapides */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard label="Services actifs" value={activeServices} icon={Check} tone="green" />
+          <StatCard label="Services inactifs" value={inactiveServices} icon={X} tone="red" />
+          <StatCard label="Total services" value={services.length} icon={Layers} tone="brand" />
         </div>
 
-        <div className="bg-red-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Services Inactifs</p>
-              <h3 className="text-red-600 text-2xl font-bold mt-1">{inactiveServices}</h3>
-            </div>
-            <div className="bg-red-100 p-2 rounded-full">
-              <X className="text-red-500" size={20} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-green-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Total Services</p>
-              <h3 className="text-green-600 text-2xl font-bold mt-1">{services.length}</h3>
-            </div>
-            <div className="bg-green-100 p-2 rounded-full">
-              <Plus className="text-green-500" size={20} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Formulaire d'ajout/modification */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-lg font-semibold mb-4">{isEditing ? 'Modifier un service' : 'Ajouter un nouveau service'}</h2>
-        <form onSubmit={handleAddService} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom du service</label>
-              <input
-                type="text"
-                name="Nom"
-                value={formData.Nom}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom du service (Arabe)</label>
-              <input
-                type="text"
-                name="NomAR"
-                value={formData.NomAR}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                dir="rtl"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              name="Descriptions"
-              value={formData.Descriptions}
-              onChange={handleChange}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Arabe)</label>
-            <textarea
-              name="DescriptionsAR"
-              value={formData.DescriptionsAR}
-              onChange={handleChange}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              dir="rtl"
-            ></textarea>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-              <div className="flex items-center mt-2">
-                <input
-                  type="checkbox"
-                  name="Etat"
-                  checked={formData.Etat}
+        {/* Formulaire d'ajout/modification */}
+        <Card
+          title={isEditing ? 'Modifier un service' : 'Ajouter un nouveau service'}
+          icon={isEditing ? Pencil : Plus}
+        >
+          <form onSubmit={handleAddService}>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <Field label="Nom du service" htmlFor="service-nom" required>
+                <Input
+                  id="service-nom"
+                  type="text"
+                  name="Nom"
+                  value={formData.Nom}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  required
                 />
-                <span className="ml-2 text-sm text-gray-700">Actif</span>
-              </div>
-            </div>
+              </Field>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="file"
-                  name="Photos"
+              <Field label="Nom du service (Arabe)" htmlFor="service-nom-ar" required>
+                <Input
+                  id="service-nom-ar"
+                  type="text"
+                  name="NomAR"
+                  value={formData.NomAR}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  accept="image/*"
+                  required
+                  dir="rtl"
                 />
-                {previewImage && (
-                  <div className="relative h-16 w-16">
+              </Field>
+
+              <Field label="Description" htmlFor="service-desc">
+                <Textarea
+                  id="service-desc"
+                  name="Descriptions"
+                  value={formData.Descriptions}
+                  onChange={handleChange}
+                  rows={3}
+                />
+              </Field>
+
+              <Field label="Description (Arabe)" htmlFor="service-desc-ar">
+                <Textarea
+                  id="service-desc-ar"
+                  name="DescriptionsAR"
+                  value={formData.DescriptionsAR}
+                  onChange={handleChange}
+                  rows={3}
+                  dir="rtl"
+                />
+              </Field>
+
+              <Field label="État">
+                <div className="pt-2">
+                  <Checkbox
+                    name="Etat"
+                    checked={formData.Etat}
+                    onChange={handleChange}
+                    label="Actif"
+                  />
+                </div>
+              </Field>
+
+              <Field label="Image" htmlFor="service-photo">
+                <div className="flex items-center gap-4">
+                  <FileInput
+                    id="service-photo"
+                    name="Photos"
+                    onChange={handleChange}
+                    accept="image/*"
+                  />
+                  {previewImage && (
                     <img
                       src={previewImage}
-                      alt="Preview"
-                      className="h-full w-full object-cover rounded-md"
+                      alt="Aperçu"
+                      className="h-16 w-16 shrink-0 rounded-lg border border-gray-200 object-cover"
                     />
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </Field>
             </div>
-          </div>
 
-          <div className="flex justify-end space-x-3">
-            {isEditing && (
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-              >
-                Annuler
-              </button>
-            )}
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              {isEditing ? 'Mettre à jour' : 'Ajouter'}
-            </button>
-          </div>
-        </form>
-      </div>
+            <FormActions>
+              {isEditing && (
+                <Button variant="secondary" onClick={handleCancelEdit}>
+                  Annuler
+                </Button>
+              )}
+              <Button type="submit" icon={isEditing ? Check : Plus}>
+                {isEditing ? 'Mettre à jour' : 'Ajouter'}
+              </Button>
+            </FormActions>
+          </form>
+        </Card>
 
-      {/* Liste des services */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Liste des services</h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        {/* Liste des services */}
+        <Card title="Liste des services" icon={Briefcase} padded={false}>
+          <Table>
+            <THead>
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lignes</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <Th>Image</Th>
+                <Th>Nom</Th>
+                <Th>Description</Th>
+                <Th>État</Th>
+                <Th>Lignes</Th>
+                <Th align="right">Actions</Th>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            </THead>
+            <TBody>
               {services.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                    Aucun service disponible
-                  </td>
-                </tr>
+                <TableEmpty colSpan={6} message="Aucun service disponible" />
               ) : (
                 services.map(service => (
-                  <tr key={service.ID_Service}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <Tr key={service.ID_Service}>
+                    <Td>
                       {service.Photos ? (
                         <img
                           src={`${API_BASE_URL}/services/${service.ID_Service}/photo`}
                           alt={service.Nom}
-                          className="h-10 w-10 rounded-full object-cover"
+                          className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
                           onError={(e) => {
                             e.target.src = '/default-service.png';
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <Image size={16} className="text-gray-500" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
+                          <Image size={16} className="text-gray-400" />
                         </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{service.Nom}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 max-w-xs truncate">{service.Descriptions}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </Td>
+                    <Td className="whitespace-nowrap font-medium text-gray-900">{service.Nom}</Td>
+                    <Td>
+                      <div className="max-w-xs truncate text-gray-500">{service.Descriptions}</div>
+                    </Td>
+                    <Td>
                       <button
+                        type="button"
                         onClick={() => toggleServiceStatus(service.ID_Service)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${service.Etat
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                          }`}
+                        title="Changer l'état"
+                        className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30"
                       >
                         {service.Etat ? (
-                          <>
-                            <Check size={12} className="mr-1" />
-                            Actif
-                          </>
+                          <Badge tone="green"><Check size={12} />Actif</Badge>
                         ) : (
-                          <>
-                            <X size={12} className="mr-1" />
-                            Inactif
-                          </>
+                          <Badge tone="red"><X size={12} />Inactif</Badge>
                         )}
                       </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
+                    </Td>
+                    <Td>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={Layers}
                         onClick={() => handleViewRows(service)}
-                        className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        <Layers size={14} className="mr-1" />
                         Voir
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEditService(service)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteService(service.ID_Service)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash size={18} />
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </Td>
+                    <Td align="right">
+                      <RowActions>
+                        <IconButton
+                          icon={Pencil}
+                          label="Modifier"
+                          tone="brand"
+                          onClick={() => handleEditService(service)}
+                        />
+                        <IconButton
+                          icon={Trash2}
+                          label="Supprimer"
+                          tone="danger"
+                          onClick={() => handleDeleteService(service.ID_Service)}
+                        />
+                      </RowActions>
+                    </Td>
+                  </Tr>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </Card>
       </div>
 
       {/* Modal for managing rows */}
-      {showRowsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Lignes pour le service: {currentServiceName}</h2>
-              <button
-                onClick={() => setShowRowsModal(false)}
-                className="p-2 rounded-md hover:bg-gray-100"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {showRowForm ? (
-              <div className="mb-6">
-                <h3 className="text-lg font-medium mb-4">{isEditingRow ? 'Modifier une ligne' : 'Ajouter une ligne'}</h3>
-                <form onSubmit={handleRowSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Type de photo</label>
-                      <select
-                        name="ID_Type_Photo"
-                        value={rowFormData.ID_Type_Photo}
-                        onChange={handleRowFormChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      >
-                        <option value="">Sélectionner un type</option>
-                        {typePhotos.map(type => (
-                          <option key={type.ID_Type_Photo} value={type.ID_Type_Photo}>
-                            {type.Nom}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Conditional file upload fields based on ID_Type_Photo */}
-                    {rowFormData.ID_Type_Photo == '1' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                        <input
-                          type="file"
-                          name="image"
-                          onChange={handleRowImageChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          accept="image/*"
-                        />
-                      </div>
-                    )}
-
-                    {rowFormData.ID_Type_Photo == '2' && (
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Image 1</label>
-                          <input
-                            type="file"
-                            name="image1"
-                            onChange={handleRowImage1Change}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            accept="image/*"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Image 2</label>
-                          <input
-                            type="file"
-                            name="image2"
-                            onChange={handleRowImage2Change}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            accept="image/*"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Classement</label>
-                      <input
-                        type="number"
-                        name="Classement"
-                        value={rowFormData.Classement}
-                        onChange={handleRowFormChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Texte</label>
-                    <div className="quill-container">
-                      <ReactQuill
-                        theme="snow"
-                        value={rowFormData.Text}
-                        onChange={handleTextEditorChange}
-                        modules={quillModules}
-                        formats={quillFormats}
-                        className="h-48"
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: "50px" }}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Texte (Arabe)</label>
-                    <div className="quill-container">
-                      <ReactQuill
-                        theme="snow"
-                        value={rowFormData.TextAR}
-                        onChange={handleTextEditorChangeAR}
-                        modules={quillModules}
-                        formats={quillFormats}
-                        className="h-48"
-                        dir="rtl"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-3" style={{ marginTop: "60px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowRowForm(false)}
-                      className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      {isEditingRow ? 'Mettre à jour' : 'Ajouter'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              <button
-                onClick={handleAddRow}
-                className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-              >
-                <Plus size={16} className="mr-1" />
-                Ajouter une ligne
-              </button>
-            )}
-
-            {/* Table of rows */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {rowColumns.map((column, index) => (
-                      <th
-                        key={index}
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {column.header}
-                      </th>
+      <Modal
+        open={showRowsModal}
+        onClose={() => setShowRowsModal(false)}
+        title={`Lignes du service : ${currentServiceName}`}
+        icon={Layers}
+        size="xl"
+      >
+        {showRowForm ? (
+          <div className="mb-6 rounded-xl border border-gray-200 p-5">
+            <h4 className="mb-4 text-base font-semibold text-gray-900">
+              {isEditingRow ? 'Modifier une ligne' : 'Ajouter une ligne'}
+            </h4>
+            <form onSubmit={handleRowSubmit}>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <Field label="Type de photo" htmlFor="row-type-photo" required>
+                  <Select
+                    id="row-type-photo"
+                    name="ID_Type_Photo"
+                    value={rowFormData.ID_Type_Photo}
+                    onChange={handleRowFormChange}
+                    required
+                  >
+                    <option value="">Sélectionner un type</option>
+                    {typePhotos.map(type => (
+                      <option key={type.ID_Type_Photo} value={type.ID_Type_Photo}>
+                        {type.Nom}
+                      </option>
                     ))}
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentServiceRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={rowColumns.length + 1} className="px-6 py-4 text-center text-sm text-gray-500">
-                        Aucune ligne disponible pour ce service
-                      </td>
-                    </tr>
-                  ) : (
-                    currentServiceRows.map(row => (
-                      <tr key={row.ID_Row}>
-                        {rowColumns.map((column, index) => (
-                          <td key={index} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {column.accessor === "Text" ? (
-                              <div className="max-w-xs truncate" dangerouslySetInnerHTML={{ __html: row.Text || '' }}></div>
-                            ) : (
-                              column.render ? column.render(row) : row[column.accessor]
-                            )}
-                          </td>
-                        ))}
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleEditRow(row)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-3"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRow(row.ID_Row)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </Select>
+                </Field>
+
+                <Field label="Classement" htmlFor="row-classement">
+                  <Input
+                    id="row-classement"
+                    type="number"
+                    name="Classement"
+                    value={rowFormData.Classement}
+                    onChange={handleRowFormChange}
+                  />
+                </Field>
+
+                {/* Conditional file upload fields based on ID_Type_Photo */}
+                {rowFormData.ID_Type_Photo == '1' && (
+                  <Field label="Image" htmlFor="row-image">
+                    <FileInput
+                      id="row-image"
+                      name="image"
+                      onChange={handleRowImageChange}
+                      accept="image/*"
+                    />
+                  </Field>
+                )}
+
+                {rowFormData.ID_Type_Photo == '2' && (
+                  <>
+                    <Field label="Image 1" htmlFor="row-image1">
+                      <FileInput
+                        id="row-image1"
+                        name="image1"
+                        onChange={handleRowImage1Change}
+                        accept="image/*"
+                      />
+                    </Field>
+                    <Field label="Image 2" htmlFor="row-image2">
+                      <FileInput
+                        id="row-image2"
+                        name="image2"
+                        onChange={handleRowImage2Change}
+                        accept="image/*"
+                      />
+                    </Field>
+                  </>
+                )}
+
+                <Field label="Texte" className="md:col-span-2">
+                  <div className="quill-container pb-12">
+                    <ReactQuill
+                      theme="snow"
+                      value={rowFormData.Text}
+                      onChange={handleTextEditorChange}
+                      modules={quillModules}
+                      formats={quillFormats}
+                      className="h-48"
+                    />
+                  </div>
+                </Field>
+
+                <Field label="Texte (Arabe)" className="md:col-span-2">
+                  <div className="quill-container pb-12">
+                    <ReactQuill
+                      theme="snow"
+                      value={rowFormData.TextAR}
+                      onChange={handleTextEditorChangeAR}
+                      modules={quillModules}
+                      formats={quillFormats}
+                      className="h-48"
+                      dir="rtl"
+                    />
+                  </div>
+                </Field>
+              </div>
+
+              <FormActions>
+                <Button variant="secondary" onClick={() => setShowRowForm(false)}>
+                  Annuler
+                </Button>
+                <Button type="submit" icon={isEditingRow ? Check : Plus}>
+                  {isEditingRow ? 'Mettre à jour' : 'Ajouter'}
+                </Button>
+              </FormActions>
+            </form>
           </div>
+        ) : (
+          <div className="mb-4 flex justify-end">
+            <Button icon={Plus} onClick={handleAddRow}>
+              Ajouter une ligne
+            </Button>
+          </div>
+        )}
+
+        {/* Table of rows */}
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <Table>
+            <THead>
+              <tr>
+                {rowColumns.map((column, index) => (
+                  <Th key={index}>{column.header}</Th>
+                ))}
+                <Th align="right">Actions</Th>
+              </tr>
+            </THead>
+            <TBody>
+              {currentServiceRows.length === 0 ? (
+                <TableEmpty colSpan={rowColumns.length + 1} message="Aucune ligne disponible pour ce service" />
+              ) : (
+                currentServiceRows.map(row => (
+                  <Tr key={row.ID_Row}>
+                    {rowColumns.map((column, index) => (
+                      <Td key={index} className="whitespace-nowrap">
+                        {column.accessor === "Text" ? (
+                          <div className="max-w-xs truncate" dangerouslySetInnerHTML={{ __html: row.Text || '' }}></div>
+                        ) : (
+                          column.render ? column.render(row) : row[column.accessor]
+                        )}
+                      </Td>
+                    ))}
+                    <Td align="right">
+                      <RowActions>
+                        <IconButton
+                          icon={Pencil}
+                          label="Modifier"
+                          tone="brand"
+                          onClick={() => handleEditRow(row)}
+                        />
+                        <IconButton
+                          icon={Trash2}
+                          label="Supprimer"
+                          tone="danger"
+                          onClick={() => handleDeleteRow(row.ID_Row)}
+                        />
+                      </RowActions>
+                    </Td>
+                  </Tr>
+                ))
+              )}
+            </TBody>
+          </Table>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

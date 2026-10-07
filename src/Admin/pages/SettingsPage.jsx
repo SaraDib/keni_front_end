@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Upload, Phone, Globe, Mail, MapPin, Facebook, Instagram, Image, Gift, Plus, Edit, Trash2, X } from 'lucide-react';
+import { Settings, Save, Upload, Phone, Globe, Mail, MapPin, Facebook, Instagram, Image, ImagePlus, Gift, Plus, Pencil, Trash2, X, Building2, Palette } from 'lucide-react';
 import { FaWhatsapp } from "react-icons/fa";
 import axios from 'axios';
 import SettingsPageModals from './SettingsPageModals';
 import API_BASE_URL from '../../config';
+import {
+  PageHeader, Card, Button, IconButton, RowActions, Field, Input, Textarea, FileInput,
+  FormActions, Alert, LoadingState, EmptyState, inputClass
+} from '../ui';
+
+const cx = (...classes) => classes.filter(Boolean).join(' ');
+
+// Vignette d'image du slider (existante ou nouvelle)
+const sliderThumbClass = 'relative h-20 w-32 overflow-hidden rounded-lg border border-gray-200 bg-gray-50';
+const sliderRemoveClass =
+  'absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-sm ' +
+  'ring-1 ring-gray-200 transition hover:bg-red-50 hover:text-red-700';
+const sliderAddClass =
+  'flex h-20 w-32 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 ' +
+  'text-xs font-medium text-gray-500 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700';
 
 // Composant pour gérer les sliders
 const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
@@ -45,29 +60,95 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
     setNewSliderImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const totalImages = sliderImages.length + newSliderImages.length;
+
+  // Tuile "Ajouter" (même logique de limites qu'auparavant)
+  const renderAddTile = () => {
+    // Pour les pages "commencer" et "contact" : pas de limite
+    if (nomPage === 'commencer' || nomPage === 'contact') {
+      return (
+        <label className={sliderAddClass}>
+          <ImagePlus size={18} />
+          Ajouter
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+          />
+        </label>
+      );
+    }
+
+    // Pour les offres d'emploi : maximum 2 images
+    if (nomPage === "offres d'emploi") {
+      if (totalImages < 2) {
+        return (
+          <label className={sliderAddClass}>
+            <ImagePlus size={18} />
+            Ajouter ({totalImages}/2)
+            <input
+              type="file"
+              multiple={totalImages === 0}
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                const remainingSlots = 2 - totalImages;
+                const filesToAdd = files.slice(0, remainingSlots);
+                setNewSliderImages([...newSliderImages, ...filesToAdd]);
+              }}
+            />
+          </label>
+        );
+      }
+      return null;
+    }
+
+    // Pour les autres pages : maximum 1 image
+    if (totalImages === 0) {
+      return (
+        <label className={sliderAddClass}>
+          <ImagePlus size={18} />
+          Ajouter
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
+          />
+        </label>
+      );
+    }
+
+    return null;
+  };
+
   return (
-    <div className="mb-6">
-      <h3 className="block text-sm font-medium text-gray-700 mb-2">
-        Images de la page {nomPage}
+    <div className="border-b border-gray-100 py-5 first:pt-0 last:border-b-0 last:pb-0">
+      <div className="mb-3 flex flex-wrap items-baseline gap-x-2">
+        <h3 className="text-sm font-medium capitalize text-gray-800">Page {nomPage}</h3>
         {nomPage === "offres d'emploi" && (
-          <span className="text-sm text-gray-500 ml-2">(Maximum 2 images)</span>
+          <span className="text-xs text-gray-500">(Maximum 2 images)</span>
         )}
-      </h3>
-      <div className="flex flex-wrap gap-4">
+      </div>
+      <div className="flex flex-wrap gap-3">
         {/* Images existantes */}
         {sliderImages.map((img, index) => (
-          <div key={img.ID_Image || img.id} className="relative w-32 h-20 border rounded overflow-hidden">
-            <img src={`${API_BASE_URL.replace('/api', '/storage')}/${img.Path}`} alt={`Slider ${index + 1}`} className="w-full h-full object-cover" />
+          <div key={img.ID_Image || img.id} className={sliderThumbClass}>
+            <img src={`${API_BASE_URL.replace('/api', '/storage')}/${img.Path}`} alt={`Slider ${index + 1}`} className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => handleDeleteSliderImage(img.ID_Image || img.id)}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600"
+              className={sliderRemoveClass}
               title="Supprimer cette image"
+              aria-label="Supprimer cette image"
             >
-              X
+              <X size={14} />
             </button>
             {nomPage === "offres d'emploi" && (
-              <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+              <div className="absolute bottom-1 left-1 rounded bg-brand-700 px-1.5 text-xs font-medium text-white">
                 {index + 1}
               </div>
             )}
@@ -76,18 +157,19 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
 
         {/* Nouvelles images */}
         {newSliderImages.map((file, index) => (
-          <div key={index} className="relative w-32 h-20 border rounded overflow-hidden">
-            <img src={URL.createObjectURL(file)} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+          <div key={index} className={cx(sliderThumbClass, 'border-dashed border-emerald-300')}>
+            <img src={URL.createObjectURL(file)} alt={`Preview ${index + 1}`} className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => handleRemoveNewSliderImage(index)}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600"
+              className={sliderRemoveClass}
               title="Supprimer cette image"
+              aria-label="Supprimer cette image"
             >
-              X
+              <X size={14} />
             </button>
             {nomPage === "offres d'emploi" && (
-              <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+              <div className="absolute bottom-1 left-1 rounded bg-emerald-600 px-1.5 text-xs font-medium text-white">
                 {sliderImages.length + index + 1}
               </div>
             )}
@@ -95,79 +177,13 @@ const SliderUploader = ({ sliderImages, setSliderImages, nomPage }) => {
         ))}
 
         {/* Ajouter */}
-        {(() => {
-          const totalImages = sliderImages.length + newSliderImages.length;
-
-          // Pour les pages "commencer" et "contact" : pas de limite
-          if (nomPage === 'commencer' || nomPage === 'contact') {
-            return (
-              <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-                + Ajouter
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-                />
-              </label>
-            );
-          }
-
-          // Pour les offres d'emploi : maximum 2 images
-          if (nomPage === "offres d'emploi") {
-            if (totalImages < 2) {
-              return (
-                <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-                  + Ajouter ({totalImages}/2)
-                  <input
-                    type="file"
-                    multiple={totalImages === 0}
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      const remainingSlots = 2 - totalImages;
-                      const filesToAdd = files.slice(0, remainingSlots);
-                      setNewSliderImages([...newSliderImages, ...filesToAdd]);
-                    }}
-                  />
-                </label>
-              );
-            }
-            return null;
-          }
-
-          // Pour les autres pages : maximum 1 image
-          if (totalImages === 0) {
-            return (
-              <label className="w-32 h-20 flex items-center justify-center border border-dashed rounded cursor-pointer text-gray-400 hover:text-gray-600">
-                + Ajouter
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => setNewSliderImages([...newSliderImages, ...Array.from(e.target.files)])}
-                />
-              </label>
-            );
-          }
-
-          return null;
-        })()}
-
-
-
+        {renderAddTile()}
       </div>
 
       {newSliderImages.length > 0 && (
-        <button
-          type="button"
-          onClick={uploadSliderImages}
-          className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          Upload nouvelles images
-        </button>
+        <Button size="sm" icon={Upload} onClick={uploadSliderImages} className="mt-3">
+          Envoyer les nouvelles images
+        </Button>
       )}
     </div>
   );
@@ -340,91 +356,72 @@ const AvantagesSociauxManager = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-medium text-gray-900">Avantages sociaux</h2>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            resetForm();
-            setShowAddForm(true);
-          }}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
-        >
-          <Plus size={16} className="mr-2" />
-          Ajouter un avantage
-        </button>
-      </div>
+      {error && <Alert tone="error">{error}</Alert>}
+      {success && <Alert tone="success">Opération réussie !</Alert>}
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-          Opération réussie !
-        </div>
-      )}
-
-
-
-      {/* Liste des avantages */}
-      {isLoading ? (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {avantages.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              Aucun avantage social configuré
-            </p>
-          ) : (
-            avantages.map((avantage) => (
-              <div key={avantage.id} className="bg-white p-4 rounded-lg border shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-4">
-                    {avantage.photo && (
-                      <img
-                        src={`${API_BASE_URL.replace('/api', '/storage')}/${avantage.photo}`}
-                        alt="Avantage"
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-gray-800">{avantage.paragraphe}</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleEdit(avantage);
-                      }}
-                      className="text-blue-500 hover:text-blue-700"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDelete(avantage);
-                      }}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+      <Card
+        title="Avantages sociaux"
+        description="Avantages présentés aux candidats sur la page des offres d'emploi."
+        icon={Gift}
+        actions={
+          <Button
+            icon={Plus}
+            onClick={(e) => {
+              e.preventDefault();
+              resetForm();
+              setShowAddForm(true);
+            }}
+          >
+            Ajouter un avantage
+          </Button>
+        }
+      >
+        {/* Liste des avantages */}
+        {isLoading ? (
+          <LoadingState />
+        ) : avantages.length === 0 ? (
+          <EmptyState icon={Gift} title="Aucun avantage social configuré" />
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {avantages.map((avantage) => (
+              <li key={avantage.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  {avantage.photo ? (
+                    <img
+                      src={`${API_BASE_URL.replace('/api', '/storage')}/${avantage.photo}`}
+                      alt="Avantage"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image size={20} className="text-gray-400" />
+                  )}
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+                <p className="flex-1 text-sm text-gray-700">{avantage.paragraphe}</p>
+                <RowActions>
+                  <IconButton
+                    icon={Pencil}
+                    label="Modifier"
+                    tone="brand"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleEdit(avantage);
+                    }}
+                  />
+                  <IconButton
+                    icon={Trash2}
+                    label="Supprimer"
+                    tone="danger"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(avantage);
+                    }}
+                  />
+                </RowActions>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       {/* Modales séparées - HORS du formulaire principal */}
       <SettingsPageModals
@@ -570,318 +567,278 @@ const SettingsPage = () => {
   };
 
   const tabs = [
-    { id: 'general', label: 'Général', icon: <Settings size={18} /> },
-    { id: 'contact', label: 'Contact', icon: <Phone size={18} /> },
-    { id: 'social', label: 'Réseaux sociaux', icon: <Globe size={18} /> },
-    { id: 'avantages', label: 'Avantages sociaux', icon: <Gift size={18} /> }
+    { id: 'general', label: 'Général', icon: Settings },
+    { id: 'contact', label: 'Contact', icon: Phone },
+    { id: 'social', label: 'Réseaux sociaux', icon: Globe },
+    { id: 'avantages', label: 'Avantages sociaux', icon: Gift }
   ];
 
+  // Libellé de champ précédé d'une icône
+  const iconLabel = (Icon, text) => (
+    <span className="inline-flex items-center gap-1.5">
+      <Icon size={15} className="text-gray-400" />
+      {text}
+    </span>
+  );
+
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <Settings className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Paramètres</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={Settings}
+        title="Paramètres"
+        description="Personnalisez les paramètres de votre site web."
+      />
 
-      <p className="mb-6 text-gray-600">Personnalisez les paramètres de votre site web.</p>
-
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">{error}</div>}
-      {success && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">Les paramètres ont été sauvegardés avec succès.</div>}
+      {error && <Alert tone="error">{error}</Alert>}
+      {success && <Alert tone="success">Les paramètres ont été sauvegardés avec succès.</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <Card>
+          <LoadingState />
+        </Card>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="flex flex-col md:flex-row">
-            {/* Onglets */}
-            <div className="w-full md:w-64 bg-gray-50 p-4 border-r border-gray-200">
-              <nav className="space-y-1">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${activeTab === tab.id ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                  >
-                    <span className="mr-3">{tab.icon}</span>
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
-            </div>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          {/* Navigation des paramètres */}
+          <nav className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-2 shadow-sm lg:sticky lg:top-6 lg:w-60 lg:shrink-0 lg:flex-col">
+            {tabs.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className={cx(
+                  'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition lg:w-full',
+                  activeTab === id ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <Icon size={17} />
+                {label}
+              </button>
+            ))}
+          </nav>
 
-            {/* Contenu des onglets */}
-            <div className="flex-1 p-6 max-h-[60vh] overflow-y-auto">
-              <form onSubmit={handleSubmit}>
+          {/* Contenu des onglets */}
+          <div className="min-w-0 flex-1">
+            {activeTab !== 'avantages' && (
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {activeTab === 'general' && (
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Paramètres généraux</h2>
+                  <>
+                    <Card title="Identité" description="Nom et logo affichés sur le site." icon={Building2}>
+                      <div className="space-y-5">
+                        {/* Nom entreprise */}
+                        <Field label="Nom de l'entreprise" htmlFor="Nom">
+                          <Input
+                            type="text"
+                            id="Nom"
+                            name="Nom"
+                            value={settings.Nom}
+                            onChange={handleChange}
+                            placeholder="Nom de l'entreprise"
+                          />
+                        </Field>
 
-                    {/* Nom entreprise */}
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
-                      <input
-                        type="text"
-                        name="Nom"
-                        value={settings.Nom}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Nom de l'entreprise"
-                      />
-                    </div>
-
-                    {/* Logo */}
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Logo du site</label>
-                      <div className="flex items-center">
-                        <div className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden mr-4 flex items-center justify-center">
-                          {settings.logoPreview ? (
-                            <img src={settings.logoPreview} alt="Logo" className="max-w-full max-h-full object-contain" />
-                          ) : (
-                            <Image size={32} className="text-gray-400" />
-                          )}
-                        </div>
-                        <div>
-                          <label className="block">
-                            <span className="sr-only">Choisir un logo</span>
-                            <input
-                              type="file"
-                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        {/* Logo */}
+                        <Field label="Logo du site" htmlFor="Logo" hint="PNG, JPG ou GIF. Taille recommandée : 200x200px">
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 p-2">
+                              {settings.logoPreview ? (
+                                <img src={settings.logoPreview} alt="Logo" className="max-h-full max-w-full object-contain" />
+                              ) : (
+                                <Image size={28} className="text-gray-400" />
+                              )}
+                            </div>
+                            <FileInput
+                              id="Logo"
                               accept="image/*"
                               onChange={handleChange}
                               name="Logo"
                             />
-                          </label>
-                          <p className="mt-1 text-xs text-gray-500">PNG, JPG ou GIF. Taille recommandée: 200x200px</p>
-                        </div>
+                          </div>
+                        </Field>
                       </div>
-                    </div>
+                    </Card>
 
-                    {/* Couleur Background */}
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Couleur de fond (Hero Global Health)</label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="color"
-                          name="CouleurBackground"
-                          value={settings.CouleurBackground}
-                          onChange={handleChange}
-                          className="h-10 w-20 cursor-pointer rounded border border-gray-300"
-                        />
-                        <input
-                          type="text"
-                          name="CouleurBackground"
-                          value={settings.CouleurBackground}
-                          onChange={handleChange}
-                          className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 uppercase"
-                          placeholder="#333333"
-                        />
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500">C'est la couleur qui s'affiche derrière le texte "GLOBAL HEALTH".</p>
-                    </div>
-
-                    {/* Image Background */}
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Image d'arrière-plan (Section Contact)</label>
-                      <div className="flex items-center">
-                        <div className="w-40 h-24 bg-gray-100 rounded-md overflow-hidden mr-4 flex items-center justify-center border">
-                          {settings.backgroundPreview ? (
-                            <img src={settings.backgroundPreview} alt="Background" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="text-gray-400 text-xs text-center p-2">Aucune image (Image par défaut utilisée)</div>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block">
-                            <span className="sr-only">Choisir une image</span>
+                    <Card title="Apparence" description="Couleur et image de fond des sections du site." icon={Palette}>
+                      <div className="space-y-5">
+                        {/* Couleur Background */}
+                        <Field
+                          label="Couleur de fond (Hero Global Health)"
+                          htmlFor="CouleurBackgroundText"
+                          hint={"C'est la couleur qui s'affiche derrière le texte \"GLOBAL HEALTH\"."}
+                        >
+                          <div className="flex items-center gap-3">
                             <input
-                              type="file"
-                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                              type="color"
+                              name="CouleurBackground"
+                              value={settings.CouleurBackground}
+                              onChange={handleChange}
+                              className="h-10 w-14 shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white p-1 shadow-sm"
+                              aria-label="Choisir la couleur de fond"
+                            />
+                            <input
+                              type="text"
+                              id="CouleurBackgroundText"
+                              name="CouleurBackground"
+                              value={settings.CouleurBackground}
+                              onChange={handleChange}
+                              className={cx(inputClass, 'w-36 font-mono uppercase')}
+                              placeholder="#333333"
+                            />
+                          </div>
+                        </Field>
+
+                        {/* Image Background */}
+                        <Field
+                          label="Image d'arrière-plan (Section Contact)"
+                          htmlFor="ImageBackground"
+                          hint={"Cette image s'affiche derrière les boutons \"Prendre RDV\". Taille recommandée : 1920x1080px"}
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <div className="flex h-24 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                              {settings.backgroundPreview ? (
+                                <img src={settings.backgroundPreview} alt="Background" className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="flex flex-col items-center gap-1 p-2 text-center text-xs text-gray-400">
+                                  <Image size={20} />
+                                  Aucune image (image par défaut utilisée)
+                                </div>
+                              )}
+                            </div>
+                            <FileInput
+                              id="ImageBackground"
                               accept="image/*"
                               onChange={handleChange}
                               name="ImageBackground"
                             />
-                          </label>
-                          <p className="mt-1 text-xs text-gray-500">Cette image s'affiche derrière les boutons "Prendre RDV". Taille recommandée: 1920x1080px</p>
-                        </div>
+                          </div>
+                        </Field>
                       </div>
-                    </div>
+                    </Card>
 
-                    {/* Slider */}
-                    <SliderUploader
-                      sliderImages={sliderImages.filter(img => img.nom_page === 'commencer')}
-                      setSliderImages={setSliderImages}
-                      nomPage="commencer"
-                    />
-                    <SliderUploader
-                      sliderImages={sliderImages.filter(img => img.nom_page === 'qui sommes nous')}
-                      setSliderImages={setSliderImages}
-                      nomPage="qui sommes nous"
-                    />
-                    <SliderUploader
-                      sliderImages={sliderImages.filter(img => img.nom_page === "offres d'emploi")}
-                      setSliderImages={setSliderImages}
-                      nomPage="offres d'emploi"
-                    />
-                    <SliderUploader
-                      sliderImages={sliderImages.filter(img => img.nom_page === "FAQ")}
-                      setSliderImages={setSliderImages}
-                      nomPage="FAQ"
-                    />
-                    <SliderUploader
-                      sliderImages={sliderImages.filter(img => img.nom_page === 'contact')}
-                      setSliderImages={setSliderImages}
-                      nomPage="contact"
-                    />
-
-                  </div>
+                    <Card
+                      title="Images des bannières"
+                      description="Les images sont enregistrées dès l'envoi, indépendamment du bouton de sauvegarde."
+                      icon={Image}
+                    >
+                      {/* Slider */}
+                      <SliderUploader
+                        sliderImages={sliderImages.filter(img => img.nom_page === 'commencer')}
+                        setSliderImages={setSliderImages}
+                        nomPage="commencer"
+                      />
+                      <SliderUploader
+                        sliderImages={sliderImages.filter(img => img.nom_page === 'qui sommes nous')}
+                        setSliderImages={setSliderImages}
+                        nomPage="qui sommes nous"
+                      />
+                      <SliderUploader
+                        sliderImages={sliderImages.filter(img => img.nom_page === "offres d'emploi")}
+                        setSliderImages={setSliderImages}
+                        nomPage="offres d'emploi"
+                      />
+                      <SliderUploader
+                        sliderImages={sliderImages.filter(img => img.nom_page === "FAQ")}
+                        setSliderImages={setSliderImages}
+                        nomPage="FAQ"
+                      />
+                      <SliderUploader
+                        sliderImages={sliderImages.filter(img => img.nom_page === 'contact')}
+                        setSliderImages={setSliderImages}
+                        nomPage="contact"
+                      />
+                    </Card>
+                  </>
                 )}
 
                 {activeTab === 'contact' && (
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Informations de contact</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="Telephone" className="block text-sm font-medium text-gray-700 mb-1">
-                          <Phone size={16} className="inline mr-1" />
-                          Numéro de téléphone
-                        </label>
-                        <input
+                  <Card title="Informations de contact" icon={Phone}>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                      <Field label={iconLabel(Phone, 'Numéro de téléphone')} htmlFor="Telephone">
+                        <Input
                           type="tel"
                           id="Telephone"
                           name="Telephone"
                           value={settings.Telephone}
                           onChange={handleChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="+33 1 23 45 67 89"
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="Whatsapp" className="block text-sm font-medium text-gray-700 mb-1">
-                          <FaWhatsapp size={16} className="inline mr-1" />
-                          Numéro WhatsApp
-                        </label>
-                        <input
+                      </Field>
+                      <Field label={iconLabel(FaWhatsapp, 'Numéro WhatsApp')} htmlFor="Whatsapp">
+                        <Input
                           type="tel"
                           id="Whatsapp"
                           name="Whatsapp"
                           value={settings.Whatsapp}
                           onChange={handleChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="+33 6 12 34 56 78"
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="Email" className="block text-sm font-medium text-gray-700 mb-1">
-                          <Mail size={16} className="inline mr-1" />
-                          Email
-                        </label>
-                        <input
+                      </Field>
+                      <Field label={iconLabel(Mail, 'Email')} htmlFor="Email">
+                        <Input
                           type="email"
                           id="Email"
                           name="Email"
                           value={settings.Email}
                           onChange={handleChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="contact@example.com"
                         />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label htmlFor="Adresse" className="block text-sm font-medium text-gray-700 mb-1">
-                          <MapPin size={16} className="inline mr-1" />
-                          Adresse
-                        </label>
-                        <textarea
+                      </Field>
+                      <Field label={iconLabel(MapPin, 'Adresse')} htmlFor="Adresse" className="md:col-span-2">
+                        <Textarea
                           id="Adresse"
                           name="Adresse"
                           value={settings.Adresse}
                           onChange={handleChange}
                           rows={3}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="123 Rue de la Santé, 75001 Paris, France"
                         />
-                      </div>
+                      </Field>
                     </div>
-                  </div>
+                  </Card>
                 )}
 
                 {activeTab === 'social' && (
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Réseaux sociaux</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="Facebook" className="block text-sm font-medium text-gray-700 mb-1">
-                          <Facebook size={16} className="inline mr-1 text-blue-600" />
-                          Facebook
-                        </label>
-                        <input
+                  <Card title="Réseaux sociaux" icon={Globe}>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                      <Field label={iconLabel(Facebook, 'Facebook')} htmlFor="Facebook">
+                        <Input
                           type="url"
                           id="Facebook"
                           name="Facebook"
                           value={settings.Facebook}
                           onChange={handleChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="https://facebook.com/votrepage"
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="Instagram" className="block text-sm font-medium text-gray-700 mb-1">
-                          <Instagram size={16} className="inline mr-1 text-pink-600" />
-                          Instagram
-                        </label>
-                        <input
+                      </Field>
+                      <Field label={iconLabel(Instagram, 'Instagram')} htmlFor="Instagram">
+                        <Input
                           type="url"
                           id="Instagram"
                           name="Instagram"
                           value={settings.Instagram}
                           onChange={handleChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           placeholder="https://instagram.com/votrecompte"
                         />
-                      </div>
+                      </Field>
                     </div>
-                  </div>
+                  </Card>
                 )}
 
-                {activeTab === 'avantages' ? (
-                  <div>
-                    {/* Fermer le formulaire avant les avantages */}
-                  </div>
-                ) : (
-                  <div className="mt-8 flex justify-end">
-                    <button
-                      type="submit"
-                      className={`px-4 py-2 rounded-md text-white flex items-center ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                          Sauvegarder...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={16} className="mr-2" />
-                          Sauvegarder les modifications
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
+                <FormActions className="mt-0 border-t-0 pt-0">
+                  <Button type="submit" icon={Save} loading={isLoading}>
+                    {isLoading ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
+                  </Button>
+                </FormActions>
               </form>
+            )}
 
-              {/* Avantages sociaux HORS du formulaire */}
-              {activeTab === 'avantages' && (
-                <AvantagesSociauxManager />
-              )}
-            </div>
+            {/* Avantages sociaux HORS du formulaire */}
+            {activeTab === 'avantages' && (
+              <AvantagesSociauxManager />
+            )}
           </div>
-        </div >
+        </div>
       )}
-    </div >
+    </div>
   );
 };
 

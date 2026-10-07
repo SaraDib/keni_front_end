@@ -1,29 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Home, User, Settings, FileText, LogOut, Menu, X, Activity, HelpCircle, Building, Phone, Briefcase, UserCheck, Clock, Users, Layers, ClipboardList, Package } from 'lucide-react';
+import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import {
+  Home, Settings, FileText, LogOut, Menu, X, Activity, HelpCircle, Building, Phone, Briefcase,
+  UserCheck, Clock, Users, Layers, ClipboardList, Package, ChevronsLeft, ChevronsRight, ChevronRight, Info,
+} from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
+import { Spinner } from '../ui';
 
+// Navigation du back-office : source unique pour la barre latérale et le fil d'Ariane.
+const NAV_SECTIONS = [
+  {
+    items: [{ to: 'dashboard', label: 'Tableau de bord', icon: Home }],
+  },
+  {
+    title: 'Services',
+    items: [
+      { to: 'services', label: 'Gestion des services', icon: Layers },
+      { to: 'experts', label: 'Section experts', icon: Activity },
+      { to: 'about-us', label: 'Qui sommes-nous', icon: Info },
+      { to: 'updates', label: 'Mises à jour', icon: FileText },
+      { to: 'gestion-recettes', label: 'Types de recettes', icon: ClipboardList },
+      { to: 'physiotherapie', label: 'Packs et services', icon: Package },
+    ],
+  },
+  {
+    title: 'Pages',
+    items: [
+      { to: 'faq', label: 'FAQ', icon: HelpCircle },
+      { to: 'health-center', label: 'Centres Global Health', icon: Building },
+      { to: 'contact', label: 'Messages de contact', icon: Phone },
+      { to: 'job-offers', label: 'Candidatures', icon: Briefcase },
+      { to: 'people', label: "L'équipe", icon: UserCheck },
+      { to: 'appointments', label: 'Rendez-vous', icon: Clock },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
+      { to: 'users', label: 'Utilisateurs', icon: Users },
+      { to: 'settings', label: 'Paramètres', icon: Settings },
+    ],
+  },
+];
 
-
-
-// Import des composants de page
-import Dashboard from '../pages/Dashboard';
-import FAQ from '../pages/FAQ';
-import HealthCenter from '../pages/HealthCenter';
-import Contact from '../pages/Contact';
-import JobOffers from '../pages/JobOffers';
-import People from '../pages/People';
-import Appointments from '../pages/Appointments';
-import SettingsPage from '../pages/SettingsPage';
-import UsersPage from '../pages/Users';
-import Services from '../pages/Services';
+const findNavItem = (pathname) => {
+  const slug = pathname.split('/').filter(Boolean)[1] || 'dashboard';
+  for (const section of NAV_SECTIONS) {
+    const item = section.items.find((i) => i.to === slug);
+    if (item) return { section: section.title, item };
+  }
+  return { section: null, item: null };
+};
 
 const AdminLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -41,16 +75,10 @@ const AdminLayout = () => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      if (mobile) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
-      }
+      setIsCollapsed(mobile);
     };
 
-    // Set initial state based on screen size
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -60,33 +88,12 @@ const AdminLayout = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Get the current page title based on the path
-  const getPageTitle = () => {
-    const path = location.pathname.split('/').pop() || 'dashboard';
-    const titles = {
-      'dashboard': 'Tableau de bord',
-      'faq': 'FAQ',
-      'health-center': 'Centre de santé',
-      'contact': 'Contact',
-      'job-offers': 'Offres d\'emploi',
-      'people': 'L\'équipe',
-      'appointments': 'Rendez-vous',
-      'settings': 'Paramètres',
-      'users': 'Utilisateurs',
-      'services': 'Services'
-    };
-    return titles[path] || path.charAt(0).toUpperCase() + path.slice(1);
-  };
-
   // Appliquer la police Open Sans à toute l'application
   useEffect(() => {
-    // Ajouter la police Open Sans depuis Google Fonts
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-
-    // Appliquer la police à tout le document
     document.body.style.fontFamily = "'Open Sans', sans-serif";
 
     return () => {
@@ -94,47 +101,53 @@ const AdminLayout = () => {
     };
   }, []);
 
-  // If still loading, show nothing or a loading spinner
   if (authLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900"></div>
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+        <Spinner />
       </div>
     );
   }
 
   if (!isAuthenticated) return null;
 
+  const collapsed = isCollapsed && !isMobile;
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+    <div className="flex h-screen flex-col bg-gray-50" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          className: 'text-sm',
+          success: { iconTheme: { primary: '#059669', secondary: '#fff' } },
+          error: { iconTheme: { primary: '#DC2626', secondary: '#fff' } },
+        }}
+      />
       {/* Mobile Navbar */}
-      <div className="md:hidden bg-white shadow-sm z-20">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-            aria-label="Toggle menu"
-          >
-            <Menu size={24} />
-          </button>
-          <Logo size="small" />
-        </div>
+      <div className="z-20 flex items-center justify-between bg-brand-950 px-4 py-3 md:hidden">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="rounded-lg p-2 text-white/80 hover:bg-white/10 hover:text-white"
+          aria-label="Ouvrir le menu"
+        >
+          <Menu size={22} />
+        </button>
+        <Logo />
+        <span className="w-10" />
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Desktop (fixed) and Mobile (overlay) */}
         <aside
           className={`
-            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
-            md:translate-x-0
-            fixed md:relative z-30 md:z-auto
-            h-full md:h-[calc(100vh-0px)]
-            transition-transform duration-300 ease-in-out
-            ${isCollapsed && !isMobile ? 'w-20' : 'w-64'}
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            fixed z-30 h-full transition-all duration-300 ease-in-out
+            md:relative md:z-auto md:translate-x-0
+            ${collapsed ? 'w-20' : 'w-64'}
           `}
         >
           <Sidebar
-            isCollapsed={isCollapsed && !isMobile}
+            isCollapsed={collapsed}
             setIsCollapsed={setIsCollapsed}
             isMobile={isMobile}
             closeMobileMenu={() => setIsMobileMenuOpen(false)}
@@ -144,21 +157,21 @@ const AdminLayout = () => {
         {/* Mobile overlay backdrop */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            className="fixed inset-0 z-20 bg-gray-900/50 md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Desktop Navbar */}
+        <div className="flex flex-1 flex-col overflow-hidden">
           <div className="hidden md:block">
-            <Navbar pageTitle={getPageTitle()} />
+            <Topbar />
           </div>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-            <Outlet />
+          <main className="flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
@@ -171,6 +184,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
   const navigate = useNavigate();
   const { logout } = useAuth();
   const location = useLocation();
+  const { item: activeItem } = findNavItem(location.pathname);
 
   const handleLogout = async () => {
     try {
@@ -183,40 +197,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
   };
 
   return (
-    <div className={`h-full bg-gray-800 text-white flex flex-col transition-all duration-300`}>
+    <div className="flex h-full flex-col bg-brand-950 text-white">
       {/* Logo and Toggle */}
-      <div className="p-4 flex items-center justify-between border-b border-gray-700">
-        {!isCollapsed || isMobile ? (
-          <div className="flex items-center justify-between w-full">
-            <Logo size="medium" />
-            {!isMobile && (
-              <button
-                onClick={() => setIsCollapsed(true)}
-                className="p-2 rounded-md hover:bg-gray-700"
-                aria-label="Réduire le menu"
-              >
-                <Menu size={20} />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center w-full">
-            {!isMobile && (
-              <button
-                onClick={() => setIsCollapsed(false)}
-                className="p-2 rounded-md hover:bg-gray-700"
-                aria-label="Développer le menu"
-              >
-                <Menu size={20} />
-              </button>
-            )}
-          </div>
-        )}
-
+      <div className={`flex h-16 shrink-0 items-center border-b border-white/10 ${isCollapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
+        <Logo compact={isCollapsed} />
         {isMobile && (
           <button
             onClick={closeMobileMenu}
-            className="p-2 rounded-md hover:bg-gray-700 absolute top-4 right-4"
+            className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white"
             aria-label="Fermer le menu"
           >
             <X size={20} />
@@ -225,160 +213,49 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 py-4 px-2 overflow-y-auto">
-        <ul className="space-y-2">
-          <SidebarLink
-            to="dashboard"
-            icon={<Home size={20} />}
-            label="Tableau de bord"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin' || location.pathname === '/admin/dashboard'}
-          />
-
-          {/* Section Services */}
-          {(!isCollapsed || isMobile) && (
-            <div className="mt-6 mb-2 px-3">
-              <h3 className="text-xs uppercase text-gray-400 font-semibold">Services</h3>
-            </div>
-          )}
-
-          <SidebarLink
-            to="services"
-            icon={<Layers size={20} />}
-            label="Gestion des Services"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/services'}
-          />
-
-          <SidebarLink
-            to="experts"
-            icon={<Activity size={20} />}
-            label="Section Experts"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/experts'}
-          />
-
-          <SidebarLink
-            to="about-us"
-            icon={<Activity size={20} />}
-            label="About Us Experts"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/about-us'}
-          />
-
-          <SidebarLink
-            to="updates"
-            icon={<FileText size={20} />}
-            label="Section Updates"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/updates'}
-          />
-
-          <SidebarLink
-            to="gestion-recettes"
-            icon={<ClipboardList size={20} />}
-            label="Gestion des Recettes"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/gestion-recettes'}
-          />
-          <SidebarLink
-            to="physiotherapie"
-            icon={<Package size={20} />}
-            label="Packs et Services"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/physiotherapie'}
-          />
-
-          {/* Section Pages */}
-          {(!isCollapsed || isMobile) && (
-            <div className="mt-6 mb-2 px-3">
-              <h3 className="text-xs uppercase text-gray-400 font-semibold">Pages</h3>
-            </div>
-          )}
-
-          <SidebarLink
-            to="faq"
-            icon={<HelpCircle size={20} />}
-            label="FAQ"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/faq'}
-          />
-          <SidebarLink
-            to="health-center"
-            icon={<Building size={20} />}
-            label="Centre de global health"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/health-center'}
-          />
-          <SidebarLink
-            to="contact"
-            icon={<Phone size={20} />}
-            label="Contact"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/contact'}
-          />
-          <SidebarLink
-            to="job-offers"
-            icon={<Briefcase size={20} />}
-            label="Offres d'emploi"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/job-offers'}
-          />
-          <SidebarLink
-            to="people"
-            icon={<UserCheck size={20} />}
-            label="L'équipe"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/people'}
-          />
-          <SidebarLink
-            to="appointments"
-            icon={<Clock size={20} />}
-            label="Rendez-vous"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/appointments'}
-          />
-          <SidebarLink
-            to="users"
-            icon={<Users size={20} />}
-            label="Utilisateurs"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/users'}
-          />
-          <SidebarLink
-            to="settings"
-            icon={<Settings size={20} />}
-            label="Paramètres"
-            isCollapsed={isCollapsed && !isMobile}
-            isMobile={isMobile}
-            isActive={location.pathname === '/admin/settings'}
-          />
-        </ul>
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {NAV_SECTIONS.map((section, index) => (
+          <div key={section.title || index} className={index > 0 ? 'mt-5' : ''}>
+            {section.title && (isCollapsed ? (
+              <div className="mx-3 mb-2 border-t border-white/10" />
+            ) : (
+              <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                {section.title}
+              </p>
+            ))}
+            <ul className="space-y-0.5">
+              {section.items.map((item) => (
+                <SidebarLink
+                  key={item.to}
+                  item={item}
+                  isCollapsed={isCollapsed}
+                  isActive={activeItem?.to === item.to}
+                />
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 border-t border-gray-700 mt-auto">
+      {/* Collapse + Logout */}
+      <div className="space-y-0.5 border-t border-white/10 p-3">
+        {!isMobile && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? 'Développer le menu' : 'Réduire le menu'}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition hover:bg-white/5 hover:text-white ${isCollapsed ? 'justify-center' : ''}`}
+          >
+            {isCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+            {!isCollapsed && <span>Réduire le menu</span>}
+          </button>
+        )}
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-3 w-full p-2 rounded-md hover:bg-gray-700 text-red-300 hover:text-red-200 ${isCollapsed && !isMobile ? 'justify-center' : ''
-            }`}
+          title="Déconnexion"
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-300 transition hover:bg-red-500/10 hover:text-red-200 ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <LogOut size={20} />
-          {(!isCollapsed || isMobile) && <span>Déconnexion</span>}
+          <LogOut size={18} />
+          {!isCollapsed && <span>Déconnexion</span>}
         </button>
       </div>
     </div>
@@ -386,32 +263,57 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobile, closeMobileMenu }) => 
 };
 
 // Sidebar Link Component
-const SidebarLink = ({ to, icon, label, isCollapsed, isMobile, isActive }) => (
-  <li>
-    <Link
-      to={to}
-      className={`flex items-center gap-3 p-2 rounded-md ${isActive
-        ? 'bg-blue-600 text-white'
-        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-        } ${isCollapsed ? 'justify-center' : ''}`}
-    >
-      {icon}
-      {(!isCollapsed || isMobile) && <span>{label}</span>}
-    </Link>
-  </li>
-);
-
-// Navbar Component
-const Navbar = ({ pageTitle }) => {
+const SidebarLink = ({ item, isCollapsed, isActive }) => {
+  const Icon = item.icon;
   return (
-    <header className="bg-white shadow-sm z-10">
-      <div className="px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-800">{pageTitle}</h1>
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600">Administrateur</div>
-          <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700">
-            <User size={16} />
-          </div>
+    <li>
+      <Link
+        to={item.to}
+        title={isCollapsed ? item.label : undefined}
+        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+          isActive ? 'bg-white/10 text-white' : 'text-white/65 hover:bg-white/5 hover:text-white'
+        } ${isCollapsed ? 'justify-center' : ''}`}
+      >
+        {isActive && <span className="absolute inset-y-1.5 left-0 w-1 rounded-r bg-customGreen" />}
+        <Icon size={18} className={isActive ? 'text-customGreen' : ''} />
+        {!isCollapsed && <span className="truncate">{item.label}</span>}
+      </Link>
+    </li>
+  );
+};
+
+// Topbar Component
+const Topbar = () => {
+  const location = useLocation();
+  const { user } = useAuth();
+  const { section, item } = findNavItem(location.pathname);
+  const name = user?.Nom || 'Administrateur';
+  const initials = name.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+
+  return (
+    <header className="z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-8">
+      <nav className="flex items-center gap-1.5 text-sm text-gray-500" aria-label="Fil d'Ariane">
+        <Link to="dashboard" className="hover:text-gray-900">Back-office</Link>
+        {section && (
+          <>
+            <ChevronRight size={14} className="text-gray-300" />
+            <span>{section}</span>
+          </>
+        )}
+        {item && item.to !== 'dashboard' && (
+          <>
+            <ChevronRight size={14} className="text-gray-300" />
+            <span className="font-medium text-gray-900">{item.label}</span>
+          </>
+        )}
+      </nav>
+      <div className="flex items-center gap-3">
+        <div className="text-right leading-tight">
+          <p className="text-sm font-medium text-gray-900">{name}</p>
+          <p className="text-xs capitalize text-gray-500">{user?.Role || 'Administrateur'}</p>
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-700 text-xs font-semibold text-white">
+          {initials}
         </div>
       </div>
     </header>

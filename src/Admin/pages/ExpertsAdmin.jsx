@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash, Check, Plus, X, Image as ImageIcon } from 'lucide-react';
+import { Pencil, Trash2, Check, X, Layers, Users, Video, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+import {
+  PageHeader, Card, StatCard, Button, IconButton, Field, Input, FileInput, Checkbox, FormActions,
+  Table, THead, TBody, Th, Tr, Td, TableEmpty, RowActions, Badge, Spinner, useConfirm,
+} from '../ui';
 
 const quillModules = {
   toolbar: [
@@ -26,6 +30,7 @@ const quillFormats = [
 ];
 
 const ExpertsAdmin = () => {
+  const { confirm, confirmDialog } = useConfirm();
   const [experts, setExperts] = useState([]);
   const [formData, setFormData] = useState({
     ID_Expert: null,
@@ -198,6 +203,9 @@ const ExpertsAdmin = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!(await confirm({ message: 'Êtes-vous sûr de vouloir supprimer cette section Experts ? Cette action est irréversible.' }))) {
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${API_URL}/${id}`, {
@@ -205,8 +213,10 @@ const ExpertsAdmin = () => {
       });
       resetForm();
       fetchExperts();
+      toast.success('Section supprimée avec succès');
     } catch (error) {
       console.error('Error deleting expert:', error);
+      toast.error('Échec de la suppression de la section.');
     }
   };
 
@@ -246,305 +256,248 @@ const ExpertsAdmin = () => {
   console.log('>>> Rendering ExpertsAdmin. Experts:', experts.length, 'isEditing:', isEditing);
 
   return (
-    <div className="p-4 md:p-6 relative">
-      <Toaster position="top-right" />
+    <div>
+      {confirmDialog}
 
       {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-[100] flex flex-col items-center justify-center text-white">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
-          <p className="text-xl font-semibold">Téléchargement en cours... {uploadProgress}%</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-[1px]">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-xl">
+            <Spinner className="mx-auto mb-4" />
+            <p className="text-base font-semibold text-gray-900">Téléchargement en cours... {uploadProgress}%</p>
 
-          <div className="w-64 h-4 bg-gray-700 rounded-full mt-4 overflow-hidden border border-gray-600">
-            <div
-              className="h-full bg-blue-500 transition-all duration-300 ease-out"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+              <div
+                className="h-full rounded-full bg-brand-700 transition-all duration-300 ease-out"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+
+            <p className="mt-4 text-sm text-gray-500">Veuillez patienter, envoi des fichiers vers le serveur...</p>
           </div>
-
-          <p className="text-sm opacity-75 mt-4 italic">Veuillez patienter, envoi des fichiers vers le serveur...</p>
         </div>
       )}
 
-      <h1 className="text-xl md:text-2xl font-bold">Gestion de la section Experts</h1>
-      <p className="mt-4 mb-6">Configurez la section unique 'Experts en santé et bien-être' de la page d'accueil.</p>
+      <PageHeader
+        icon={Users}
+        title="Section Experts"
+        description="Configurez la section unique « Experts en santé et bien-être » de la page d'accueil."
+      />
 
-      {/* Statistiques rapides */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Section Actif</p>
-              <h3 className="text-blue-600 text-2xl font-bold mt-1">{experts.length > 0 && experts[0].Etat ? 1 : 0}</h3>
-            </div>
-            <div className="bg-blue-100 p-2 rounded-full">
-              <Check className="text-blue-500" size={20} />
-            </div>
-          </div>
+      <div className="space-y-6">
+        {/* Statistiques rapides */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Section active"
+            value={experts.length > 0 && experts[0].Etat ? 1 : 0}
+            icon={Check}
+            tone="green"
+          />
+          <StatCard
+            label="Section inactive"
+            value={experts.length > 0 && !experts[0].Etat ? 1 : 0}
+            icon={X}
+            tone="red"
+          />
+          <StatCard label="Total sections" value={experts.length || 0} icon={Layers} tone="brand" />
         </div>
-        <div className="bg-red-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Section Inactif</p>
-              <h3 className="text-red-600 text-2xl font-bold mt-1">{experts.length > 0 && !experts[0].Etat ? 1 : 0}</h3>
-            </div>
-            <div className="bg-red-100 p-2 rounded-full">
-              <X className="text-red-500" size={20} />
-            </div>
-          </div>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Total Sections</p>
-              <h3 className="text-green-600 text-2xl font-bold mt-1">{experts.length || 0}</h3>
-            </div>
-            <div className="bg-green-100 p-2 rounded-full">
-              <Plus className="text-green-500" size={20} />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Formulaire */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-lg font-semibold mb-4">Gérer la section Experts</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vidéo</label>
-              <input
-                type="file"
-                name="VideoURL"
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                accept="video/mp4,video/webm"
-                disabled={experts.length > 0 && !isEditing}
-              />
-              {previewVideo && (
-                <video
-                  src={previewVideo}
-                  controls
-                  className="mt-2 w-full h-32 object-cover rounded-md"
+        {/* Formulaire */}
+        <Card title="Gérer la section Experts" icon={Pencil}>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <Field label="Vidéo">
+                <FileInput
+                  name="VideoURL"
+                  onChange={handleChange}
+                  accept="video/mp4,video/webm"
+                  disabled={experts.length > 0 && !isEditing}
                 />
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image illustrative</label>
-              <input
-                type="file"
-                name="Image"
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                accept="image/*"
-                disabled={experts.length > 0 && !isEditing}
-              />
-              {previewImage && (
-                <img
-                  src={previewImage}
-                  alt="Preview"
-                  className="mt-2 w-full h-32 object-cover rounded-md"
+                {previewVideo && (
+                  <video
+                    src={previewVideo}
+                    controls
+                    className="mt-3 h-32 w-full rounded-lg border border-gray-200 object-cover"
+                  />
+                )}
+              </Field>
+              <Field label="Image illustrative">
+                <FileInput
+                  name="Image"
+                  onChange={handleChange}
+                  accept="image/*"
+                  disabled={experts.length > 0 && !isEditing}
                 />
+                {previewImage && (
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="mt-3 h-32 w-full rounded-lg border border-gray-200 object-cover"
+                  />
+                )}
+              </Field>
+              <Field label="Titre (Français)">
+                <Input
+                  type="text"
+                  name="TitleFR"
+                  value={formData.TitleFR}
+                  onChange={handleChange}
+                  disabled={experts.length > 0 && !isEditing}
+                />
+              </Field>
+              <Field label="Titre (Arabe)">
+                <Input
+                  type="text"
+                  name="TitleAR"
+                  value={formData.TitleAR}
+                  onChange={handleChange}
+                  dir="rtl"
+                  disabled={experts.length > 0 && !isEditing}
+                />
+              </Field>
+              <Field label="Description (Français)" className="md:col-span-2">
+                <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <ReactQuill
+                    key={`fr-${formData.ID_Expert}`}
+                    theme="snow"
+                    value={formData.DescriptionFR}
+                    onChange={(content) => {
+                      if (content !== formData.DescriptionFR) {
+                        setFormData(prev => ({ ...prev, DescriptionFR: content }));
+                      }
+                    }}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="h-48 mb-12"
+                    readOnly={experts.length > 0 && !isEditing}
+                  />
+                </div>
+              </Field>
+              <Field label="Description (Arabe)" className="md:col-span-2">
+                <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <ReactQuill
+                    key={`ar-${formData.ID_Expert}`}
+                    theme="snow"
+                    value={formData.DescriptionAR}
+                    onChange={(content) => {
+                      if (content !== formData.DescriptionAR) {
+                        setFormData(prev => ({ ...prev, DescriptionAR: content }));
+                      }
+                    }}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="h-48 mb-12"
+                    dir="rtl"
+                    readOnly={experts.length > 0 && !isEditing}
+                  />
+                </div>
+              </Field>
+              <Field label="État">
+                <Checkbox
+                  name="Etat"
+                  checked={formData.Etat}
+                  onChange={handleChange}
+                  disabled={experts.length === 0}
+                  label="Actif"
+                />
+              </Field>
+            </div>
+            <FormActions>
+              {experts.length > 0 && (
+                <Button variant="secondary" onClick={resetForm} disabled={!isEditing}>
+                  Annuler
+                </Button>
               )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre (Français)</label>
-              <input
-                type="text"
-                name="TitleFR"
-                value={formData.TitleFR}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={experts.length > 0 && !isEditing}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre (Arabe)</label>
-              <input
-                type="text"
-                name="TitleAR"
-                value={formData.TitleAR}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                dir="rtl"
-                disabled={experts.length > 0 && !isEditing}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
-            <ReactQuill
-              key={`fr-${formData.ID_Expert}`}
-              theme="snow"
-              value={formData.DescriptionFR}
-              onChange={(content) => {
-                if (content !== formData.DescriptionFR) {
-                  setFormData(prev => ({ ...prev, DescriptionFR: content }));
-                }
-              }}
-              modules={quillModules}
-              formats={quillFormats}
-              className="h-48 mb-12"
-              readOnly={experts.length > 0 && !isEditing}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Arabe)</label>
-            <ReactQuill
-              key={`ar-${formData.ID_Expert}`}
-              theme="snow"
-              value={formData.DescriptionAR}
-              onChange={(content) => {
-                if (content !== formData.DescriptionAR) {
-                  setFormData(prev => ({ ...prev, DescriptionAR: content }));
-                }
-              }}
-              modules={quillModules}
-              formats={quillFormats}
-              className="h-48 mb-12"
-              dir="rtl"
-              readOnly={experts.length > 0 && !isEditing}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                name="Etat"
-                checked={formData.Etat}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                disabled={experts.length === 0}
-              />
-              <span className="ml-2 text-sm text-gray-700">Actif</span>
-            </div>
-          </div>
-          <div className="flex justify-end space-x-3">
-            {experts.length > 0 && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                disabled={!isEditing}
+              <Button
+                onClick={(e) => {
+                  console.log('>>> Manual button trigger');
+                  handleSubmit(e);
+                }}
+                loading={isLoading}
               >
-                Annuler
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={(e) => {
-                console.log('>>> Manual button trigger');
-                handleSubmit(e);
-              }}
-              disabled={isLoading}
-              className={`px-4 py-2 text-white rounded-md transition-all ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-            >
-              {isLoading ? 'Envoi...' : (experts.length > 0 ? 'Mettre à jour' : 'Enregistrer')}
-            </button>
-          </div>
-        </form>
-      </div>
+                {isLoading ? 'Envoi...' : (experts.length > 0 ? 'Mettre à jour' : 'Enregistrer')}
+              </Button>
+            </FormActions>
+          </form>
+        </Card>
 
-      {/* Liste des experts */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Contenu actuel</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        {/* Liste des experts */}
+        <Card title="Contenu actuel" padded={false}>
+          <Table>
+            <THead>
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vidéo</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <Th>Vidéo</Th>
+                <Th>Image</Th>
+                <Th>Titre</Th>
+                <Th>Description</Th>
+                <Th>État</Th>
+                <Th align="right">Actions</Th>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            </THead>
+            <TBody>
               {experts.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                    Aucun contenu disponible
-                  </td>
-                </tr>
+                <TableEmpty colSpan={6} message="Aucun contenu disponible" />
               ) : (
                 experts.slice(0, 1).map(expert => ( // Limit to first entry
-                  <tr key={expert.ID_Expert}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <Tr key={expert.ID_Expert}>
+                    <Td className="whitespace-nowrap">
                       {expert.VideoURL ? (
                         <video
                           src={`${API_BASE_URL}/experts/${expert.ID_Expert}/video`}
-                          className="h-10 w-10 object-cover rounded"
+                          className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
                           onError={(e) => {
                             e.target.style.display = 'none';
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded bg-gray-200"></div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+                          <Video size={16} className="text-gray-400" />
+                        </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </Td>
+                    <Td className="whitespace-nowrap">
                       {expert.ImagePath ? (
                         <img
                           src={`${API_BASE_URL}/experts/${expert.ID_Expert}/image`}
                           alt={expert.TitleFR}
-                          className="h-10 w-10 rounded-full object-cover"
+                          className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
                           onError={(e) => {
                             e.target.src = '/default-image.png';
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <ImageIcon size={16} className="text-gray-500" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+                          <ImageIcon size={16} className="text-gray-400" />
                         </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expert.TitleFR}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" dangerouslySetInnerHTML={{ __html: expert.DescriptionFR }} />
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    </Td>
+                    <Td className="whitespace-nowrap font-medium text-gray-900">{expert.TitleFR}</Td>
+                    <Td className="max-w-xs truncate text-gray-500" dangerouslySetInnerHTML={{ __html: expert.DescriptionFR }} />
+                    <Td className="whitespace-nowrap">
                       <button
+                        type="button"
                         onClick={() => toggleStatus(expert.ID_Expert)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${expert.Etat ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}
+                        title="Changer l'état"
+                        className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30"
                       >
                         {expert.Etat ? (
-                          <>
-                            <Check size={12} className="mr-1" />
-                            Actif
-                          </>
+                          <Badge tone="green"><Check size={12} /> Actif</Badge>
                         ) : (
-                          <>
-                            <X size={12} className="mr-1" />
-                            Inactif
-                          </>
+                          <Badge tone="red"><X size={12} /> Inactif</Badge>
                         )}
                       </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(expert)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(expert.ID_Expert)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash size={18} />
-                      </button>
-                    </td>
-                  </tr>
+                    </Td>
+                    <Td align="right" className="whitespace-nowrap">
+                      <RowActions>
+                        <IconButton icon={Pencil} label="Modifier" tone="brand" onClick={() => handleEdit(expert)} />
+                        <IconButton icon={Trash2} label="Supprimer" tone="danger" onClick={() => handleDelete(expert.ID_Expert)} />
+                      </RowActions>
+                    </Td>
+                  </Tr>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </Card>
       </div>
     </div>
   );

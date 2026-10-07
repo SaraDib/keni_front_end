@@ -2,47 +2,32 @@
 import React, { useState, useEffect } from 'react';
 import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
-import { Users, Shield, User, PlusCircle, Pencil, Trash2, X } from 'lucide-react';
+import { Users, Shield, User, Plus, Pencil, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import {
+  PageHeader,
+  Card,
+  Button,
+  IconButton,
+  RowActions,
+  Field,
+  Input,
+  Textarea,
+  FormActions,
+  Badge,
+  Alert,
+  LoadingState,
+  Spinner,
+  EmptyState,
+  ConfirmDialog,
+} from '../ui';
+import toast from 'react-hot-toast';
 
 const API_BASE = API_BASE_URL;
 
 // Rôles non supprimables (tu peux en ajouter)
 const PROTECTED_ROLE_NAMES = ['admin']; // insensible à la casse
-
-// Petit composant de confirmation modale (sans lib)
-const ConfirmDialog = ({ open, title, message, confirmLabel = 'Confirmer', cancelLabel = 'Annuler', onConfirm, onCancel, accentColor = '#2563eb' }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* overlay */}
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      {/* dialog */}
-      <div className="relative bg-white w-[95%] max-w-md rounded-xl shadow-xl p-5">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onCancel} className="p-1 rounded hover:bg-gray-100" aria-label="Fermer">
-            <X size={18} />
-          </button>
-        </div>
-        <p className="text-sm text-gray-600 mt-2">{message}</p>
-        <div className="mt-5 flex gap-2 justify-end">
-          <button onClick={onCancel} className="px-4 py-2 rounded border border-gray-300">
-            {cancelLabel}
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded text-white"
-            style={{ backgroundColor: accentColor }}
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const UsersPage = () => {
   // USERS
@@ -173,17 +158,10 @@ const UsersPage = () => {
         const label = labelForRole(roleName);
         const Icon = iconForRole(roleName);
         return (
-          <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-            style={{
-              backgroundColor: `${color}22`,
-              color: '#111',
-              border: `1px solid ${color}`,
-            }}
-          >
-            <Icon className="mr-1" size={14} style={{ color }} />
+          <Badge tone="gray">
+            <Icon size={13} style={{ color }} />
             {label}
-          </span>
+          </Badge>
         );
       },
     },
@@ -293,11 +271,11 @@ const UsersPage = () => {
 
   const requestDeleteRole = (role) => {
     if (isProtectedRole(role)) {
-      alert('Ce rôle est protégé et ne peut pas être supprimé.');
+      toast.error('Ce rôle est protégé et ne peut pas être supprimé.');
       return;
     }
     if (isRoleUsed(role)) {
-      alert('Ce rôle est déjà attribué à un utilisateur et ne peut pas être supprimé.');
+      toast.error('Ce rôle est déjà attribué à un utilisateur et ne peut pas être supprimé.');
       return;
     }
     setRolePendingDelete(role);
@@ -321,7 +299,7 @@ const UsersPage = () => {
       }
     } catch (e) {
       console.error('Erreur suppression rôle:', e);
-      alert("Erreur lors de la suppression du rôle");
+      toast.error("Erreur lors de la suppression du rôle");
     } finally {
       setRolePendingDelete(null);
     }
@@ -352,7 +330,7 @@ const UsersPage = () => {
       fetchRoles();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du rôle:", error);
-      alert("Erreur lors de l'enregistrement du rôle");
+      toast.error("Erreur lors de l'enregistrement du rôle");
     }
   };
 
@@ -360,22 +338,17 @@ const UsersPage = () => {
   // RENDER
   // -----------------------------
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <Users className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Utilisateurs</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={Users}
+        title="Utilisateurs"
+        description="Gérez les utilisateurs qui ont accès au panneau d'administration."
+      />
 
-      <p className="mb-6 text-gray-600">
-        Gérez les utilisateurs qui ont accès au panneau d&apos;administration.
-      </p>
-
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">{error}</div>}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-        </div>
+        <LoadingState />
       ) : showForm ? (
         <CrudForm
           title="utilisateur"
@@ -388,171 +361,163 @@ const UsersPage = () => {
       ) : (
         <div className="space-y-6">
           {/* ROLES & PERMISSIONS */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="flex items-center mb-4 justify-between">
-              <div className="flex items-center">
-                <Shield className="text-blue-500 mr-2" size={20} />
-                <h2 className="text-lg font-semibold">Rôles et permissions</h2>
-              </div>
-              <button
+          <Card
+            icon={Shield}
+            title="Rôles et permissions"
+            description="Définissez les rôles attribuables aux utilisateurs."
+            actions={
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Plus}
                 onClick={() => {
                   if (!showRoleForm) resetRoleForm();
                   setShowRoleForm(!showRoleForm);
                 }}
-                className="flex items-center text-sm text-blue-600 hover:underline"
               >
-                <PlusCircle size={18} className="mr-1" />
                 {editingRoleId ? 'Nouveau rôle' : 'Ajouter un rôle'}
-              </button>
-            </div>
-
+              </Button>
+            }
+          >
             {/* ADD/EDIT ROLE FORM */}
             {showRoleForm && (
               <form
-                className="mb-4 bg-blue-50 p-4 rounded-lg space-y-4"
+                className="mb-6 rounded-lg border border-gray-200 bg-gray-50/60 p-5"
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleAddOrUpdateRole();
                 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium mb-1">
-                      Nom du rôle <span className="text-red-500">*</span>
-                    </label>
-                    <input
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <Field label="Nom du rôle" htmlFor="role-name" required>
+                    <Input
+                      id="role-name"
                       type="text"
                       value={newRole}
                       onChange={(e) => setNewRole(e.target.value)}
                       required
                       placeholder="Nom du rôle"
-                      className="border rounded p-2"
                     />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium mb-1">
-                      Couleur <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="color"
-                      value={newRoleColor}
-                      onChange={(e) => setNewRoleColor(e.target.value)}
-                      className="h-10 w-16 border rounded bg-white"
-                      style={{ maxWidth: '100px' }}
-                      required
+                  </Field>
+                  <Field label="Couleur" htmlFor="role-color" required>
+                    <div className="flex items-center gap-3">
+                      <input
+                        id="role-color"
+                        type="color"
+                        value={newRoleColor}
+                        onChange={(e) => setNewRoleColor(e.target.value)}
+                        className="h-10 w-16 cursor-pointer rounded-lg border border-gray-300 bg-white p-1 shadow-sm"
+                        required
+                      />
+                      <span className="font-mono text-sm text-gray-500">{newRoleColor}</span>
+                    </div>
+                  </Field>
+                  <Field label="Description du rôle" htmlFor="role-description" className="md:col-span-2">
+                    <Textarea
+                      id="role-description"
+                      value={newRoleDescription}
+                      onChange={(e) => setNewRoleDescription(e.target.value)}
+                      placeholder="Description du rôle"
+                      rows={2}
                     />
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium mb-1">Description du rôle</label>
-                  <textarea
-                    value={newRoleDescription}
-                    onChange={(e) => setNewRoleDescription(e.target.value)}
-                    placeholder="Description du rôle"
-                    className="border rounded p-2"
-                    rows="2"
-                  />
+                  </Field>
                 </div>
 
-                <div className="flex gap-2">
-                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                    {editingRoleId ? 'Mettre à jour le rôle' : 'Ajouter le rôle'}
-                  </button>
+                <FormActions className="mt-5 pt-4">
                   {editingRoleId && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
                       onClick={() => {
                         resetRoleForm();
                         setShowRoleForm(false);
                       }}
-                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded"
                     >
                       Annuler
-                    </button>
+                    </Button>
                   )}
-                </div>
+                  <Button type="submit">
+                    {editingRoleId ? 'Mettre à jour le rôle' : 'Ajouter le rôle'}
+                  </Button>
+                </FormActions>
               </form>
             )}
 
             {/* ROLES LIST */}
-            <div className="mt-4">
-              {isLoadingRoles ? (
-                <div className="flex justify-center items-center h-24">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
-                </div>
-              ) : rolesError ? (
-                <div className="p-3 bg-red-100 text-red-700 rounded">{rolesError}</div>
-              ) : roles.length === 0 ? (
-                <div className="p-3 bg-gray-50 text-gray-600 rounded">Aucun rôle trouvé.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {roles.map((role) => {
-                    const id = role.id || role.ID_Role || role.nom;
-                    const name = role.nom || role.name || 'Rôle';
-                    const color = role.color || '#2563eb';
-                    const bg = `${color}20`;
-                    const Icon = iconForRole(name);
+            {isLoadingRoles ? (
+              <div className="flex h-24 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : rolesError ? (
+              <Alert tone="error" className="mb-0">{rolesError}</Alert>
+            ) : roles.length === 0 ? (
+              <EmptyState icon={Shield} title="Aucun rôle trouvé." compact />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {roles.map((role) => {
+                  const id = role.id || role.ID_Role || role.nom;
+                  const name = role.nom || role.name || 'Rôle';
+                  const color = role.color || '#1E3A8A';
+                  const Icon = iconForRole(name);
 
-                    const protectedRole = isProtectedRole(name);
-                    const usedRole = isRoleUsed(name);
-                    const disabledDelete = protectedRole || usedRole;
+                  const protectedRole = isProtectedRole(name);
+                  const usedRole = isRoleUsed(name);
+                  const disabledDelete = protectedRole || usedRole;
 
-                    return (
-                      <div
-                        key={id}
-                        className="p-4 rounded-lg border"
-                        style={{ borderColor: color, backgroundColor: bg }}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center">
-                            <Icon className="mr-2" style={{ color }} size={18} />
-                            <div>
-                              <h3 className="font-medium">{name}</h3>
-                              {role.description && (
-                                <p className="text-sm text-gray-600">{role.description}</p>
-                              )}
-                            </div>
+                  return (
+                    <div
+                      key={id}
+                      className="flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-white p-4"
+                      style={{ borderLeftWidth: 4, borderLeftColor: color }}
+                    >
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                          style={{ backgroundColor: `${color}1A`, color }}
+                        >
+                          <Icon size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-medium text-gray-900">{name}</h3>
+                            {protectedRole && <Badge tone="red">Protégé</Badge>}
+                            {!protectedRole && usedRole && <Badge tone="brand">Utilisé</Badge>}
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              title="Éditer"
-                              aria-label="Éditer"
-                              onClick={() => handleEditRoleClick(role)}
-                              className="p-1 rounded hover:bg-white/60"
-                            >
-                              <Pencil size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              title={
-                                disabledDelete
-                                  ? (protectedRole
-                                    ? 'Rôle protégé'
-                                    : 'Rôle utilisé par un utilisateur')
-                                  : 'Supprimer'
-                              }
-                              aria-label="Supprimer"
-                              disabled={disabledDelete}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!disabledDelete) requestDeleteRole(role);
-                              }}
-                              className={`p-1 rounded transition border border-transparent
-                                ${disabledDelete ? 'opacity-40 cursor-not-allowed' : 'hover:bg-white/60 hover:border-white'}
-                              `}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
+                          {role.description && (
+                            <p className="mt-0.5 text-sm text-gray-500">{role.description}</p>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+                      <RowActions>
+                        <IconButton
+                          icon={Pencil}
+                          tone="brand"
+                          label="Éditer"
+                          onClick={() => handleEditRoleClick(role)}
+                        />
+                        <IconButton
+                          icon={Trash2}
+                          tone="danger"
+                          label={
+                            disabledDelete
+                              ? (protectedRole
+                                ? 'Rôle protégé'
+                                : 'Rôle utilisé par un utilisateur')
+                              : 'Supprimer'
+                          }
+                          disabled={disabledDelete}
+                          className={disabledDelete ? 'cursor-not-allowed' : undefined}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!disabledDelete) requestDeleteRole(role);
+                          }}
+                        />
+                      </RowActions>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
 
           {/* USERS LIST */}
           <CrudTable
@@ -561,7 +526,8 @@ const UsersPage = () => {
             onAdd={handleAdd}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            title="utilisateur"
+            idField="ID_User"
+            title="Liste des utilisateurs"
           />
         </div>
       )}
@@ -577,7 +543,6 @@ const UsersPage = () => {
           setConfirmOpen(false);
           setRolePendingDelete(null);
         }}
-        accentColor="#dc2626"
       />
     </div>
   );

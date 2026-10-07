@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Edit, Trash } from 'lucide-react'; // Import des icônes Lucide React
+import { Package, Plus, Pencil, Trash2, Save } from 'lucide-react';
 import API_BASE_URL from '../../config';
+import {
+  PageHeader, Card, Button, IconButton, Field, Input, Table, THead, TBody, Th, Tr, Td, TableEmpty, RowActions,
+  Modal, ConfirmDialog, LoadingState,
+} from '../ui';
 
 const GestionTypesPhysiotherapie = () => {
   const [types, setTypes] = useState([]);
@@ -85,118 +89,115 @@ const GestionTypesPhysiotherapie = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-md shadow-lg">
-      <h1 className="text-xl font-semibold mb-4">Gestion des Packs et Services</h1>
+    <div>
+      <PageHeader
+        icon={Package}
+        title="Packs et services"
+        description="Gérez les packs et services de physiothérapie proposés sur le site."
+      />
 
       {isLoading ? (
-        <div className="text-center">Chargement...</div>
+        <LoadingState />
       ) : (
-        <>
-          <div className="mb-4 flex items-center space-x-3">
-            <input
-              type="text"
-              className="border p-2 rounded-md w-full"
-              placeholder="Nom du pack ou service"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-            />
-            <button
-              onClick={handleAddType}
-              className="bg-blue-500 text-white p-2 rounded-md"
-            >
-              Ajouter
-            </button>
-          </div>
+        <div className="space-y-6">
+          <Card title="Ajouter un pack ou service" icon={Plus}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <Field label="Nom du pack ou service" htmlFor="new-type-physio" className="flex-1">
+                <Input
+                  id="new-type-physio"
+                  type="text"
+                  placeholder="Nom du pack ou service"
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                />
+              </Field>
+              <Button icon={Plus} onClick={handleAddType}>
+                Ajouter
+              </Button>
+            </div>
+          </Card>
 
-          <h2 className="text-lg font-semibold mb-4">Liste des Packs et Services</h2>
-          <table className="min-w-full bg-gray-100 rounded-md">
-            <thead className="bg-gray-100">
-              <tr className="text-center">
-                <th className="py-2 px-4 border-b">Nom du Pack/Service</th>
-                <th className="py-2 px-4 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {types.length > 0 ? (
-                types.map((type, index) => (
-                  <tr key={type.id} className="text-center bg-white">
-                    <td className="py-2 px-4 border-b">{type.nom}</td>
-                    <td className="py-2 px-4 border-b flex justify-center space-x-2">
-                      <button
-                        className="text-yellow-500"
-                        onClick={() => setEditType({ id: type.id, nom: type.nom })}
-                      >
-                        <Edit size={20} />
-                      </button>
-                      <button
-                        className="text-red-500"
-                        onClick={() => {
-                          setDeleteId(type.id);
-                          setShowDeleteConfirmation(true);
-                        }}
-                      >
-                        <Trash size={20} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
+          <Card title="Liste des packs et services" padded={false}>
+            <Table>
+              <THead>
                 <tr>
-                  <td colSpan="2" className="text-center py-4">Aucun pack ou service disponible</td>
+                  <Th>Nom du pack/service</Th>
+                  <Th align="right">Actions</Th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Formulaire de modification */}
-          {editType && (
-            <div className="mt-4 bg-gray-200 p-4 rounded-md">
-              <h3 className="font-semibold mb-2">Modifier le Pack ou Service</h3>
-              <input
-                type="text"
-                className="border p-2 rounded-md w-full"
-                value={editType.nom}
-                onChange={(e) => setEditType({ ...editType, nom: e.target.value })}
-              />
-              <button
-                onClick={handleEditType}
-                className="bg-green-500 text-white p-2 rounded-md mt-2"
-              >
-                Sauvegarder
-              </button>
-              <button
-                onClick={() => setEditType(null)}
-                className="bg-gray-500 text-white p-2 rounded-md mt-2 ml-2"
-              >
-                Annuler
-              </button>
-            </div>
-          )}
-
-          {/* Confirmation de suppression */}
-          {showDeleteConfirmation && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-              <div className="bg-white p-6 rounded-md shadow-lg w-1/3 text-center">
-                <h4 className="text-lg font-semibold">Êtes-vous sûr de vouloir supprimer ce pack ou service ?</h4>
-                <div className="mt-4">
-                  <button
-                    onClick={handleDeleteType}
-                    className="bg-red-500 text-white p-2 rounded-md"
-                  >
-                    Oui, supprimer
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirmation(false)}
-                    className="bg-gray-500 text-white p-2 rounded-md ml-2"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+              </THead>
+              <TBody>
+                {types.length > 0 ? (
+                  types.map((type) => (
+                    <Tr key={type.id}>
+                      <Td className="font-medium text-gray-900">{type.nom}</Td>
+                      <Td align="right">
+                        <RowActions>
+                          <IconButton
+                            icon={Pencil}
+                            label="Modifier"
+                            tone="brand"
+                            onClick={() => setEditType({ id: type.id, nom: type.nom })}
+                          />
+                          <IconButton
+                            icon={Trash2}
+                            label="Supprimer"
+                            tone="danger"
+                            onClick={() => {
+                              setDeleteId(type.id);
+                              setShowDeleteConfirmation(true);
+                            }}
+                          />
+                        </RowActions>
+                      </Td>
+                    </Tr>
+                  ))
+                ) : (
+                  <TableEmpty colSpan={2} message="Aucun pack ou service disponible" />
+                )}
+              </TBody>
+            </Table>
+          </Card>
+        </div>
       )}
+
+      {/* Formulaire de modification */}
+      <Modal
+        open={!!editType}
+        onClose={() => setEditType(null)}
+        title="Modifier le pack ou service"
+        icon={Pencil}
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditType(null)}>
+              Annuler
+            </Button>
+            <Button icon={Save} onClick={handleEditType}>
+              Sauvegarder
+            </Button>
+          </>
+        }
+      >
+        {editType && (
+          <Field label="Nom du pack ou service" htmlFor="edit-type-physio">
+            <Input
+              id="edit-type-physio"
+              type="text"
+              value={editType.nom}
+              onChange={(e) => setEditType({ ...editType, nom: e.target.value })}
+            />
+          </Field>
+        )}
+      </Modal>
+
+      {/* Confirmation de suppression */}
+      <ConfirmDialog
+        open={showDeleteConfirmation}
+        message="Êtes-vous sûr de vouloir supprimer ce pack ou service ? Cette action est irréversible."
+        confirmLabel="Oui, supprimer"
+        onConfirm={handleDeleteType}
+        onCancel={() => setShowDeleteConfirmation(false)}
+      />
     </div>
   );
 };

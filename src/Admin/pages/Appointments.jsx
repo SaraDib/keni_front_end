@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import CrudTable from '../components/CrudTable';
 import CrudForm from '../components/CrudForm';
-import { Calendar, Filter, Eye } from 'lucide-react';
+import { Calendar, Filter, Eye, RotateCcw } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import {
+  PageHeader, Card, Button, IconButton, Field, Select, Badge, Alert, LoadingState,
+} from '../ui';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -26,7 +29,6 @@ const Appointments = () => {
           'Content-Type': 'application/json'
         }
       });
-      console.log(localStorage.getItem('token'))
       setAppointments(response.data);
       setError(null);
     } catch (err) {
@@ -65,7 +67,7 @@ const Appointments = () => {
       accessor: "patient",
       render: (item) => (
         <div>
-          <div className="font-medium">{item.Nom} {item.Prenom}</div>
+          <div className="font-medium text-gray-900">{item.Nom} {item.Prenom}</div>
           <div className="text-xs text-gray-500">Né(e) le {new Date(item.Date_Naissance).toLocaleDateString('fr-FR')}</div>
         </div>
       )
@@ -98,17 +100,9 @@ const Appointments = () => {
           <div className="text-sm">
             Nombre de personnes: {item.nombre}
           </div>
-          <div className="text-xs">
-            {item.Physiotherapie === 'Oui' && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mr-1">
-                Physiothérapie
-              </span>
-            )}
-            {item.Ergotherapie === 'Oui' && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                Ergothérapie
-              </span>
-            )}
+          <div className="flex flex-wrap gap-1">
+            {item.Physiotherapie === 'Oui' && <Badge tone="brand">Physiothérapie</Badge>}
+            {item.Ergotherapie === 'Oui' && <Badge tone="green">Ergothérapie</Badge>}
           </div>
         </div>
       )
@@ -138,16 +132,10 @@ const Appointments = () => {
       )
     },
     {
-      header: "Actions",
+      header: "Détails",
       accessor: "actions",
       render: (item) => (
-        <button
-          onClick={() => handleView(item)}
-          className="p-2 text-blue-600 hover:text-blue-800"
-          title="Voir les détails"
-        >
-          <Eye size={18} />
-        </button>
+        <IconButton icon={Eye} label="Voir les détails" onClick={() => handleView(item)} />
       )
     }
   ];
@@ -221,26 +209,17 @@ const Appointments = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center mb-6">
-        <Calendar className="text-blue-500 mr-2" size={24} />
-        <h1 className="text-xl md:text-2xl font-bold">Rendez-vous</h1>
-      </div>
+    <div>
+      <PageHeader
+        icon={Calendar}
+        title="Rendez-vous"
+        description="Gérez les rendez-vous reçus via le formulaire de prise de rendez-vous du site."
+      />
 
-      <p className="mb-6 text-gray-600">
-        Gérez les rendez-vous reçus via le formulaire de prise de rendez-vous du site.
-      </p>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <LoadingState />
       ) : showDetails ? (
         <CrudForm
           title="Détails du rendez-vous"
@@ -252,54 +231,42 @@ const Appointments = () => {
         />
       ) : (
         <div className="space-y-6">
-          <div className="bg-white p-4 rounded-lg shadow mb-6">
-            <div className="flex items-center mb-4">
-              <Filter className="text-blue-500 mr-2" size={20} />
-              <h2 className="text-lg font-semibold">Filtres</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                  Type de consultation
-                </label>
-                <select
+          <Card
+            title="Filtres"
+            icon={Filter}
+            actions={
+              <Button variant="secondary" size="sm" icon={RotateCcw} onClick={resetFilters}>
+                Réinitialiser les filtres
+              </Button>
+            }
+          >
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <Field label="Type de consultation" htmlFor="type">
+                <Select
                   id="type"
                   name="type"
                   value={filters.type}
                   onChange={handleFilterChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Tous les types</option>
                   <option value="Générale">Générale</option>
                   <option value="Spécialiste">Spécialiste</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
-                  Service
-                </label>
-                <select
+                </Select>
+              </Field>
+              <Field label="Service" htmlFor="service">
+                <Select
                   id="service"
                   name="service"
                   value={filters.service}
                   onChange={handleFilterChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Tous les services</option>
                   <option value="physiotherapie">Physiothérapie</option>
                   <option value="ergotherapie">Ergothérapie</option>
-                </select>
-              </div>
+                </Select>
+              </Field>
             </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={resetFilters}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Réinitialiser les filtres
-              </button>
-            </div>
-          </div>
+          </Card>
 
           <CrudTable
             title="Liste des rendez-vous"

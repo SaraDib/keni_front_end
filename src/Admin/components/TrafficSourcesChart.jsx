@@ -2,17 +2,22 @@ import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import { Spinner } from '../ui';
+
+// Palette et styles communs aux graphiques du back-office
+const CHART_COLORS = ['#1E3A8A', '#9FB873', '#3C5DB5', '#8EA6DD', '#F59E0B', '#14B8A6'];
+const FONT_FAMILY = "'Open Sans', sans-serif";
+
+const StatTile = ({ value, label }) => (
+  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="truncate text-sm font-semibold text-gray-900">{value}</div>
+    <div className="mt-0.5 truncate text-xs text-gray-500">{label}</div>
+  </div>
+);
 
 const TrafficSourcesChart = () => {
   const [series, setSeries] = useState([]);
   const [labels, setLabels] = useState([]);
-
-  // 🎨 Générer N couleurs distinctes automatiquement
-  const generateColors = (n) => {
-    return Array.from({ length: n }, (_, i) =>
-      `hsl(${(i * 360) / n}, 70%, 55%)`
-    );
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -37,7 +42,8 @@ const TrafficSourcesChart = () => {
   const options = {
     chart: {
       type: 'donut',
-      fontFamily: "'Open Sans', sans-serif",
+      toolbar: { show: false },
+      fontFamily: FONT_FAMILY,
       animations: {
         enabled: true,
         easing: 'easeinout',
@@ -47,16 +53,22 @@ const TrafficSourcesChart = () => {
       }
     },
     labels: labels,
-    colors: generateColors(labels.length), // ✅ couleurs dynamiques
+    colors: CHART_COLORS,
+    stroke: { width: 2, colors: ['#fff'] },
     plotOptions: {
       pie: {
         donut: {
-          size: '55%',
+          size: '60%',
           labels: {
             show: true,
+            name: { color: '#6B7280', fontSize: '12px', fontFamily: FONT_FAMILY },
+            value: { color: '#111827', fontSize: '20px', fontWeight: 600, fontFamily: FONT_FAMILY },
             total: {
               show: true,
               label: 'Total',
+              color: '#6B7280',
+              fontSize: '12px',
+              fontWeight: 500,
               formatter: function (w) {
                 return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
               }
@@ -71,17 +83,19 @@ const TrafficSourcesChart = () => {
         return val.toFixed(1) + '%';
       },
       style: {
-        fontFamily: "'Open Sans', sans-serif",
-        fontSize: '12px',
-        fontWeight: 'bold',
+        fontFamily: FONT_FAMILY,
+        fontSize: '11px',
+        fontWeight: 600,
         colors: ['#fff']
       },
-      dropShadow: { enabled: true, blur: 3, opacity: 0.5 }
+      dropShadow: { enabled: false }
     },
     legend: {
       position: 'bottom',
-      fontFamily: "'Open Sans', sans-serif",
+      fontFamily: FONT_FAMILY,
       fontSize: '12px',
+      labels: { colors: '#4B5563' },
+      markers: { radius: 12 },
       formatter: function (seriesName, opts) {
         const value = opts.w.globals.series[opts.seriesIndex];
         const percent = ((value / totalVisitors) * 100).toFixed(1);
@@ -94,26 +108,8 @@ const TrafficSourcesChart = () => {
           const percent = ((val / totalVisitors) * 100).toFixed(1);
           return `${val} visiteurs (${percent}%)`;
         }
-      },
-      theme: 'dark'
-    },
-    title: {
-      text: 'Visiteurs par Pays',
-      align: 'center',
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        fontFamily: "'Open Sans', sans-serif",
-        color: '#334155'
       }
     },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: { height: 300 },
-        legend: { position: 'bottom' }
-      }
-    }]
   };
 
   // Trouver le pays top
@@ -123,34 +119,25 @@ const TrafficSourcesChart = () => {
   const topPercent = totalVisitors > 0 ? ((topValue / totalVisitors) * 100).toFixed(1) : 0;
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1">
+    <div className="flex h-full w-full flex-col">
+      <div className="min-h-0 flex-1">
         {series.length > 0 ? (
-          <ReactApexChart options={options} series={series} type="donut" height="100%" />
+          <ReactApexChart options={options} series={series} type="donut" height="100%" width="100%" />
         ) : (
-          <div className="text-center text-gray-500 p-4">Chargement...</div>
+          <div className="flex h-full items-center justify-center">
+            <Spinner />
+          </div>
         )}
       </div>
 
       {/* Stats sous le chart */}
       {series.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-center text-xs">
-          <div className="bg-rose-50 p-2 rounded">
-            <div className="font-semibold text-rose-600">{totalVisitors}</div>
-            <div className="text-gray-500">Visiteurs totaux</div>
-          </div>
-          <div className="bg-pink-50 p-2 rounded">
-            <div className="font-semibold text-pink-600">{topCountry}</div>
-            <div className="text-gray-500">Pays principal ({topPercent}%)</div>
-          </div>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-center md:grid-cols-4">
+          <StatTile value={totalVisitors} label="Visiteurs totaux" />
+          <StatTile value={topCountry} label={`Pays principal (${topPercent}%)`} />
           {labels.slice(0, 2).map((pays, i) => {
             const percent = totalVisitors > 0 ? ((series[i] / totalVisitors) * 100).toFixed(1) : 0;
-            return (
-              <div key={i} className="bg-purple-50 p-2 rounded">
-                <div className="font-semibold text-purple-600">{percent}%</div>
-                <div className="text-gray-500">{pays}</div>
-              </div>
-            );
+            return <StatTile key={i} value={`${percent}%`} label={pays} />;
           })}
         </div>
       )}

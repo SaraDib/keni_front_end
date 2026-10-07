@@ -1,18 +1,26 @@
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
+// Palette et styles communs aux graphiques du back-office
+const CHART_COLORS = ['#1E3A8A', '#9FB873', '#3C5DB5', '#8EA6DD', '#F59E0B', '#14B8A6'];
+const FONT_FAMILY = "'Open Sans', sans-serif";
+const AXIS_LABEL_STYLE = { colors: '#6B7280', fontSize: '12px', fontFamily: FONT_FAMILY };
+
+const StatTile = ({ value, label }) => (
+  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="truncate text-sm font-semibold text-gray-900">{value}</div>
+    <div className="mt-0.5 truncate text-xs text-gray-500">{label}</div>
+  </div>
+);
+
 const TeamAnalyticsChart = () => {
-  const currentYear = new Date().getFullYear();
-  
-  // Données pour les services et le nombre de clients par mois
-  const services = ['Consultation', 'Chirurgie', 'Radiologie', 'Laboratoire', 'Physiothérapie'];
   const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-  
+
   // Générer des données réalistes pour chaque service
   const generateServiceData = (baseLine, variance) => {
     return months.map(() => Math.floor(baseLine + Math.random() * variance));
   };
-  
+
   const seriesData = [
     {
       name: 'Consultation',
@@ -35,157 +43,103 @@ const TeamAnalyticsChart = () => {
       data: generateServiceData(30, 16)
     }
   ];
-  
+
   // Calculer les totaux par service
   const serviceTotals = seriesData.map(service => ({
     name: service.name,
     total: service.data.reduce((sum, count) => sum + count, 0)
   }));
-  
+
   // Trouver le service le plus populaire
-  const topService = serviceTotals.reduce((prev, current) => 
+  const topService = serviceTotals.reduce((prev, current) =>
     (prev.total > current.total) ? prev : current
   );
-  
+
   // Calculer le total de tous les clients
   const totalClients = serviceTotals.reduce((sum, service) => sum + service.total, 0);
-  
+
   // Calculer la moyenne mensuelle de clients
   const monthlyAverage = Math.round(totalClients / 12);
-  
+
   const options = {
     chart: {
       type: 'bar',
-      height: 350,
       stacked: true,
-      toolbar: {
-        show: false
-      },
-      fontFamily: "'Open Sans', sans-serif",
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: FONT_FAMILY,
       animations: {
         enabled: true,
         easing: 'easeinout',
         speed: 800,
-        animateGradually: {
-          enabled: true,
-          delay: 150
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 350
-        }
+        animateGradually: { enabled: true, delay: 150 },
+        dynamicAnimation: { enabled: true, speed: 350 }
       }
     },
     plotOptions: {
       bar: {
         horizontal: false,
         borderRadius: 4,
-        columnWidth: '70%',
+        columnWidth: '60%',
         dataLabels: {
           total: {
             enabled: true,
             style: {
-              fontSize: '13px',
-              fontWeight: 900
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#374151',
             }
           }
         }
       },
     },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      width: 1,
-      colors: ['#fff']
-    },
+    dataLabels: { enabled: false },
+    stroke: { width: 1, colors: ['#fff'] },
     xaxis: {
       categories: months,
-      labels: {
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      }
+      labels: { style: AXIS_LABEL_STYLE },
+      axisBorder: { color: '#E5E7EB' },
+      axisTicks: { color: '#E5E7EB' },
     },
-    yaxis: {
-      title: {
-        text: 'Nombre de clients',
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      },
-      labels: {
-        style: {
-          fontFamily: "'Open Sans', sans-serif",
-        }
-      }
-    },
-    fill: {
-      opacity: 1
-    },
-    colors: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1', '#ec4899'],
+    yaxis: { labels: { style: AXIS_LABEL_STYLE } },
+    fill: { opacity: 1 },
+    colors: CHART_COLORS,
     tooltip: {
       y: {
         formatter: function (val) {
           return val + " clients"
         }
-      },
-      theme: 'dark'
+      }
     },
     legend: {
-      position: 'top',
-      horizontalAlign: 'left',
-      fontFamily: "'Open Sans', sans-serif",
+      position: 'bottom',
+      fontFamily: FONT_FAMILY,
+      fontSize: '12px',
+      labels: { colors: '#4B5563' },
+      markers: { radius: 12 },
     },
-    grid: {
-      borderColor: '#f1f1f1',
-      row: {
-        colors: ['transparent', 'transparent'],
-        opacity: 0.5
-      }
-    },
-    title: {
-      text: `Clients par service en ${currentYear}`,
-      align: 'center',
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        fontFamily: "'Open Sans', sans-serif",
-        color: '#334155'
-      }
-    }
+    grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1">
-        <ReactApexChart 
-          options={options} 
-          series={seriesData} 
-          type="bar" 
-          height="100%" 
+    <div className="flex h-full w-full flex-col">
+      <div className="min-h-0 flex-1">
+        <ReactApexChart
+          options={options}
+          series={seriesData}
+          type="bar"
+          height="100%"
+          width="100%"
         />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-center text-xs">
-        <div className="bg-blue-50 p-2 rounded">
-          <div className="font-semibold text-blue-600">{totalClients.toLocaleString()}</div>
-          <div className="text-gray-500">Total clients</div>
-        </div>
-        <div className="bg-green-50 p-2 rounded">
-          <div className="font-semibold text-green-600">{topService.name}</div>
-          <div className="text-gray-500">Service le plus populaire</div>
-        </div>
-        <div className="bg-amber-50 p-2 rounded">
-          <div className="font-semibold text-amber-600">{topService.total.toLocaleString()}</div>
-          <div className="text-gray-500">Clients {topService.name}</div>
-        </div>
-        <div className="bg-indigo-50 p-2 rounded">
-          <div className="font-semibold text-indigo-600">{monthlyAverage}</div>
-          <div className="text-gray-500">Moyenne mensuelle</div>
-        </div>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-center md:grid-cols-4">
+        <StatTile value={totalClients.toLocaleString()} label="Total clients" />
+        <StatTile value={topService.name} label="Service le plus populaire" />
+        <StatTile value={topService.total.toLocaleString()} label={`Clients ${topService.name}`} />
+        <StatTile value={monthlyAverage} label="Moyenne mensuelle" />
       </div>
     </div>
   );
 };
 
-export default TeamAnalyticsChart; 
+export default TeamAnalyticsChart;

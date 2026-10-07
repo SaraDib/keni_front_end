@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
+import { Spinner, EmptyState } from '../ui';
+
+// Palette et styles communs aux graphiques du back-office
+const CHART_COLORS = ['#1E3A8A', '#9FB873', '#3C5DB5', '#8EA6DD', '#F59E0B', '#14B8A6'];
+const FONT_FAMILY = "'Open Sans', sans-serif";
+const AXIS_LABEL_STYLE = { colors: '#6B7280', fontSize: '12px', fontFamily: FONT_FAMILY };
 
 const CandidatesChart = () => {
   const currentYear = new Date().getFullYear();
@@ -27,11 +33,19 @@ const CandidatesChart = () => {
   }, []);
 
   if (loading) {
-    return <div className="text-center p-4">Chargement des statistiques...</div>;
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
   }
 
   // Extraire les départements dynamiquement
   const departments = candidatesData[0]?.details.map(d => d.department) || [];
+
+  if (departments.length === 0) {
+    return <EmptyState title="Aucune donnée disponible" compact />;
+  }
 
   // Construire les séries dynamiquement
   const series = departments.map(dep => ({
@@ -45,52 +59,34 @@ const CandidatesChart = () => {
   const options = {
     chart: {
       type: 'bar',
-      height: 350,
       stacked: true,
       toolbar: { show: false },
       zoom: { enabled: false },
-      fontFamily: "'Open Sans', sans-serif",
+      fontFamily: FONT_FAMILY,
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        borderRadius: 5,
+        borderRadius: 4,
         columnWidth: '60%',
       },
     },
     xaxis: {
       categories: candidatesData.map(item => item.month),
-      labels: { style: { fontFamily: "'Open Sans', sans-serif" } }
+      labels: { style: AXIS_LABEL_STYLE },
+      axisBorder: { color: '#E5E7EB' },
+      axisTicks: { color: '#E5E7EB' },
     },
-    yaxis: {
-      title: {
-        text: 'Nombre de candidats',
-        style: { fontFamily: "'Open Sans', sans-serif" }
-      },
-      labels: { style: { fontFamily: "'Open Sans', sans-serif" } }
-    },
-    legend: {
-      position: 'bottom',
-      offsetY: 10,
-      fontFamily: "'Open Sans', sans-serif",
-    },
+    yaxis: { labels: { style: AXIS_LABEL_STYLE } },
+    grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
+    // La légende (avec les totaux par département) est rendue sous le graphique
+    legend: { show: false },
     fill: { opacity: 1 },
-    colors: ['#10b981', '#059669', '#047857', '#065f46'],
+    colors: CHART_COLORS,
     tooltip: {
       y: { formatter: val => val + " candidats" },
-      theme: 'dark'
     },
     dataLabels: { enabled: false },
-    title: {
-      text: `Candidats spontanés par mois en ${currentYear}`,
-      align: 'center',
-      style: {
-        fontSize: '14px',
-        fontWeight: 'bold',
-        fontFamily: "'Open Sans', sans-serif",
-        color: '#334155'
-      }
-    }
   };
 
   // Calculer les totaux
@@ -104,24 +100,30 @@ const CandidatesChart = () => {
   }, {});
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-1">
+    <div className="flex h-full w-full flex-col">
+      <div className="min-h-0 flex-1">
         <ReactApexChart
           options={options}
           series={series}
           type="bar"
           height="100%"
+          width="100%"
         />
       </div>
-      <div className="mt-2 text-center text-sm text-gray-500">
+      <div className="mt-2 text-center text-xs text-gray-500">
         <div>
-          Total: <span className="font-semibold">{totalCandidates}</span> candidats spontanés en {currentYear}
+          Total : <span className="font-semibold text-gray-900">{totalCandidates}</span> candidats spontanés en {currentYear}
         </div>
-        <div className="flex flex-wrap justify-center mt-2 text-xs">
+        <div className="mt-1.5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-gray-600">
           {departments.map((dep, idx) => (
-            <div key={dep} className="flex items-center mx-2 mb-1">
-              <div className={`w-3 h-3 rounded-full mr-1`} style={{ backgroundColor: options.colors[idx % options.colors.length] }}></div>
-              <span>{dep}: {totalByDepartment[dep]}</span>
+            <div key={dep} className="flex items-center gap-1.5">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }}
+              />
+              <span>
+                {dep} : <span className="font-semibold text-gray-900">{totalByDepartment[dep]}</span>
+              </span>
             </div>
           ))}
         </div>

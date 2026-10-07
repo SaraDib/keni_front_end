@@ -35,6 +35,20 @@ export default {
       colors: {
         customGreen: '#9FB873',
         customGray:'#A6A9AA',
+        // Back-office palette, built around the navy used on the admin login
+        brand: {
+          50: '#EEF2FB',
+          100: '#DCE4F6',
+          200: '#BACAEC',
+          300: '#8EA6DD',
+          400: '#5F7DC9',
+          500: '#3C5DB5',
+          600: '#2B4AA0',
+          700: '#1E3A8A',
+          800: '#192F6E',
+          900: '#142455',
+          950: '#0C1636',
+        },
       },
     },
   },

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash, Check, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, Megaphone, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import {
+  PageHeader, Card, Button, IconButton, Field, Input, FileInput, Checkbox, FormActions,
+  Table, THead, TBody, Th, Tr, Td, TableEmpty, RowActions, Badge, LoadingState, useConfirm,
+} from '../ui';
+import toast from 'react-hot-toast';
 
 const UpdatesAdmin = () => {
+  const { confirm, confirmDialog } = useConfirm();
   const [update, setUpdate] = useState(null); // Single update object, not an array
   const [formData, setFormData] = useState({
     ID_Updates: null,
@@ -18,18 +24,22 @@ const UpdatesAdmin = () => {
   const [image, setImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false); // True when editing or creating
+  const [isLoaded, setIsLoaded] = useState(false); // Avoids submitting a "create" before the existing update is known
 
   const token = localStorage.getItem('token');
   const API_URL = `${API_BASE_URL}/updates`;
 
-  const fetchUpdate = async () => {
+  // `isActive` lets the initial load ignore a response that arrives after the
+  // effect was cleaned up, so it cannot reset a form the user is already filling.
+  const fetchUpdate = async (isActive = () => true) => {
     try {
       const response = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = response.data
-        ? { ...response.data, ID_Updates: response.data.id || response.data.ID_Updates }
-        : null;
+      if (!isActive()) return;
+      // Laravel renvoie {} (et non null) quand aucune mise à jour n'existe.
+      const existingId = response.data && (response.data.id || response.data.ID_Updates);
+      const data = existingId ? { ...response.data, ID_Updates: existingId } : null;
       console.log('Fetched update:', data);
       setUpdate(data);
       if (data) {
@@ -49,14 +59,18 @@ const UpdatesAdmin = () => {
         setIsEditing(true); // Creation mode if no update exists
       }
     } catch (error) {
+      if (!isActive()) return;
       console.error('Error fetching update:', error);
       resetForm();
       setIsEditing(true); // Allow creation if fetch fails (e.g., no update exists)
     }
+    setIsLoaded(true);
   };
 
   useEffect(() => {
-    fetchUpdate();
+    let active = true;
+    fetchUpdate(() => active);
+    return () => { active = false; };
   }, []);
 
   const handleChange = (e) => {
@@ -105,12 +119,12 @@ const UpdatesAdmin = () => {
 
 
       fetchUpdate();
-      alert(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
+      toast.success(formData.ID_Updates ? 'Mise à jour modifiée avec succès' : 'Mise à jour créée avec succès');
     } catch (error) {
       console.error('Erreur:', error.response ? error.response.data : error.message);
-      alert(
+      toast.error(
         error.response?.data?.message ||
-        'Échec de l’enregistrement de la mise à jour. Voir la console pour plus de détails.'
+        'Échec de l’enregistrement de la mise à jour.'
       );
     }
   };
@@ -120,11 +134,11 @@ const UpdatesAdmin = () => {
     const targetId = (id && (typeof id === 'string' || typeof id === 'number')) ? id : formData.ID_Updates;
 
     if (!targetId) {
-      alert('Aucune mise à jour à supprimer.');
+      toast.error('Aucune mise à jour à supprimer.');
       return;
     }
 
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette mise à jour ?')) {
+    if (!(await confirm({ message: 'Êtes-vous sûr de vouloir supprimer cette mise à jour ? Cette action est irréversible.' }))) {
       return;
     }
 
@@ -134,10 +148,10 @@ const UpdatesAdmin = () => {
       });
       resetForm();
       fetchUpdate();
-      alert('Mise à jour supprimée avec succès');
+      toast.success('Mise à jour supprimée avec succès');
     } catch (error) {
       console.error('Error deleting update:', error);
-      alert('Échec de la suppression de la mise à jour. Voir la console pour plus de détails.');
+      toast.error('Échec de la suppression de la mise à jour.');
     }
   };
 
@@ -171,195 +185,162 @@ const UpdatesAdmin = () => {
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <h1 className="text-xl md:text-2xl font-bold">Gestion de la Mise à Jour</h1>
-      <p className="mt-4 mb-6">Configurez la section unique des mises à jour de la page d'accueil.</p>
+    <div>
+      {confirmDialog}
+      <PageHeader
+        icon={Megaphone}
+        title="Mise à jour"
+        description="Configurez la section unique des mises à jour de la page d'accueil."
+      />
 
-      {/* Formulaire */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-lg font-semibold mb-4">
-          {update ? 'Modifier la Mise à Jour' : 'Créer une Mise à Jour'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-              <input
-                type="file"
-                name="image"
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                accept="image/*"
-              />
-              {previewImage && (
-                <img
-                  src={previewImage}
-                  alt="Preview"
-                  className="mt-2 w-full h-32 object-cover rounded-md"
+      {!isLoaded ? <LoadingState /> : (
+      <div className="space-y-6">
+        {/* Formulaire */}
+        <Card
+          title={update ? 'Modifier la mise à jour' : 'Créer une mise à jour'}
+          icon={update ? Pencil : Plus}
+        >
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <Field label="Image" className="md:col-span-2">
+                <FileInput
+                  name="image"
+                  onChange={handleChange}
+                  accept="image/*"
                 />
+                {previewImage && (
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="mt-3 h-32 w-full rounded-lg border border-gray-200 object-cover md:w-1/2"
+                  />
+                )}
+              </Field>
+              <Field label="Titre (Français)" required>
+                <Input
+                  type="text"
+                  name="title_fr"
+                  value={formData.title_fr}
+                  onChange={handleChange}
+                  required
+                />
+              </Field>
+              <Field label="Titre (Arabe)" required>
+                <Input
+                  type="text"
+                  name="title_ar"
+                  value={formData.title_ar}
+                  onChange={handleChange}
+                  required
+                  dir="rtl"
+                />
+              </Field>
+              <Field label="Description (Français)" className="md:col-span-2">
+                <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.description_fr}
+                    onChange={(content) => handleDescriptionChange('description_fr', content)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="h-48 mb-12"
+                  />
+                </div>
+              </Field>
+              <Field label="Description (Arabe)" className="md:col-span-2">
+                <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.description_ar}
+                    onChange={(content) => handleDescriptionChange('description_ar', content)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="h-48 mb-12"
+                    dir="rtl"
+                  />
+                </div>
+              </Field>
+              <Field label="État">
+                <Checkbox
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  label="Actif"
+                />
+              </Field>
+            </div>
+            <FormActions>
+              {update && (
+                <Button
+                  variant="danger"
+                  icon={Trash2}
+                  onClick={() => handleDelete(formData.ID_Updates)}
+                >
+                  Supprimer
+                </Button>
               )}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre (Français)</label>
-              <input
-                type="text"
-                name="title_fr"
-                value={formData.title_fr}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre (Arabe)</label>
-              <input
-                type="text"
-                name="title_ar"
-                value={formData.title_ar}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                dir="rtl"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Français)</label>
-            <ReactQuill
-              theme="snow"
-              value={formData.description_fr}
-              onChange={(content) => handleDescriptionChange('description_fr', content)}
-              modules={quillModules}
-              formats={quillFormats}
-              className="h-48 mb-12"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Arabe)</label>
-            <ReactQuill
-              theme="snow"
-              value={formData.description_ar}
-              onChange={(content) => handleDescriptionChange('description_ar', content)}
-              modules={quillModules}
-              formats={quillFormats}
-              className="h-48 mb-12"
-              dir="rtl"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                name="active"
-                checked={formData.active}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-gray-700">Actif</span>
-            </div>
-          </div>
-          <div className="flex justify-end space-x-3">
-            {update && (
-              <button
-                type="button"
-                onClick={() => handleDelete(formData.ID_Updates)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Supprimer
-              </button>
-            )}
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              {update ? 'Mettre à jour' : 'Créer'}
-            </button>
-          </div>
-        </form>
-      </div>
+              <Button type="submit">
+                {update ? 'Mettre à jour' : 'Créer'}
+              </Button>
+            </FormActions>
+          </form>
+        </Card>
 
-      {/* Contenu Actuel */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Contenu Actuel</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        {/* Contenu Actuel */}
+        <Card title="Contenu actuel" padded={false}>
+          <Table>
+            <THead>
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <Th>Image</Th>
+                <Th>Titre</Th>
+                <Th>Description</Th>
+                <Th>État</Th>
+                <Th align="right">Actions</Th>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            </THead>
+            <TBody>
               {!update ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                    Aucun contenu disponible
-                  </td>
-                </tr>
+                <TableEmpty colSpan={5} message="Aucun contenu disponible" />
               ) : (
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <Tr>
+                  <Td className="whitespace-nowrap">
                     {update.image_path ? (
                       <img
                         src={`${API_BASE_URL.replace('/api', '/storage')}/${update.image_path}`}
                         alt={update.title_fr}
-                        className="h-10 w-10 rounded-full object-cover"
+                        className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
                         onError={(e) => { e.target.src = '/default-image.png'; }}
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <ImageIcon size={16} className="text-gray-500" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
+                        <ImageIcon size={16} className="text-gray-400" />
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{update.title_fr || 'N/A'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                  </Td>
+                  <Td className="whitespace-nowrap font-medium text-gray-900">{update.title_fr || 'N/A'}</Td>
+                  <Td className="max-w-xs truncate text-gray-500">
                     {update.description_fr ? <span dangerouslySetInnerHTML={{ __html: update.description_fr }} /> : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${update.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
-                    >
-                      {update.active ? (
-                        <>
-                          <Check size={12} className="mr-1" /> Actif
-                        </>
-                      ) : (
-                        <>
-                          <X size={12} className="mr-1" /> Inactif
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(update)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(update.ID_Updates)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash size={18} />
-                    </button>
-                  </td>
-                </tr>
+                  </Td>
+                  <Td className="whitespace-nowrap">
+                    {update.active ? (
+                      <Badge tone="green"><Check size={12} /> Actif</Badge>
+                    ) : (
+                      <Badge tone="red"><X size={12} /> Inactif</Badge>
+                    )}
+                  </Td>
+                  <Td align="right" className="whitespace-nowrap">
+                    <RowActions>
+                      <IconButton icon={Pencil} label="Modifier" tone="brand" onClick={() => handleEdit(update)} />
+                      <IconButton icon={Trash2} label="Supprimer" tone="danger" onClick={() => handleDelete(update.ID_Updates)} />
+                    </RowActions>
+                  </Td>
+                </Tr>
               )}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </Card>
       </div>
+      )}
     </div>
   );
 };
